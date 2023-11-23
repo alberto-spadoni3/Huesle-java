@@ -1,13 +1,5 @@
-/server/node_modules
 /client/node_modules
-node_modules
-package.json
-package-lock.json
-
 .idea
-
-.DS_Store
-
-/server/.env
-
-Pics_Huesle
+**/.DS_Store
+server/.gradle
+server/app/build
