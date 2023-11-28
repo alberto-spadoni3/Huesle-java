@@ -4,4 +4,4 @@ plugins {
 }
 
 rootProject.name = "server"
-include("app")
+include("game", "webservice")

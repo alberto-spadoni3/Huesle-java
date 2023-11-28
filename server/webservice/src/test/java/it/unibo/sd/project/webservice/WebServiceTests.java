@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class WebServiceTests {
     @Test
     void basicTest() {
+        System.out.println("Web service tests");
         assertFalse(false);
     }
 }

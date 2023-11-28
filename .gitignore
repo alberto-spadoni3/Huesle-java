@@ -2,4 +2,5 @@
 .idea
 **/.DS_Store
 server/.gradle
-server/app/build
+server/game/build
+server/webservice/build
