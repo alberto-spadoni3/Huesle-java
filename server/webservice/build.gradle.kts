@@ -7,6 +7,7 @@ repositories {
 }
 
 dependencies {
+    implementation("com.rabbitmq:amqp-client:5.20.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.9.2")
 }
