@@ -1,4 +1,4 @@
-package it.unibo.sd.project.mastermind;
+package it.unibo.sd.project.mastermind.model;
 
 import java.util.List;
 import java.util.Objects;

@@ -1,8 +1,8 @@
-package it.unibo.sd.project.mastermind.match;
+package it.unibo.sd.project.mastermind.model.match;
 
-import it.unibo.sd.project.mastermind.Attempt;
-import it.unibo.sd.project.mastermind.Player;
-import it.unibo.sd.project.mastermind.SecretCode;
+import it.unibo.sd.project.mastermind.model.Attempt;
+import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.SecretCode;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,12 +14,14 @@ public class Match {
     private MatchStatus matchStatus;
     // private List<Player> players;
 
+    // Constructor used when creating a new match
     public Match(List<Player> players) {
         this.matchID = UUID.randomUUID();
         this.secretCode = new SecretCode();
         this.matchStatus = new MatchStatus(players);
     }
 
+    // Constructor used when the match is taken from the database
     public Match(UUID matchID, MatchStatus status, List<Attempt> attempts, SecretCode code) {
         this.matchID = matchID;
         this.matchStatus = status;

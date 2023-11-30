@@ -1,4 +1,4 @@
-package it.unibo.sd.project.mastermind.mongo;
+package it.unibo.sd.project.mastermind.model.mongo;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
