@@ -4,15 +4,14 @@ public enum MessageType {
     CREATE("create"),
     JOIN("join"),
     START("start"),
-    ATTEMPT("attempt"),
-    HINTS("hints"),
-    SECRETCODE("secretcode"),
-    STOP("stop"),
-    SCORES("scores"),
-    CHECK("check"),
     FINISH("finish"),
     UPDATE("update"),
-    DISCONNECT("disconnect");
+    DISCONNECT("disconnect"),
+
+    // User-related types
+    REGISTER_USER("register"),
+    LOGIN_USER("login"),
+    LOGOUT_USER("logout");
 
     private final String type;
 
