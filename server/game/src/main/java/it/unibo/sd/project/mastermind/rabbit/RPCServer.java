@@ -8,16 +8,57 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
-public class RPCServer {
+public class RPCServer implements Runnable {
     private static final String EXCHANGE_NAME = "Web";
     private final Map<MessageType, Function<String, String>> map;
 
     public RPCServer(Map<MessageType, Function<String,String>> map) {
         this.map = map;
+    }
+
+    @Override
+    public void run() {
         try {
-            start();
+            startServer();
         } catch (IOException | TimeoutException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void startServer() throws IOException, TimeoutException {
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(System.getenv("RABBIT_HOST"));
+        try (Connection connection = factory.newConnection();
+             Channel channel = connection.createChannel()) {
+
+            channel.exchangeDeclare(EXCHANGE_NAME, "direct");
+            var callbacks = createCallbackMap(channel);
+
+            System.out.println(" [x] Awaiting RPC requests");
+
+            Object monitor = new Object();
+            callbacks.forEach((queue, callback) -> {
+                try {
+                    channel.basicConsume(
+                            queue,
+                            false,
+                            getDeliverCallback(callback, channel, monitor),
+                            (consumerTag -> { } ));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            //Wait and be prepared to consume the message from RPC client.
+            while (true) {
+                synchronized (monitor) {
+                    try {
+                        monitor.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
     }
 
@@ -51,43 +92,12 @@ public class RPCServer {
                 System.out.println("RPC server responding " + response + " in queue " + delivery.getProperties().getReplyTo());
                 channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.getBytes("UTF-8"));
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+
                 //RabbitMq consumer worker thread notifies the RPC server owner thread
                 synchronized (monitor) {
                     monitor.notify();
                 }
             }
         };
-    }
-
-    private void start() throws IOException, TimeoutException {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(System.getenv("RABBIT_HOST"));
-        try (Connection connection = factory.newConnection();
-             Channel channel = connection.createChannel()) {
-
-             channel.exchangeDeclare(EXCHANGE_NAME, "direct");
-             var callback = createCallbackMap(channel);
-
-             System.out.println(" [x] Awaiting RPC requests");
-
-             Object monitor = new Object();
-             callback.forEach((q,c) -> {
-                 try {
-                    channel.basicConsume(q, false, getDeliverCallback(c,channel,monitor), (consumerTag -> { }));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-             });
-             //Wait and be prepared to consume the message from RPC client.
-             while (true) {
-                 synchronized (monitor) {
-                     try {
-                         monitor.wait();
-                     } catch (InterruptedException e) {
-                         e.printStackTrace();
-                     }
-                 }
-             }
-        }
     }
 }
