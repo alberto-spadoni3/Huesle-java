@@ -39,6 +39,19 @@ public class DBManager<T> {
         collection.deleteOne(Filters.eq(ID_FIELD, id));
     }
 
+    public boolean isPresentByID(String id){
+        return collection.countDocuments(Filters.eq(ID_FIELD, id)) > 0;
+    }
+
+    public boolean isPresentByField(String fieldName, String fieldValue){
+        return collection.countDocuments(Filters.eq(fieldName, fieldValue)) > 0;
+    }
+
+    public Optional<T> getDocumentByField(String fieldName, String fieldValue) throws Exception {
+        Document doc = collection.find(Filters.eq(fieldName, fieldValue)).first();
+        return doc == null ? Optional.empty() : Optional.of(convertDocumentTo(doc));
+    }
+
     private Document convertToDocument(T elem){
         return Document.parse(Presentation.serializerOf(klass).serialize(elem));
     }
