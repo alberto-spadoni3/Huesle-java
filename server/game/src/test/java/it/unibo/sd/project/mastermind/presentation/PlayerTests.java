@@ -10,7 +10,7 @@ public class PlayerTests {
     private final String email = "mario.rossi@unibo.it";
     private final String username = "marior";
     private final String clearPassword = "Mario123!";
-    private final String hashedPassword = getHashedPassword(clearPassword);
+    private final String hashedPassword = getHashedPassword();
     private final byte profilePictureID = 4;
     private final boolean darkMode = false;
     private final boolean colorblindMode = true;
@@ -79,7 +79,7 @@ public class PlayerTests {
         assertFalse(deserializedPlayer.isDisabled());
     }
 
-    private String getHashedPassword(String clearPassword) {
+    private String getHashedPassword() {
         return BCrypt.withDefaults().hashToString(14, clearPassword.toCharArray());
     }
 
