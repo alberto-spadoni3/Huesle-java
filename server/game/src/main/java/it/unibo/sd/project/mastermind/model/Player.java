@@ -11,15 +11,23 @@ public class Player {
     private AccessibilitySettings settings;
     private boolean disabled;
 
-    public Player(String username, String email, String password, boolean clearPassword) {
+    public Player(String username, String email, String clearPassword) {
         this.username = username;
         this.email = email;
-        this.password = clearPassword ?
-                getHashedPassword(password) :
-                password;
+        this.password = getHashedPassword(clearPassword);
         this.settings = new AccessibilitySettings();
         this.profilePictureID = 0;
         this.disabled = false;
+    }
+
+    public Player(String username, String email, String hashedPassword,
+                  byte profilePictureID, AccessibilitySettings accessibilitySettings, boolean disabled) {
+        this.username = username;
+        this.email = email;
+        this.password = hashedPassword;
+        this.settings = accessibilitySettings;
+        this.profilePictureID = profilePictureID;
+        this.disabled = disabled;
     }
 
     public String getUsername() {
@@ -30,8 +38,32 @@ public class Player {
         return this.email;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
+    public byte getProfilePictureID() {
+        return profilePictureID;
+    }
+
+    public AccessibilitySettings getSettings() {
+        return settings;
+    }
+
     private String getHashedPassword(String clearPassword) {
         return BCrypt.withDefaults().hashToString(14, clearPassword.toCharArray());
+    }
+
+    public void setProfilePictureID(byte profilePictureID) {
+        this.profilePictureID = profilePictureID;
+    }
+
+    public void setAccessibilitySettings(AccessibilitySettings settings) {
+        this.settings = settings;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 
     public boolean verifyPassword(String clearPassword) {
