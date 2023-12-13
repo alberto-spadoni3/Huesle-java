@@ -1,7 +1,9 @@
 package it.unibo.sd.project.mastermind.presentation;
 
 import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.user.LoginRequest;
 import it.unibo.sd.project.mastermind.presentation.deserializers.Deserializer;
+import it.unibo.sd.project.mastermind.presentation.deserializers.LoginRequestDeserializer;
 import it.unibo.sd.project.mastermind.presentation.deserializers.PlayerDeserializer;
 import it.unibo.sd.project.mastermind.presentation.serializers.PlayerSerializer;
 import it.unibo.sd.project.mastermind.presentation.serializers.Serializer;
@@ -25,6 +27,7 @@ public class Presentation {
     private static void registerDeserializers() {
         //TODO
         deserializers.put(Player.class, new PlayerDeserializer());
+        deserializers.put(LoginRequest.class, new LoginRequestDeserializer());
     }
 
     public static <T> Serializer<T> serializerOf(Class<T> klass) {
