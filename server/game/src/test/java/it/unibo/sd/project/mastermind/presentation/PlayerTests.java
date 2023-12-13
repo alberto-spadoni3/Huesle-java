@@ -1,13 +1,12 @@
-package it.unibo.sd.project.mastermind;
+package it.unibo.sd.project.mastermind.presentation;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import it.unibo.sd.project.mastermind.model.AccessibilitySettings;
 import it.unibo.sd.project.mastermind.model.Player;
-import it.unibo.sd.project.mastermind.presentation.Presentation;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class PresentationTests {
+public class PlayerTests {
     private final String email = "mario.rossi@unibo.it";
     private final String username = "marior";
     private final String clearPassword = "Mario123!";
@@ -85,9 +84,9 @@ public class PresentationTests {
     }
 
     private String getNewPlayerAsJson() {
-        return "{ \"username\": " + username + "," +
-                "\"email\": " + email + "," +
-                "\"password\": " + clearPassword + "}";
+        return "{\"username\":" + username + "," +
+                "\"email\":" + email + "," +
+                "\"password\":" + clearPassword + "}";
     }
 
     private String getCustomPlayerAsJson(String hashedPassword, byte profilePictureID,
