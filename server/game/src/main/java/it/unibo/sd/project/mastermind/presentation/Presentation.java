@@ -1,6 +1,9 @@
 package it.unibo.sd.project.mastermind.presentation;
 
+import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.presentation.deserializers.Deserializer;
+import it.unibo.sd.project.mastermind.presentation.deserializers.PlayerDeserializer;
+import it.unibo.sd.project.mastermind.presentation.serializers.PlayerSerializer;
 import it.unibo.sd.project.mastermind.presentation.serializers.Serializer;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,10 +19,12 @@ public class Presentation {
 
     private static void registerSerializers() {
         //TODO
+        serializers.put(Player.class, new PlayerSerializer());
     }
 
     private static void registerDeserializers() {
         //TODO
+        deserializers.put(Player.class, new PlayerDeserializer());
     }
 
     public static <T> Serializer<T> serializerOf(Class<T> klass) {
