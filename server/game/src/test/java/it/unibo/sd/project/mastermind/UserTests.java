@@ -9,8 +9,8 @@ public class UserTests {
     void passwordVerification() {
         String email = "mario.rossi@unibo.it";
         String username = "mariorossi";
-        String password = "Mario123!";
-        Player player = new Player(username, email, password, true);
+        String clearPassword = "Mario123!";
+        Player player = new Player(username, email, clearPassword);
 
         assertTrue(player.verifyPassword("Mario123!"), "The given password doesn't match with the user password");
     }
