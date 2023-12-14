@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.user.LoginRequest;
 
 public class LoginRequestDeserializer extends AbstractJsonDeserializer<LoginRequest> {
-
     @Override
     protected LoginRequest deserializeJson(JsonElement jsonElement) {
         if (jsonElement.isJsonObject()) {
