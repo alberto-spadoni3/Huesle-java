@@ -34,7 +34,7 @@ public class RPCServer implements Runnable {
             channel.exchangeDeclare(EXCHANGE_NAME, "direct");
             var callbacks = createCallbackMap(channel);
 
-            System.out.println(" [x] Awaiting RPC requests");
+            System.out.println("[x] Awaiting RPC requests");
 
             Object monitor = new Object();
             callbacks.forEach((queue, callback) -> {
@@ -43,9 +43,9 @@ public class RPCServer implements Runnable {
                             queue,
                             false,
                             getDeliverCallback(callback, channel, monitor),
-                            (consumerTag -> { } ));
+                            consumerTag -> { });
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.err.println(e.getMessage());
                 }
             });
 
@@ -55,7 +55,7 @@ public class RPCServer implements Runnable {
                     try {
                         monitor.wait();
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        System.err.println(e.getMessage());
                     }
                 }
             }
@@ -70,7 +70,7 @@ public class RPCServer implements Runnable {
                 channel.queueBind(queueName, EXCHANGE_NAME, t.getType());
                 callbackMap.put(queueName, c);
             } catch (IOException e) {
-                e.printStackTrace();
+                System.err.println(e.getMessage());
             }
         });
         return callbackMap;
