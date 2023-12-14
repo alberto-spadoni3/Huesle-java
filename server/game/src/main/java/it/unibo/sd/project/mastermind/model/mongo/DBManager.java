@@ -9,21 +9,20 @@ import org.bson.Document;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class DBManager<T> {
     private final static String ID_FIELD = "_id";
-
     private final MongoDatabase database;
     private final MongoCollection<Document> collection;
     private final Class<T> klass;
 
     public DBManager(String databaseName, String collectionName, Class<T> klass) {
-        String connectionString = System.getenv("MONGODB");
-        try (MongoClient mongoClient = MongoClients.create(connectionString)) {
-            this.database = mongoClient.getDatabase(databaseName);
-            this.collection = database.getCollection(collectionName);
-        }
+        String connectionString = Objects.requireNonNull(System.getenv("MONGO_HOST"));
+        MongoClient mongoClient = MongoClients.create(connectionString);
+        this.database = mongoClient.getDatabase(databaseName);
+        this.collection = database.getCollection(collectionName);
         this.klass = klass;
     }
 
