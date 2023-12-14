@@ -5,10 +5,10 @@ import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import it.unibo.sd.project.mastermind.rabbit.MessageType;
 import it.unibo.sd.project.mastermind.rabbit.RPCServer;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 
 public class UserManager {
@@ -18,7 +18,6 @@ public class UserManager {
 
     private final String SUCCESS_HTTP_CODE = "200";
     private final String REGISTRATION_DONE_HTTP_CODE = "201";
-
     private final String UNAUTHORIZED_HTTP_CODE = "401";
     private final String VALUE_ALREADY_EXISTS_HTTP_CODE = "409";
     private final String EMAIL_ALREADY_EXISTS_MESSAGE = "The email address is already in use";
@@ -27,8 +26,13 @@ public class UserManager {
     public UserManager() {
         rpcServer = new RPCServer(getUserManagementCallbacks());
         userDB = new DBManager<>("huesle-db", "users", Player.class);
+        this.users = new ArrayList<>();
         // TODO initialize users variable with the elements in DB
         // users.addAll(...)
+        try (ExecutorService service = Executors.newSingleThreadExecutor()) {
+            System.out.println("Going to start the RPC server...");
+            service.submit(rpcServer);
+        }
     }
 
     private Map<MessageType, Function<String, String>> getUserManagementCallbacks() {
@@ -60,11 +64,11 @@ public class UserManager {
                                         + "-"
                                         + "The user "
                                         + newUser.getUsername()
-                                        + "is being registered successfully";
+                                        + " is being registered successfully";
                 }
 
             } catch (Exception e) {
-                System.out.println("Error deserializing " + message + " into a Player");
+                System.out.println(e.getMessage());
             }
             return registrationMessage;
         };
@@ -104,7 +108,7 @@ public class UserManager {
                             "Unauthorized";
                 }
             } catch (Exception e) {
-                System.out.println("Error deserializing " + message + " into a LoginRequest");
+                System.out.println(e.getMessage());
             }
             return loginMessage;
         };
