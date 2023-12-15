@@ -2,9 +2,12 @@ package it.unibo.sd.project.mastermind.presentation;
 
 import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.model.user.LoginRequest;
+import it.unibo.sd.project.mastermind.model.user.OperationResult;
 import it.unibo.sd.project.mastermind.presentation.deserializers.Deserializer;
 import it.unibo.sd.project.mastermind.presentation.deserializers.LoginRequestDeserializer;
+import it.unibo.sd.project.mastermind.presentation.deserializers.OperationResultDeserializer;
 import it.unibo.sd.project.mastermind.presentation.deserializers.PlayerDeserializer;
+import it.unibo.sd.project.mastermind.presentation.serializers.OperationResultSerializer;
 import it.unibo.sd.project.mastermind.presentation.serializers.PlayerSerializer;
 import it.unibo.sd.project.mastermind.presentation.serializers.Serializer;
 import java.util.HashMap;
@@ -22,12 +25,14 @@ public class Presentation {
     private static void registerSerializers() {
         //TODO
         serializers.put(Player.class, new PlayerSerializer());
+        serializers.put(OperationResult.class, new OperationResultSerializer());
     }
 
     private static void registerDeserializers() {
         //TODO
         deserializers.put(Player.class, new PlayerDeserializer());
         deserializers.put(LoginRequest.class, new LoginRequestDeserializer());
+        deserializers.put(OperationResult.class, new OperationResultDeserializer());
     }
 
     public static <T> Serializer<T> serializerOf(Class<T> klass) {
