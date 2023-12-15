@@ -1,12 +1,14 @@
 package it.unibo.sd.project.webservice;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.bridge.BridgeEventType;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
@@ -52,7 +54,26 @@ public class WebServer extends AbstractVerticle {
 
     private Router getUserRouter() {
         Router router = Router.router(vertx);
+        router.route().handler(BodyHandler.create());
+        router.route().consumes("application/json");
+
+        router.post("/register").handler(getHandler(MessageType.REGISTER_USER));
+        router.post("/login").handler(getHandler(MessageType.LOGIN_USER));
+
         return router;
+    }
+
+    private Handler<RoutingContext> getHandler(MessageType messageType) {
+        return routingContext -> {
+            gameBackend.call(messageType, routingContext.body().asString(), backendResponse -> {
+                JsonObject response = new JsonObject(backendResponse);
+                routingContext
+                        .response()
+                        .setStatusCode(response.getInteger("statusCode"))
+                        .putHeader("Content-Type", "application/json")
+                        .end(response.getString("resultMessage"));
+            });
+        };
     }
 
     private Router getEventBusRouter() {
