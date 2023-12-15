@@ -22,17 +22,19 @@ java {
     }
 }
 
+val env = mapOf (
+        "RABBIT_HOST" to "localhost",
+        "MONGO_HOST" to "mongodb://localhost:27017"
+)
+
 // Task used to run the microservice related to the game
 task("game", JavaExec::class) {
-    val env = mapOf (
-            "RABBIT_HOST" to "localhost",
-            "MONGO_HOST" to "mongodb://localhost:27017"
-        )
     environment = env
     mainClass.set("it.unibo.sd.project.mastermind.Main")
     classpath = sourceSets["main"].runtimeClasspath
 }
 
 tasks.named<Test>("test") {
+    environment = env
     useJUnitPlatform()
 }
