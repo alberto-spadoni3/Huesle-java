@@ -5,6 +5,7 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import it.unibo.sd.project.mastermind.model.Player;
 import org.bson.Document;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class DBManager<T> {
-    private final static String ID_FIELD = "_id";
+    private final static String ID_FIELD = "username";
     private final MongoDatabase database;
     private final MongoCollection<Document> collection;
     private final Class<T> klass;
