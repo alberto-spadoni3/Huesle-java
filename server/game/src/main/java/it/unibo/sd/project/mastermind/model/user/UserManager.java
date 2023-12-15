@@ -16,12 +16,13 @@ public class UserManager {
     private final RPCServer rpcServer;
     private final DBManager<Player> userDB;
 
-    private final String SUCCESS_HTTP_CODE = "200";
-    private final String REGISTRATION_DONE_HTTP_CODE = "201";
-    private final String UNAUTHORIZED_HTTP_CODE = "401";
-    private final String VALUE_ALREADY_EXISTS_HTTP_CODE = "409";
+    private final short SUCCESS_HTTP_CODE = 200;
+    private final short REGISTRATION_DONE_HTTP_CODE = 201;
+    private final short UNAUTHORIZED_HTTP_CODE = 401;
+    private final short VALUE_ALREADY_EXISTS_HTTP_CODE = 409;
     private final String EMAIL_ALREADY_EXISTS_MESSAGE = "The email address is already in use";
     private final String USERNAME_ALREADY_EXISTS_MESSAGE = "The username is already in use";
+    private final String UNAUTHORIZED_MESSAGE = "Unauthorized";
 
     public UserManager() {
         rpcServer = new RPCServer(getUserManagementCallbacks());
@@ -29,10 +30,7 @@ public class UserManager {
         this.users = new ArrayList<>();
         // TODO initialize users variable with the elements in DB
         // users.addAll(...)
-        try (ExecutorService service = Executors.newSingleThreadExecutor()) {
-            System.out.println("Going to start the RPC server...");
-            service.submit(rpcServer);
-        }
+        Executors.newSingleThreadExecutor().submit(rpcServer);
     }
 
     private Map<MessageType, Function<String, String>> getUserManagementCallbacks() {
@@ -44,43 +42,35 @@ public class UserManager {
 
     private Function<String, String> registerUser() {
         return (message) -> {
-            String registrationMessage = "";
+            OperationResult registrationResult = null;
             try {
                 Player newUser = Presentation.deserializeAs(message, Player.class);
                 if (userDB.isPresentByField("email", newUser.getEmail()))
-                    registrationMessage = VALUE_ALREADY_EXISTS_HTTP_CODE
-                                        + "-"
-                                        + EMAIL_ALREADY_EXISTS_MESSAGE;
+                    registrationResult =
+                            new OperationResult(VALUE_ALREADY_EXISTS_HTTP_CODE, EMAIL_ALREADY_EXISTS_MESSAGE);
                 else if (userDB.isPresentByField("username", newUser.getUsername()))
-                    registrationMessage = VALUE_ALREADY_EXISTS_HTTP_CODE
-                                        + "-"
-                                        + USERNAME_ALREADY_EXISTS_MESSAGE;
+                    registrationResult =
+                            new OperationResult(VALUE_ALREADY_EXISTS_HTTP_CODE, USERNAME_ALREADY_EXISTS_MESSAGE);
 
-                if (registrationMessage.isEmpty()) {
+                if (registrationResult == null) {
                     // The registration process can go on without problems
                     users.add(newUser);
                     userDB.insert(newUser);
-                    registrationMessage = REGISTRATION_DONE_HTTP_CODE
-                                        + "-"
-                                        + "The user "
-                                        + newUser.getUsername()
-                                        + " is being registered successfully";
+                    registrationResult = new OperationResult(
+                                    REGISTRATION_DONE_HTTP_CODE,
+                                    String.format("User %s created successfully", newUser.getUsername()));
                 }
 
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
-            return registrationMessage;
+            return Presentation.serializerOf(OperationResult.class).serialize(registrationResult);
         };
     }
 
     private Function<String, String> loginUser() {
-        // ITER
-        // deserializzare e verificare che ci siano tutti i campi
-        // verificare che l'utente sia presente nel db
-        // verificare che la password fornita corrisponda con quella nel db
         return (message) -> {
-            String loginMessage  = "";
+            OperationResult loginResult  = null;
             try {
                 LoginRequest loginRequest = Presentation.deserializeAs(message, LoginRequest.class);
                 Optional<Player> userToLogin =
@@ -88,29 +78,23 @@ public class UserManager {
                                 "username",
                                 loginRequest.getUsername()
                         );
-                if (userToLogin.isPresent() && !userToLogin.get().isDisabled()) {
-                    // check password
-                    if (userToLogin.get().verifyPassword(loginRequest.getClearPassword()))
-                        loginMessage =
-                                SUCCESS_HTTP_CODE +
-                                "-" +
-                                "User logged in";
-                    else
-                        loginMessage =
-                                UNAUTHORIZED_HTTP_CODE +
-                                "-" +
-                                "Unauthorized";
-                } else {
-                    // User not in DB or disabled
-                    loginMessage =
-                            UNAUTHORIZED_HTTP_CODE +
-                            "-" +
-                            "Unauthorized";
+                if (userToLogin.isPresent() &&
+                    !userToLogin.get().isDisabled() &&
+                    userToLogin.get().verifyPassword(loginRequest.getClearPassword())) {
+                    loginResult = new OperationResult(
+                            SUCCESS_HTTP_CODE,
+                            String.format("User %s logged in", userToLogin.get().getUsername()));
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
+            } finally {
+                if (loginResult == null)
+                    // It means that the username is not present in the DB,
+                    // or it is disabled
+                    // or the passwords doesn't match
+                    loginResult = new OperationResult(UNAUTHORIZED_HTTP_CODE, UNAUTHORIZED_MESSAGE);
             }
-            return loginMessage;
+            return Presentation.serializerOf(OperationResult.class).serialize(loginResult);
         };
     }
 }
