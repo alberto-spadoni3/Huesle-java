@@ -5,14 +5,15 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 public class RPCClient implements AutoCloseable {
 
-    private Connection connection;
-    private Channel channel;
+    private final Connection connection;
+    private final Channel channel;
     private static final String EXCHANGE_NAME = "Web";
 
     public RPCClient() throws IOException, TimeoutException {
@@ -35,20 +36,17 @@ public class RPCClient implements AutoCloseable {
                     .build();
             channel.exchangeDeclare(EXCHANGE_NAME, "direct");
             channel.basicPublish(EXCHANGE_NAME,messageType.getType(),
-                    props, message.getBytes("UTF-8"));
-            System.out.println(" [x] Sent '" + messageType.getType() + "':'" + message + "'");
-            String ctag = null;
+                    props, message.getBytes(StandardCharsets.UTF_8));
+            System.out.println("[x] Sent '" + messageType.getType() + "':'" + message + "'");
             channel.queuePurge(replyQueueName);
             channel.basicQos(1);
-            ctag = channel.basicConsume(replyQueueName, true, (consumerTag, delivery) -> {
+            channel.basicConsume(replyQueueName, true, (consumerTag, delivery) -> {
                 if (delivery.getProperties().getCorrelationId().equals(corrId)) {
-                    responseConsumer.accept(new String(delivery.getBody(), "UTF-8"));
+                    responseConsumer.accept(new String(delivery.getBody(), StandardCharsets.UTF_8));
                 }
             }, consumerTag -> {});
-            //channel.basicCancel(ctag);
-
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 
