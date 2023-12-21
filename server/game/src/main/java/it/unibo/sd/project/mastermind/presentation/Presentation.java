@@ -3,6 +3,7 @@ package it.unibo.sd.project.mastermind.presentation;
 import it.unibo.sd.project.mastermind.model.Attempt;
 import it.unibo.sd.project.mastermind.model.Hints;
 import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.SecretCode;
 import it.unibo.sd.project.mastermind.model.user.LoginRequest;
 import it.unibo.sd.project.mastermind.model.user.OperationResult;
 import it.unibo.sd.project.mastermind.presentation.deserializers.Deserializer;
@@ -29,6 +30,7 @@ public class Presentation {
         serializers.put(OperationResult.class, new OperationResultSerializer());
         serializers.put(Attempt.class, new AttemptSerializer());
         serializers.put(Hints.class, new HintsSerializer());
+        serializers.put(SecretCode.class, new SecretCodeSerializer());
     }
 
     private static void registerDeserializers() {

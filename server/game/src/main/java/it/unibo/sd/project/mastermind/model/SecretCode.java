@@ -5,6 +5,11 @@ import java.util.List;
 
 public class SecretCode {
     private final int COLOR_SEQUENCE_LENGTH = 4;
+
+    public int getCOLOR_SEQUENCE_LENGTH() {
+        return COLOR_SEQUENCE_LENGTH;
+    }
+
     private final List<String> possibleColours = List.of("crimson",
                                                          "coral",
                                                          "gold",
