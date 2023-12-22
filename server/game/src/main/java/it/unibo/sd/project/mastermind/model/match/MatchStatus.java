@@ -4,6 +4,7 @@ import it.unibo.sd.project.mastermind.model.Player;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 public class MatchStatus {
     private final byte MAX_ATTEMPTS_NUMBER = 10;
@@ -24,8 +25,10 @@ public class MatchStatus {
     }
 
     private Player extractFirstPlayer() {
-        //TODO: choose a player randomly
-        return null;
+        int s = this.getPlayers().size();
+        Random r = new Random();
+
+        return this.players.get(r.nextInt(s - 1));
     }
 
     public void switchPlayer() {
