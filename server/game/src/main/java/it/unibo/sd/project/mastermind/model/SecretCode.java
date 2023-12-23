@@ -32,6 +32,6 @@ public class SecretCode {
 
     private ArrayList<String> generateColorSequence() {
         // TODO: implement a color sequence generator
-        return null;
+        return new ArrayList<String>();
     }
 }

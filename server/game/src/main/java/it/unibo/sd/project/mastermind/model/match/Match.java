@@ -34,4 +34,17 @@ public class Match {
         attempt.computeHints(this.secretCode);
         madeAttempts.add(attempt);
     }
+    public UUID getMatchID() {
+        return matchID;
+    }
+
+    public MatchStatus getMatchStatus() {
+        return matchStatus;
+    }
+    public List<Attempt> getMadeAttempts() {
+        return madeAttempts;
+    }
+    public SecretCode getSecretCode() {
+        return secretCode;
+    }
 }
