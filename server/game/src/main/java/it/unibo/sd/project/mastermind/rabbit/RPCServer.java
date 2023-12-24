@@ -87,7 +87,7 @@ public class RPCServer implements Runnable {
             try {
                 response = callback.apply(new String(delivery.getBody(), "UTF-8"));
             } catch (RuntimeException e) {
-                System.out.println(" [.] " + e);
+                System.out.println("[.] " + e);
             } finally {
                 System.out.println("RPC server responding " + response + " in queue " + delivery.getProperties().getReplyTo());
                 channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.getBytes("UTF-8"));
