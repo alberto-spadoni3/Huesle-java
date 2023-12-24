@@ -1,5 +1,11 @@
 package it.unibo.sd.project.mastermind.model.user;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.JWTOptions;
+import io.vertx.ext.auth.PubSecKeyOptions;
+import io.vertx.ext.auth.jwt.JWTAuth;
+import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
@@ -26,7 +32,7 @@ public class UserManager {
 
     public UserManager() {
         rpcServer = new RPCServer(getUserManagementCallbacks());
-        userDB = new DBManager<>("huesle-db", "users", Player.class);
+        userDB = new DBManager<>("huesle-db", "users", "username", Player.class);
         this.users = new ArrayList<>();
         // TODO initialize users variable with the elements in DB
         // users.addAll(...)
@@ -60,7 +66,6 @@ public class UserManager {
                                     REGISTRATION_DONE_HTTP_CODE,
                                     String.format("User %s created successfully", newUser.getUsername()));
                 }
-
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
@@ -70,7 +75,7 @@ public class UserManager {
 
     private Function<String, String> loginUser() {
         return (message) -> {
-            OperationResult loginResult  = null;
+            OperationResult loginResult = null;
             try {
                 LoginRequest loginRequest = Presentation.deserializeAs(message, LoginRequest.class);
                 Optional<Player> userToLogin =
@@ -80,10 +85,24 @@ public class UserManager {
                         );
                 if (userToLogin.isPresent() &&
                     !userToLogin.get().isDisabled() &&
-                    userToLogin.get().verifyPassword(loginRequest.getClearPassword())) {
+                    userToLogin.get().verifyPassword(loginRequest.getClearPassword()))
+                {
+                    Player user = userToLogin.get();
+
+                    // generate access and refresh tokens
+                    JWTAuth jwtAccessProvider = getJwtAuthProvider("access.secret");
+                    String accessToken = getTokenFromProvider(jwtAccessProvider, user.getUsername());
+                    JWTAuth jwtRefreshProvider = getJwtAuthProvider("refresh.secret");
+                    String refreshToken = getTokenFromProvider(jwtRefreshProvider, user.getUsername());
+
+                    // Save the refresh token in the database
+                    user.setRefreshToken(refreshToken);
+                    userDB.update(user.getUsername(), user);
+
                     loginResult = new OperationResult(
                             SUCCESS_HTTP_CODE,
-                            String.format("User %s logged in", userToLogin.get().getUsername()));
+                            String.format("User %s logged in", userToLogin.get().getUsername()),
+                            user, accessToken);
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
@@ -96,5 +115,24 @@ public class UserManager {
             }
             return Presentation.serializerOf(OperationResult.class).serialize(loginResult);
         };
+    }
+
+    private static String getTokenFromProvider(JWTAuth jwtAuth, String username) {
+        String token;
+        final byte TOKEN_EXPIRATION_IN_MINUTES = 2;
+        JWTOptions jwtOptions = new JWTOptions()
+                .setExpiresInMinutes(TOKEN_EXPIRATION_IN_MINUTES);
+        JsonObject tokenData = new JsonObject().put("sub", username);
+        token = jwtAuth.generateToken(tokenData, jwtOptions);
+        return token;
+    }
+
+    private JWTAuth getJwtAuthProvider(String symmetricKey) {
+        //TODO: change this password with a random generated string inside an environment variable
+        JWTAuthOptions jwtAuthOptions = new JWTAuthOptions()
+                .addPubSecKey(new PubSecKeyOptions()
+                        .setAlgorithm("HS256")
+                        .setBuffer(symmetricKey));
+        return JWTAuth.create(Vertx.vertx(), jwtAuthOptions);
     }
 }
