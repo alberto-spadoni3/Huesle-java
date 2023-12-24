@@ -36,7 +36,7 @@ public class UserTests {
         UserManager userManager = new UserManager();
         client = new RPCClient();
         usersToDelete = new ArrayList<>();
-        userDB = new DBManager<>("huesle-db", "users", Player.class);
+        userDB = new DBManager<>("huesle-db", "users", "username", Player.class);
         username = "albisyx";
         email = "albisyx@protonmail.ch";
         clearPassword = "passwd123!";
