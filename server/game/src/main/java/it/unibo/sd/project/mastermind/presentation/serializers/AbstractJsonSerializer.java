@@ -17,6 +17,11 @@ public abstract class AbstractJsonSerializer<T> implements Serializer<T> {
     }
 
     @Override
+    public JsonElement getJsonElement(T object) {
+        return toJsonElement(object);
+    }
+
+    @Override
     public String serializeMany(Collection<? extends T> objects) {
         var jsonArray = new JsonArray();
         for (var object : objects) {
