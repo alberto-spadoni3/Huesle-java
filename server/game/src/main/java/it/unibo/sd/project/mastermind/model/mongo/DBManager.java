@@ -14,16 +14,16 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class DBManager<T> {
-    private final static String ID_FIELD = "username";
-    private final MongoDatabase database;
+    private final String ID_FIELD;
     private final MongoCollection<Document> collection;
     private final Class<T> klass;
 
-    public DBManager(String databaseName, String collectionName, Class<T> klass) {
+    public DBManager(String databaseName, String collectionName, String idField, Class<T> klass) {
         String connectionString = Objects.requireNonNull(System.getenv("MONGO_HOST"));
         MongoClient mongoClient = MongoClients.create(connectionString);
-        this.database = mongoClient.getDatabase(databaseName);
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
         this.collection = database.getCollection(collectionName);
+        this.ID_FIELD = idField;
         this.klass = klass;
     }
 
