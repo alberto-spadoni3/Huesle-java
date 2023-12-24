@@ -6,6 +6,7 @@ repositories {
 
 dependencies {
     implementation("io.vertx:vertx-web:4.4.0")
+    implementation("io.vertx:vertx-auth-jwt:4.5.1")
     runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.101.Final:osx-x86_64")
     implementation("com.rabbitmq:amqp-client:5.20.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
