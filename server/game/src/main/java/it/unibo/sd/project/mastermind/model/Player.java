@@ -10,6 +10,7 @@ public class Player {
     private byte profilePictureID;
     private AccessibilitySettings settings;
     private boolean disabled;
+    private String refreshToken;
 
     public Player(String username, String email, String clearPassword) {
         this.username = username;
@@ -20,7 +21,7 @@ public class Player {
         this.disabled = false;
     }
 
-    public Player(String username, String email, String hashedPassword,
+    public Player(String username, String email, String hashedPassword, String refreshToken,
                   byte profilePictureID, AccessibilitySettings accessibilitySettings, boolean disabled) {
         this.username = username;
         this.email = email;
@@ -28,6 +29,7 @@ public class Player {
         this.settings = accessibilitySettings;
         this.profilePictureID = profilePictureID;
         this.disabled = disabled;
+        this.refreshToken = refreshToken;
     }
 
     public String getUsername() {
@@ -66,6 +68,18 @@ public class Player {
         this.disabled = disabled;
     }
 
+    public boolean isDisabled() {
+        return this.disabled;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
     public boolean verifyPassword(String clearPassword) {
         return BCrypt.verifyer()
                 .verify(clearPassword.toCharArray(), this.password)
@@ -83,9 +97,5 @@ public class Player {
     @Override
     public int hashCode() {
         return Objects.hash(username, email);
-    }
-
-    public boolean isDisabled() {
-        return this.disabled;
     }
 }

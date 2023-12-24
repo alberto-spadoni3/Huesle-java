@@ -26,10 +26,12 @@ public class PlayerDeserializer extends AbstractJsonDeserializer<Player> {
                                     jsonSettings.get("darkMode").getAsBoolean(),
                                     jsonSettings.get("colorblindMode").getAsBoolean()
                             );
+                    String possibleToken = jsonPlayer.get("refreshToken").getAsString();
                     return new Player(
                             jsonPlayer.get("username").getAsString(),
                             jsonPlayer.get("email").getAsString(),
                             hashedPassword,
+                            possibleToken.isBlank() ? null : possibleToken,
                             jsonPlayer.get("profilePictureID").getAsByte(),
                             settings,
                             jsonPlayer.get("disabled").getAsBoolean()

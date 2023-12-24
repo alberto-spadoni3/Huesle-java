@@ -11,6 +11,8 @@ public class PlayerSerializer extends AbstractJsonSerializer<Player> {
         jsonPlayer.addProperty("username", player.getUsername());
         jsonPlayer.addProperty("email", player.getEmail());
         jsonPlayer.addProperty("password", player.getPassword());
+        String refreshToken = player.getRefreshToken();
+        jsonPlayer.addProperty("refreshToken", refreshToken == null ? "" : refreshToken);
         jsonPlayer.addProperty("profilePictureID", player.getProfilePictureID());
         jsonPlayer.addProperty("disabled", player.isDisabled());
         JsonObject settings = new JsonObject();

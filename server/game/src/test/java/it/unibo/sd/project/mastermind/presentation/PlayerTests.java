@@ -21,6 +21,7 @@ public class PlayerTests {
         String serializedPlayer = Presentation.serializerOf(Player.class).serialize(newPlayer);
         String jsonPlayer = getCustomPlayerAsJson(
                 newPlayer.getPassword(),
+                null,
                 (byte) 0,
                 true,
                 false
@@ -31,20 +32,38 @@ public class PlayerTests {
 
     @Test
     void CustomPlayerSerialization() {
+        // Player without a refresh token
         Player customPlayer = new Player(
-                username, email, hashedPassword, profilePictureID,
+                username, email, hashedPassword, null, profilePictureID,
                 new AccessibilitySettings(darkMode, colorblindMode),
                 false
             );
         String serializedPlayer = Presentation.serializerOf(Player.class).serialize(customPlayer);
         String jsonPlayer = getCustomPlayerAsJson(
                 hashedPassword,
+                null,
                 profilePictureID,
                 darkMode,
                 colorblindMode
         );
-
         assertEquals(jsonPlayer, serializedPlayer);
+
+        // Player with a refresh token
+        String refreshToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJTYXJhIiwiaWF0IjoxNzAzMjY2ODE1LCJleHAiOjE3MDMyNjY5MzV9.Kjkf_Njfd_K6iKkXybwzehcCUUgEgxxWIsd4srCKhgA";
+        Player customPlayerWithToken = new Player(
+                username, email, hashedPassword, refreshToken, profilePictureID,
+                new AccessibilitySettings(darkMode, colorblindMode),
+                false
+        );
+        String serializedPlayerWithToken = Presentation.serializerOf(Player.class).serialize(customPlayerWithToken);
+        String jsonPlayerWithToken = getCustomPlayerAsJson(
+                hashedPassword,
+                refreshToken,
+                profilePictureID,
+                darkMode,
+                colorblindMode
+        );
+        assertEquals(jsonPlayerWithToken, serializedPlayerWithToken);
     }
 
     @Test
@@ -58,6 +77,7 @@ public class PlayerTests {
         assertTrue(newPlayer.getSettings().isDarkMode());
         assertFalse(newPlayer.getSettings().isColorblindMode());
         assertFalse(newPlayer.isDisabled());
+        assertNull(newPlayer.getRefreshToken());
     }
 
     @Test
@@ -65,6 +85,17 @@ public class PlayerTests {
         Player deserializedPlayer = Presentation.deserializeAs(
                 getCustomPlayerAsJson(
                         hashedPassword,
+                        null,
+                        profilePictureID,
+                        darkMode,
+                        colorblindMode
+                ), Player.class);
+
+        String refreshToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJTYXJhIiwiaWF0IjoxNzAzMjY2ODE1LCJleHAiOjE3MDMyNjY5MzV9.Kjkf_Njfd_K6iKkXybwzehcCUUgEgxxWIsd4srCKhgA";
+        Player deserializedPlayerWithToken = Presentation.deserializeAs(
+                getCustomPlayerAsJson(
+                        hashedPassword,
+                        refreshToken,
                         profilePictureID,
                         darkMode,
                         colorblindMode
@@ -77,6 +108,8 @@ public class PlayerTests {
         assertEquals(darkMode, deserializedPlayer.getSettings().isDarkMode());
         assertEquals(colorblindMode, deserializedPlayer.getSettings().isColorblindMode());
         assertFalse(deserializedPlayer.isDisabled());
+        assertNull(deserializedPlayer.getRefreshToken());
+        assertEquals(refreshToken, deserializedPlayerWithToken.getRefreshToken());
     }
 
     private String getHashedPassword() {
@@ -89,12 +122,13 @@ public class PlayerTests {
                 "\"password\":" + clearPassword + "}";
     }
 
-    private String getCustomPlayerAsJson(String hashedPassword, byte profilePictureID,
+    private String getCustomPlayerAsJson(String hashedPassword, String refreshToken, byte profilePictureID,
                                          boolean darkMode, boolean colorblindMode) {
         return "{" +
                 "\"username\":\"" + username + "\"," +
                 "\"email\":\"" + email + "\"," +
                 "\"password\":\"" + hashedPassword + "\"," +
+                "\"refreshToken\":\"" + (refreshToken == null ? "" : refreshToken) + "\"," +
                 "\"profilePictureID\":" + profilePictureID + "," +
                 "\"disabled\":false," +
                 "\"accessibilitySettings\":{" +
