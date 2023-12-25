@@ -1,15 +1,11 @@
 package it.unibo.sd.project.mastermind.presentation;
 
-import it.unibo.sd.project.mastermind.model.Attempt;
-import it.unibo.sd.project.mastermind.model.Hints;
-import it.unibo.sd.project.mastermind.model.Player;
-import it.unibo.sd.project.mastermind.model.SecretCode;
+import it.unibo.sd.project.mastermind.model.*;
+import it.unibo.sd.project.mastermind.model.match.Match;
+import it.unibo.sd.project.mastermind.model.match.MatchStatus;
 import it.unibo.sd.project.mastermind.model.user.LoginRequest;
 import it.unibo.sd.project.mastermind.model.user.OperationResult;
-import it.unibo.sd.project.mastermind.presentation.deserializers.Deserializer;
-import it.unibo.sd.project.mastermind.presentation.deserializers.LoginRequestDeserializer;
-import it.unibo.sd.project.mastermind.presentation.deserializers.OperationResultDeserializer;
-import it.unibo.sd.project.mastermind.presentation.deserializers.PlayerDeserializer;
+import it.unibo.sd.project.mastermind.presentation.deserializers.*;
 import it.unibo.sd.project.mastermind.presentation.serializers.*;
 
 import java.util.HashMap;
@@ -26,11 +22,21 @@ public class Presentation {
 
     private static void registerSerializers() {
         //TODO
-        serializers.put(Player.class, new PlayerSerializer());
-        serializers.put(OperationResult.class, new OperationResultSerializer());
+        serializers.put(AccessibilitySettings.class, new AccessibilitySettingsSerializer());
         serializers.put(Attempt.class, new AttemptSerializer());
         serializers.put(Hints.class, new HintsSerializer());
+        serializers.put(Game.class, new GameSerializer());
+        serializers.put(Player.class, new PlayerSerializer());
         serializers.put(SecretCode.class, new SecretCodeSerializer());
+
+        serializers.put(Match.class, new MatchSerializer());
+        serializers.put(MatchStatus.class, new MatchStatusSerializer());
+
+        serializers.put(OperationResult.class, new OperationResultSerializer());
+
+
+
+
     }
 
     private static void registerDeserializers() {
@@ -38,6 +44,9 @@ public class Presentation {
         deserializers.put(Player.class, new PlayerDeserializer());
         deserializers.put(LoginRequest.class, new LoginRequestDeserializer());
         deserializers.put(OperationResult.class, new OperationResultDeserializer());
+
+        deserializers.put(AccessibilitySettings.class, new AccessibilitySettingsDeserializer());
+        deserializers.put(Hints.class, new HintsDeserializer());
     }
 
     public static <T> Serializer<T> serializerOf(Class<T> klass) {
