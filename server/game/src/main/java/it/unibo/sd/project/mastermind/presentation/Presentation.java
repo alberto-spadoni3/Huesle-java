@@ -47,6 +47,7 @@ public class Presentation {
 
         deserializers.put(AccessibilitySettings.class, new AccessibilitySettingsDeserializer());
         deserializers.put(Hints.class, new HintsDeserializer());
+        deserializers.put(MatchStatus.class, new MatchStatusDeserializer());
     }
 
     public static <T> Serializer<T> serializerOf(Class<T> klass) {
