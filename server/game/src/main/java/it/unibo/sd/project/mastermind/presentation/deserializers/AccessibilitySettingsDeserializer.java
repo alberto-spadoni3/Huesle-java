@@ -9,8 +9,8 @@ public class AccessibilitySettingsDeserializer extends AbstractJsonDeserializer<
     protected AccessibilitySettings deserializeJson(JsonElement jsonElement) {
         if (jsonElement.isJsonObject()) {
             JsonObject result = (JsonObject) jsonElement;
-            boolean darkMode = Boolean.parseBoolean(result.get("darkMode").getAsString());
-            boolean colorblindMode = Boolean.parseBoolean(result.get("resultMessage").getAsString());
+            boolean darkMode = result.get("darkMode").getAsBoolean();
+            boolean colorblindMode = result.get("colorblindMode").getAsBoolean();
             return new AccessibilitySettings(darkMode, colorblindMode);
         } else {
         throw new RuntimeException("Cannot deserialize " + jsonElement + " as AccessibilitySettings");
