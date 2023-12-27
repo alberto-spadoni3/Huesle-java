@@ -11,6 +11,7 @@ public enum MessageType {
     // User-related types
     REGISTER_USER("register"),
     LOGIN_USER("login"),
+    REFRESH_ACCESS_TOKEN("refreshAccessToken"),
     LOGOUT_USER("logout");
 
     private final String type;
