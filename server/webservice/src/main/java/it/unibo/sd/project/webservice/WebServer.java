@@ -24,6 +24,7 @@ import it.unibo.sd.project.webservice.rabbit.RPCClient;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class WebServer extends AbstractVerticle {
     private final short LISTENING_PORT;
@@ -89,29 +90,55 @@ public class WebServer extends AbstractVerticle {
 
         router.post("/login").handler(getHandler(
                 MessageType.LOGIN_USER,
-                (routingContext, response) -> {
-                    JsonObject backendResponse = new JsonObject(response);
-                    if (routingContext.response().getStatusCode() == 200) {
-                        // Authentication with JWT
-                        JsonObject user = backendResponse.getJsonObject("relatedUser");
-                        String accessToken = backendResponse.getString("accessToken");
-                        String refreshToken = user.getString("refreshToken");
+                (routingContext, response) -> processResponse(routingContext, response, backendResponse -> {
+                    JsonObject user = backendResponse.getJsonObject("relatedUser");
+                    String accessToken = backendResponse.getString("accessToken");
+                    String refreshToken = user.getString("refreshToken");
 
-                        long maxAge = 24 * 60 * 60; // one day expressed in seconds
-                        Cookie cookie = Cookie.cookie("jwtRefreshToken", refreshToken)
-                                .setMaxAge(maxAge)
-                                .setHttpOnly(true);
+                    long maxAge = 24 * 60 * 60; // one day expressed in seconds
+                    Cookie cookie = Cookie.cookie("jwtRefreshToken", refreshToken)
+                            .setMaxAge(maxAge)
+                            .setHttpOnly(true);
 
-                        JsonObject responseBody = new JsonObject();
-                        responseBody
-                                .put("accessToken", accessToken)
-                                .put("profilePicID", user.getInteger("profilePictureID"))
-                                .put("email", user.getString("email"));
-                        routingContext.response().addCookie(cookie).end(responseBody.encode());
-                    } else
-                        routingContext.response().end(backendResponse.getString("resultMessage"));
-                }));
+                    JsonObject responseBody = new JsonObject();
+                    responseBody
+                            .put("accessToken", accessToken)
+                            .put("profilePicID", user.getInteger("profilePictureID"))
+                            .put("email", user.getString("email"));
+                    routingContext.response().addCookie(cookie).end(responseBody.encode());
+                })));
+
+        router.get("/refreshToken").handler(routingContext -> {
+            Cookie cookie = routingContext.request().getCookie("jwtRefreshToken");
+            if (cookie != null) {
+                String refreshToken = cookie.getValue();
+                getHandler(
+                        MessageType.REFRESH_ACCESS_TOKEN,
+                        refreshToken,
+                        (context, response) -> processResponse(context, response, backendResponse -> {
+                            JsonObject user = backendResponse.getJsonObject("relatedUser");
+                            String accessToken = backendResponse.getString("accessToken");
+                            JsonObject responseBody = new JsonObject();
+                            responseBody
+                                    .put("username", user.getString("username"))
+                                    .put("newAccessToken", accessToken)
+                                    .put("profilePicID", user.getInteger("profilePictureID"))
+                                    .put("email", user.getString("email"));
+                            context.response().end(responseBody.encode());
+                        })).handle(routingContext);
+            }
+            else
+                routingContext.response().setStatusCode(401).end();
+        });
         return router;
+    }
+
+    private void processResponse(RoutingContext context, String response, Consumer<JsonObject> consumer) {
+        JsonObject backendResponse = new JsonObject(response);
+        if (context.response().getStatusCode() == 200)
+            consumer.accept(backendResponse);
+        else
+            context.response().end(backendResponse.getString("resultMessage"));
     }
 
     private JWTAuth getJwtAuthProvider(String symmetricKey) {
@@ -124,7 +151,14 @@ public class WebServer extends AbstractVerticle {
     }
 
     private Handler<RoutingContext> getHandler(MessageType messageType, BiConsumer<RoutingContext, String> consumer) {
-        return routingContext -> gameBackend.call(messageType, routingContext.body().asString(), res -> {
+        return routingContext -> {
+            getHandler(messageType, routingContext.body().asString(), consumer).handle(routingContext);
+        };
+    }
+
+
+    private Handler<RoutingContext> getHandler(MessageType messageType, String message, BiConsumer<RoutingContext, String> consumer) {
+        return routingContext -> gameBackend.call(messageType, message, res -> {
             JsonObject backendResponse = new JsonObject(res);
             routingContext
                     .response()
