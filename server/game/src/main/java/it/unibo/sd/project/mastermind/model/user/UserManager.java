@@ -4,6 +4,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.auth.PubSecKeyOptions;
+import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import it.unibo.sd.project.mastermind.model.Player;
@@ -13,8 +14,8 @@ import it.unibo.sd.project.mastermind.rabbit.MessageType;
 import it.unibo.sd.project.mastermind.rabbit.RPCServer;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 public class UserManager {
@@ -25,7 +26,8 @@ public class UserManager {
     private final short SUCCESS_HTTP_CODE = 200;
     private final short REGISTRATION_DONE_HTTP_CODE = 201;
     private final short UNAUTHORIZED_HTTP_CODE = 401;
-    private final short VALUE_ALREADY_EXISTS_HTTP_CODE = 409;
+    private final short FORBIDDEN_HTTP_CODE = 403;
+    private final short CONFLICT_HTTP_CODE = 409;
     private final String EMAIL_ALREADY_EXISTS_MESSAGE = "The email address is already in use";
     private final String USERNAME_ALREADY_EXISTS_MESSAGE = "The username is already in use";
     private final String UNAUTHORIZED_MESSAGE = "Unauthorized";
@@ -43,6 +45,7 @@ public class UserManager {
         Map<MessageType, Function<String, String>> userCallbacks = new HashMap<>();
         userCallbacks.put(MessageType.REGISTER_USER, registerUser());
         userCallbacks.put(MessageType.LOGIN_USER, loginUser());
+        userCallbacks.put(MessageType.REFRESH_ACCESS_TOKEN, refreshAccessToken());
         return userCallbacks;
     }
 
@@ -53,10 +56,10 @@ public class UserManager {
                 Player newUser = Presentation.deserializeAs(message, Player.class);
                 if (userDB.isPresentByField("email", newUser.getEmail()))
                     registrationResult =
-                            new OperationResult(VALUE_ALREADY_EXISTS_HTTP_CODE, EMAIL_ALREADY_EXISTS_MESSAGE);
+                            new OperationResult(CONFLICT_HTTP_CODE, EMAIL_ALREADY_EXISTS_MESSAGE);
                 else if (userDB.isPresentByField("username", newUser.getUsername()))
                     registrationResult =
-                            new OperationResult(VALUE_ALREADY_EXISTS_HTTP_CODE, USERNAME_ALREADY_EXISTS_MESSAGE);
+                            new OperationResult(CONFLICT_HTTP_CODE, USERNAME_ALREADY_EXISTS_MESSAGE);
 
                 if (registrationResult == null) {
                     // The registration process can go on without problems
@@ -90,10 +93,8 @@ public class UserManager {
                     Player user = userToLogin.get();
 
                     // generate access and refresh tokens
-                    JWTAuth jwtAccessProvider = getJwtAuthProvider("access.secret");
-                    String accessToken = getTokenFromProvider(jwtAccessProvider, user.getUsername());
-                    JWTAuth jwtRefreshProvider = getJwtAuthProvider("refresh.secret");
-                    String refreshToken = getTokenFromProvider(jwtRefreshProvider, user.getUsername());
+                    String accessToken = generateToken("access.secret", user.getUsername());
+                    String refreshToken = generateToken("refresh.secret", user.getUsername());
 
                     // Save the refresh token in the database
                     user.setRefreshToken(refreshToken);
@@ -117,12 +118,43 @@ public class UserManager {
         };
     }
 
-    private static String getTokenFromProvider(JWTAuth jwtAuth, String username) {
+    private Function<String, String> refreshAccessToken() {
+        return refreshToken -> {
+            AtomicReference<OperationResult> result = new AtomicReference<>();
+            TokenCredentials credentials = new TokenCredentials(refreshToken);
+            try {
+                Optional<Player> optionalPlayer =
+                        userDB.getDocumentByField("refreshToken", credentials.getToken());
+                if (optionalPlayer.isPresent()) {
+                    Player player = optionalPlayer.get();
+                    // check the signature and expiration of the refreshToken
+                    getJwtAuthProvider("refresh.secret").authenticate(credentials, user -> {
+                        if (user.succeeded() && user.result().subject().equals(player.getUsername())) {
+                            String newAccessToken = generateToken("access.secret", player.getUsername());
+                            result.set(new OperationResult(
+                                    SUCCESS_HTTP_CODE,
+                                    "Access token refreshed successfully",
+                                    player, newAccessToken));
+                        }
+                    });
+                }
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            } finally {
+                if (result.get() == null)
+                    result.set(new OperationResult(FORBIDDEN_HTTP_CODE, "Forbidden"));
+            }
+            return Presentation.serializerOf(OperationResult.class).serialize(result.get());
+        };
+    }
+
+    private String generateToken(String tokenSecret, String username) {
         String token;
         final byte TOKEN_EXPIRATION_IN_MINUTES = 2;
         JWTOptions jwtOptions = new JWTOptions()
                 .setExpiresInMinutes(TOKEN_EXPIRATION_IN_MINUTES);
         JsonObject tokenData = new JsonObject().put("sub", username);
+        JWTAuth jwtAuth = getJwtAuthProvider(tokenSecret);
         token = jwtAuth.generateToken(tokenData, jwtOptions);
         return token;
     }
