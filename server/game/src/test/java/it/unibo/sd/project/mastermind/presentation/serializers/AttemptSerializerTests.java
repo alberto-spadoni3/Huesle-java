@@ -31,7 +31,6 @@ public class AttemptSerializerTests {
         Byte b = new Byte(String.valueOf(1));
         Hints hints = new Hints(b, b);
         Attempt attempt = new Attempt(emptyList, player, hints);
-
         assertEquals(getCustomPlayerAsJson(hashedPassword, profilePictureID, darkMode, colorblindMode), Presentation.serializerOf(Attempt.class).serialize(attempt));
     }
 
@@ -41,14 +40,10 @@ public class AttemptSerializerTests {
 
     private String getCustomPlayerAsJson(String hashedPassword, byte profilePictureID,
                                          boolean darkMode, boolean colorblindMode) {
-        return "{" +
-                "\"username\":\"" + username + "\"," +
-                "\"email\":\"" + email + "\"," +
-                "\"password\":\"" + hashedPassword + "\"," +
-                "\"profilePictureID\":" + profilePictureID + "," +
-                "\"disabled\":false," +
-                "\"accessibilitySettings\":{" +
-                "\"darkMode\":" + darkMode + "," +
-                "\"colorblindMode\":" + colorblindMode + "}}";
+        return "{\"colorSequence\":[],\"hints\":{\"rightPositions\":1,\"rightColours\":1}," +
+                "\"attemptMadeBy\":{\"username\":\"marior\",\"email\":\"mario.rossi@unibo.it\"," +
+                "\"password\":\"$2a$14$PGb7NrZ4VoxdXAzM14C7beYqUwmG2vLY9q8TfikhgWukyEbLyUSoO\"," +
+                "\"refreshToken\":\"\",\"profilePictureID\":4,\"disabled\":false," +
+                "\"accessibilitySettings\":{\"darkMode\":false,\"colorblindMode\":true}}}";
     }
 }

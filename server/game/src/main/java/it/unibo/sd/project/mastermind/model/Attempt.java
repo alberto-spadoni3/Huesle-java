@@ -11,6 +11,7 @@ public class Attempt {
     public Attempt(List<String> colorSequence, Player attemptMadeBy, Hints hints) {
         this.colorSequence = colorSequence;
         this.attemptMadeBy = attemptMadeBy;
+        this.hints = hints;
     }
 
     public void computeHints(SecretCode secretCode) {
