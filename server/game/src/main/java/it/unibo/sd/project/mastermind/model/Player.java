@@ -32,6 +32,16 @@ public class Player {
         this.refreshToken = refreshToken;
     }
 
+    public Player(String username, String email, String hashedPassword,
+                  byte profilePictureID, AccessibilitySettings accessibilitySettings, boolean disabled) {
+        this.username = username;
+        this.email = email;
+        this.password = hashedPassword;
+        this.settings = accessibilitySettings;
+        this.profilePictureID = profilePictureID;
+        this.disabled = disabled;
+    }
+
     public String getUsername() {
         return this.username;
     }

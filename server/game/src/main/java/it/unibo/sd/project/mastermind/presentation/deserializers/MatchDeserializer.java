@@ -3,6 +3,7 @@ package it.unibo.sd.project.mastermind.presentation.deserializers;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchState;
 import it.unibo.sd.project.mastermind.model.match.MatchStatus;
 
@@ -27,7 +28,7 @@ public class MatchDeserializer extends AbstractJsonDeserializer<Match> {
             MatchStatus ms = new MatchStatus(players);
             ms.changeNextPlayer(nextPlayer);
             ms.changeState(matchState);
-            return ms;
+            return null;
         } else {
             throw new RuntimeException("Cannot deserialize " + jsonElement + " as Match");
         }
