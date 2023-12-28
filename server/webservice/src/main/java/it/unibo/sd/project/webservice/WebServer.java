@@ -6,7 +6,6 @@ import io.vertx.core.Promise;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
@@ -15,7 +14,6 @@ import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.HttpException;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
@@ -24,7 +22,6 @@ import it.unibo.sd.project.webservice.rabbit.RPCClient;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class WebServer extends AbstractVerticle {
     private final short LISTENING_PORT;
@@ -160,13 +157,12 @@ public class WebServer extends AbstractVerticle {
     }
 
     private Handler<RoutingContext> getHandler(MessageType messageType, BiConsumer<RoutingContext, String> consumer) {
-        return routingContext -> {
-            getHandler(messageType, routingContext.body().asString(), consumer).handle(routingContext);
-        };
+        return routingContext -> getHandler(messageType, routingContext.body().asString(), consumer).handle(routingContext);
     }
 
 
-    private Handler<RoutingContext> getHandler(MessageType messageType, String message, BiConsumer<RoutingContext, String> consumer) {
+    private Handler<RoutingContext> getHandler(MessageType messageType, String message,
+                                               BiConsumer<RoutingContext, String> consumer) {
         return routingContext -> gameBackend.call(messageType, message, res -> {
             JsonObject backendResponse = new JsonObject(res);
             int statusCode = backendResponse.getInteger("statusCode");

@@ -19,10 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 public class UserManager {
-    private List<Player> users;
-    private final RPCServer rpcServer;
     private final DBManager<Player> userDB;
-
     private final short SUCCESS_HTTP_CODE = 200;
     private final short REGISTRATION_DONE_HTTP_CODE = 201;
     private final short NO_CONTENT_HTTP_CODE = 204;
@@ -34,11 +31,8 @@ public class UserManager {
     private final String UNAUTHORIZED_MESSAGE = "Unauthorized";
 
     public UserManager() {
-        rpcServer = new RPCServer(getUserManagementCallbacks());
+        RPCServer rpcServer = new RPCServer(getUserManagementCallbacks());
         userDB = new DBManager<>("huesle-db", "users", "username", Player.class);
-        this.users = new ArrayList<>();
-        // TODO initialize users variable with the elements in DB
-        // users.addAll(...)
         Executors.newSingleThreadExecutor().submit(rpcServer);
     }
 
@@ -65,7 +59,6 @@ public class UserManager {
 
                 if (registrationResult == null) {
                     // The registration process can go on without problems
-                    users.add(newUser);
                     userDB.insert(newUser);
                     registrationResult = new OperationResult(
                                     REGISTRATION_DONE_HTTP_CODE,
