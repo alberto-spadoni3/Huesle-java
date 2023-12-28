@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SecretCodeSerializerTests {
     private final List<String> sequence = new ArrayList<>();
-    private final String result = "{\"colorCode\":\"crimson,mediumblue,coral,rebeccapurple\"}";
+    private final String result = "{\"colorCode\":[\"crimson\",\"mediumblue\",\"coral\",\"rebeccapurple\"]}";
     @Test
     void secretCodeSerializerTest(){
         this.sequence.add("crimson");
