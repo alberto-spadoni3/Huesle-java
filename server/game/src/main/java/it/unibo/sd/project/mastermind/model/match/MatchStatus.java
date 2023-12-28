@@ -20,6 +20,10 @@ public class MatchStatus {
         this.remainingAttempts = MAX_ATTEMPTS_NUMBER;
     }
 
+    public void changeNextPlayer(Player player) {
+        this.nextPlayer = player;
+    }
+
     public void changeState(MatchState newState) {
         this.matchState = newState;
     }

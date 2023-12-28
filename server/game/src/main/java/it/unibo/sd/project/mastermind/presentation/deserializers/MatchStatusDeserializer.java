@@ -24,12 +24,14 @@ public class MatchStatusDeserializer extends AbstractJsonDeserializer<MatchStatu
             }
             JsonObject jsonNextPlayer = result.getAsJsonObject("nextPlayer");
             Player nextPlayer = ps.deserializeJson(jsonNextPlayer);
+
+
             MatchStatus ms = new MatchStatus(players);
             ms.changeNextPlayer(nextPlayer);
             ms.changeState(matchState);
             return ms;
         } else {
-            throw new RuntimeException("Cannot deserialize " + jsonElement + " as Hints");
+            throw new RuntimeException("Cannot deserialize " + jsonElement + " as MatchStatus");
         }
     }
 }
