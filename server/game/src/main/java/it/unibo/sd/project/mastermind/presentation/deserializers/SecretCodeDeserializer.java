@@ -12,8 +12,9 @@ public class SecretCodeDeserializer extends AbstractJsonDeserializer<SecretCode>
         if (jsonElement.isJsonObject()) {
             JsonObject result = (JsonObject) jsonElement;
             ArrayList<String> sequence = new ArrayList<>();
-            //TODO After modifying serializer with JSONArray
-
+            for(JsonElement e : result.getAsJsonArray("colorCode")){
+                sequence.add(e.getAsString());
+            }
             return new SecretCode(sequence);
         } else {
             throw new RuntimeException("Cannot deserialize " + jsonElement + " as SecretCode");
