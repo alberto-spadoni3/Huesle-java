@@ -41,7 +41,7 @@ public class AttemptSerializerTests {
 
     private String getCustomPlayerAsJson(String hashedPassword, byte profilePictureID,
                                          boolean darkMode, boolean colorblindMode) {
-        return "{\"attemptMadeBy\":{" +
+        return "{" +
                 "\"username\":\"" + username + "\"," +
                 "\"email\":\"" + email + "\"," +
                 "\"password\":\"" + hashedPassword + "\"," +
@@ -49,6 +49,6 @@ public class AttemptSerializerTests {
                 "\"disabled\":false," +
                 "\"accessibilitySettings\":{" +
                 "\"darkMode\":" + darkMode + "," +
-                "\"colorblindMode\":" + colorblindMode + "}}}";
+                "\"colorblindMode\":" + colorblindMode + "}}";
     }
 }
