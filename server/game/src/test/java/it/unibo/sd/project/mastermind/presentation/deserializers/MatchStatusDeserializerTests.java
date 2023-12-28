@@ -1,6 +1,8 @@
 package it.unibo.sd.project.mastermind.presentation.deserializers;
 
+import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.model.match.MatchStatus;
+import it.unibo.sd.project.mastermind.presentation.PlayerTests;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import org.junit.jupiter.api.Test;
 
@@ -9,18 +11,16 @@ public class MatchStatusDeserializerTests {
     String p2p = " ";
 
     String start = "{\"matchState\":\"PLAYING\",\"players\":{" +
-            "\"0\":{\"username\":\"prova\",\"email\":\"pro@pro.va\"," +
-            "\"password\":\""+p1p+"\"," +
-            "\"profilePictureID\":0,\"disabled\":false,\"accessibilitySettings\":{" +
-            "\"darkMode\":true,\"colorblindMode\":false}}," +
-            "\"1\":{\"username\":\"p2\",\"email\":\"p2@pro.va\"," +
-            "\"password\":\""+p2p+"\"," +
-            "\"profilePictureID\":0,\"disabled\":false,\"accessibilitySettings\":{" +
-            "\"darkMode\":true,\"colorblindMode\":false}}}," +
-            "\"nextPlayer\":{\"username\":\"prova\",\"email\":\"pro@pro.va\"," +
-            "\"password\":\"$2a$14$mxlqjRjx6qO2GTlixfieFusI0PwaOTO5iLip5cr2cTrG4O8b71PAi\"," +
-            "\"profilePictureID\":0,\"disabled\":false,\"accessibilitySettings\":{" +
-            "\"darkMode\":true,\"colorblindMode\":false}}}";
+            "\"0\":{\"username\":\"marior\",\"email\":\"mario.rossi@unibo.it\",\"password\":" +
+            "\"$2a$14$Zo/Ujuzwm9E.JcqeQJQd3.8dBEF8B4lPSiiFzR2FmA.Um/8vKlAAi\"," +
+            "\"refreshToken\":\"\",\"profilePictureID\":4,\"disabled\":false,\"accessibilitySettings\":{" +
+            "\"darkMode\":false,\"colorblindMode\":true}}," +
+            "\"1\":{\"username\":\"marior\",\"email\":\"mario.rossi@unibo.it\",\"password\":" +
+            "\"$2a$14$Zo/Ujuzwm9E.JcqeQJQd3.8dBEF8B4lPSiiFzR2FmA.Um/8vKlAAi\"," +
+            "\"refreshToken\":\"\",\"profilePictureID\":4,\"disabled\":false,\"accessibilitySettings\":{" +
+            "\"darkMode\":false,\"colorblindMode\":true}}}," +
+            "\"nextPlayer\":{\"username\":\"marior\",\"email\":\"mario.rossi@unibo.it\",\"password\":" +
+            "\"$2a$14$Zo/Ujuzwm9E.JcqeQJQd3.8dBEF8B4lPSiiFzR2FmA.Um/8vKlAAi\",\"refreshToken\":\"\",\"profilePictureID\":4,\"disabled\":false,\"accessibilitySettings\":{\"darkMode\":false,\"colorblindMode\":true}}}";
 
     @Test
     void matchStatusDeserializerTest() throws Exception {
