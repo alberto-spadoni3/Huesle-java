@@ -54,9 +54,6 @@ public class WebServer extends AbstractVerticle {
         router.route("/api/protected/*")
                 .handler(JWTAuthHandler.create(jwtAccessProvider))
                 .failureHandler(this::manageAuthFailures);
-        router.route("/api/protected/db").handler(c -> {
-            c.response().end("Hi " + c.user().subject());
-        });
 
         vertx
             .createHttpServer()
@@ -85,12 +82,13 @@ public class WebServer extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
         router.route().consumes("application/json");
 
-        router.post("/register").handler(getHandler(
+        router.post("/register").blockingHandler(getHandler(
                 MessageType.REGISTER_USER, (routingContext, username) -> routingContext.response().end()));
 
-        router.post("/login").handler(getHandler(
+        router.post("/login").blockingHandler(getHandler(
                 MessageType.LOGIN_USER,
-                (routingContext, response) -> processResponse(routingContext, response, backendResponse -> {
+                (routingContext, response) -> {
+                    JsonObject backendResponse = new JsonObject(response);
                     JsonObject user = backendResponse.getJsonObject("relatedUser");
                     String accessToken = backendResponse.getString("accessToken");
                     String refreshToken = user.getString("refreshToken");
@@ -106,16 +104,12 @@ public class WebServer extends AbstractVerticle {
                             .put("profilePicID", user.getInteger("profilePictureID"))
                             .put("email", user.getString("email"));
                     routingContext.response().addCookie(cookie).end(responseBody.encode());
-                })));
+                }));
 
-        router.get("/refreshToken").handler(routingContext -> {
-            Cookie cookie = routingContext.request().getCookie("jwtRefreshToken");
-            if (cookie != null) {
-                String refreshToken = cookie.getValue();
-                getHandler(
+        router.get("/refreshToken").blockingHandler(checkRefreshTokenCookiePresence(
                         MessageType.REFRESH_ACCESS_TOKEN,
-                        refreshToken,
-                        (context, response) -> processResponse(context, response, backendResponse -> {
+                        (context, response) -> {
+                            JsonObject backendResponse = new JsonObject(response);
                             JsonObject user = backendResponse.getJsonObject("relatedUser");
                             String accessToken = backendResponse.getString("accessToken");
                             JsonObject responseBody = new JsonObject();
@@ -125,20 +119,35 @@ public class WebServer extends AbstractVerticle {
                                     .put("profilePicID", user.getInteger("profilePictureID"))
                                     .put("email", user.getString("email"));
                             context.response().end(responseBody.encode());
-                        })).handle(routingContext);
-            }
-            else
-                routingContext.response().setStatusCode(401).end();
-        });
+                        }));
+
+        router.get("/logout").blockingHandler(checkRefreshTokenCookiePresence(
+                MessageType.LOGOUT_USER,
+                (context, response) -> context.response().end(new JsonObject(response).getString("resultMessage"))
+        ));
+
         return router;
     }
 
-    private void processResponse(RoutingContext context, String response, Consumer<JsonObject> consumer) {
-        JsonObject backendResponse = new JsonObject(response);
-        if (context.response().getStatusCode() == 200)
-            consumer.accept(backendResponse);
-        else
-            context.response().end(backendResponse.getString("resultMessage"));
+    private Handler<RoutingContext> checkRefreshTokenCookiePresence(MessageType messageType,
+                                                                    BiConsumer<RoutingContext, String> consumer) {
+        return routingContext -> {
+            String cookieName = "jwtRefreshToken";
+            Cookie cookie = routingContext.request().getCookie(cookieName);
+            if (cookie != null) {
+                String refreshToken = cookie.getValue();
+                if (messageType.getType().equals(MessageType.LOGOUT_USER.getType()))
+                    routingContext.response().removeCookies(cookieName);
+                getHandler(messageType, refreshToken, consumer).handle(routingContext);
+            }
+            else {
+                int statusCode = messageType.getType().equals(MessageType.LOGOUT_USER.getType()) ? 204 : 401;
+                routingContext
+                        .response()
+                        .setStatusCode(statusCode)
+                        .end();
+            }
+        };
     }
 
     private JWTAuth getJwtAuthProvider(String symmetricKey) {
@@ -160,11 +169,15 @@ public class WebServer extends AbstractVerticle {
     private Handler<RoutingContext> getHandler(MessageType messageType, String message, BiConsumer<RoutingContext, String> consumer) {
         return routingContext -> gameBackend.call(messageType, message, res -> {
             JsonObject backendResponse = new JsonObject(res);
+            int statusCode = backendResponse.getInteger("statusCode");
             routingContext
                     .response()
                     .putHeader("Content-Type", "application/json")
-                    .setStatusCode(backendResponse.getInteger("statusCode"));
-            consumer.accept(routingContext, backendResponse.encode());
+                    .setStatusCode(statusCode);
+            if (statusCode >= 200 && statusCode <= 204)
+                consumer.accept(routingContext, backendResponse.encode());
+            else
+                routingContext.response().end(backendResponse.getString("resultMessage"));
         });
     }
 
