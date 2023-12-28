@@ -3,24 +3,32 @@ package it.unibo.sd.project.webservice;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.Cookie;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.JWTOptions;
+import io.vertx.ext.auth.PubSecKeyOptions;
+import io.vertx.ext.auth.jwt.JWTAuth;
+import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.bridge.BridgeEventType;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.HttpException;
+import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import it.unibo.sd.project.webservice.rabbit.MessageType;
 import it.unibo.sd.project.webservice.rabbit.RPCClient;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class WebServer extends AbstractVerticle {
     private final short LISTENING_PORT;
     private RPCClient gameBackend;
-    private HttpServer httpServer;
 
     public WebServer(short listeningPort) {
         LISTENING_PORT = listeningPort;
@@ -42,14 +50,34 @@ public class WebServer extends AbstractVerticle {
         router.route("/eventbus/*").subRouter(getEventBusRouter());
         router.route("/api/user/*").subRouter(getUserRouter());
 
-        httpServer = vertx
-                .createHttpServer()
-                .requestHandler(router)
-                .listen(LISTENING_PORT, res -> {
-                    if (res.succeeded())
-                        startPromise.complete();
-                    else startPromise.fail(res.cause());
-                });
+        JWTAuth jwtAccessProvider = getJwtAuthProvider("access.secret");
+        router.route("/api/protected/*")
+                .handler(JWTAuthHandler.create(jwtAccessProvider))
+                .failureHandler(this::manageAuthFailures);
+        router.route("/api/protected/db").handler(c -> {
+            c.response().end("Hi " + c.user().subject());
+        });
+
+        vertx
+            .createHttpServer()
+            .requestHandler(router)
+            .listen(LISTENING_PORT, res -> {
+                if (res.succeeded())
+                    startPromise.complete();
+                else startPromise.fail(res.cause());
+            });
+    }
+
+    private void manageAuthFailures(RoutingContext routingContext) {
+        HttpServerResponse response = routingContext.response();
+        Throwable cause = routingContext.failure().getCause();
+        if (cause != null)
+            if (cause.getMessage().contains("token expired"))
+                response.setStatusCode(403).end("JWT token expired");
+            else
+                response.setStatusCode(400).end(cause.getMessage())
+;        else
+            response.setStatusCode(500).end("Internal Server Error");
     }
 
     private Router getUserRouter() {
@@ -57,23 +85,87 @@ public class WebServer extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
         router.route().consumes("application/json");
 
-        router.post("/register").handler(getHandler(MessageType.REGISTER_USER));
-        router.post("/login").handler(getHandler(MessageType.LOGIN_USER));
+        router.post("/register").handler(getHandler(
+                MessageType.REGISTER_USER, (routingContext, username) -> routingContext.response().end()));
 
+        router.post("/login").handler(getHandler(
+                MessageType.LOGIN_USER,
+                (routingContext, response) -> processResponse(routingContext, response, backendResponse -> {
+                    JsonObject user = backendResponse.getJsonObject("relatedUser");
+                    String accessToken = backendResponse.getString("accessToken");
+                    String refreshToken = user.getString("refreshToken");
+
+                    long maxAge = 24 * 60 * 60; // one day expressed in seconds
+                    Cookie cookie = Cookie.cookie("jwtRefreshToken", refreshToken)
+                            .setMaxAge(maxAge)
+                            .setHttpOnly(true);
+
+                    JsonObject responseBody = new JsonObject();
+                    responseBody
+                            .put("accessToken", accessToken)
+                            .put("profilePicID", user.getInteger("profilePictureID"))
+                            .put("email", user.getString("email"));
+                    routingContext.response().addCookie(cookie).end(responseBody.encode());
+                })));
+
+        router.get("/refreshToken").handler(routingContext -> {
+            Cookie cookie = routingContext.request().getCookie("jwtRefreshToken");
+            if (cookie != null) {
+                String refreshToken = cookie.getValue();
+                getHandler(
+                        MessageType.REFRESH_ACCESS_TOKEN,
+                        refreshToken,
+                        (context, response) -> processResponse(context, response, backendResponse -> {
+                            JsonObject user = backendResponse.getJsonObject("relatedUser");
+                            String accessToken = backendResponse.getString("accessToken");
+                            JsonObject responseBody = new JsonObject();
+                            responseBody
+                                    .put("username", user.getString("username"))
+                                    .put("newAccessToken", accessToken)
+                                    .put("profilePicID", user.getInteger("profilePictureID"))
+                                    .put("email", user.getString("email"));
+                            context.response().end(responseBody.encode());
+                        })).handle(routingContext);
+            }
+            else
+                routingContext.response().setStatusCode(401).end();
+        });
         return router;
     }
 
-    private Handler<RoutingContext> getHandler(MessageType messageType) {
+    private void processResponse(RoutingContext context, String response, Consumer<JsonObject> consumer) {
+        JsonObject backendResponse = new JsonObject(response);
+        if (context.response().getStatusCode() == 200)
+            consumer.accept(backendResponse);
+        else
+            context.response().end(backendResponse.getString("resultMessage"));
+    }
+
+    private JWTAuth getJwtAuthProvider(String symmetricKey) {
+        //TODO: change this password with a random generated string inside an environment variable
+        JWTAuthOptions jwtAuthOptions = new JWTAuthOptions()
+                .addPubSecKey(new PubSecKeyOptions()
+                        .setAlgorithm("HS256")
+                        .setBuffer(symmetricKey));
+        return JWTAuth.create(vertx, jwtAuthOptions);
+    }
+
+    private Handler<RoutingContext> getHandler(MessageType messageType, BiConsumer<RoutingContext, String> consumer) {
         return routingContext -> {
-            gameBackend.call(messageType, routingContext.body().asString(), backendResponse -> {
-                JsonObject response = new JsonObject(backendResponse);
-                routingContext
-                        .response()
-                        .setStatusCode(response.getInteger("statusCode"))
-                        .putHeader("Content-Type", "application/json")
-                        .end(response.getString("resultMessage"));
-            });
+            getHandler(messageType, routingContext.body().asString(), consumer).handle(routingContext);
         };
+    }
+
+
+    private Handler<RoutingContext> getHandler(MessageType messageType, String message, BiConsumer<RoutingContext, String> consumer) {
+        return routingContext -> gameBackend.call(messageType, message, res -> {
+            JsonObject backendResponse = new JsonObject(res);
+            routingContext
+                    .response()
+                    .putHeader("Content-Type", "application/json")
+                    .setStatusCode(backendResponse.getInteger("statusCode"));
+            consumer.accept(routingContext, backendResponse.encode());
+        });
     }
 
     private Router getEventBusRouter() {
