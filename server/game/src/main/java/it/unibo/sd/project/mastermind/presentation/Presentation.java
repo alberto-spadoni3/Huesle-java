@@ -49,6 +49,7 @@ public class Presentation {
         deserializers.put(Hints.class, new HintsDeserializer());
         deserializers.put(MatchStatus.class, new MatchStatusDeserializer());
         deserializers.put(SecretCode.class, new SecretCodeDeserializer());
+        deserializers.put(Attempt.class, new AttemptDeserializer());
     }
 
     public static <T> Serializer<T> serializerOf(Class<T> klass) {
