@@ -11,7 +11,6 @@ import it.unibo.sd.project.mastermind.presentation.Presentation;
 public class AttemptSerializer extends AbstractJsonSerializer<Attempt>{
     @Override
     protected JsonElement toJsonElement(Attempt attempt) {
-        //TODO fix
         JsonObject jsonAttempt = new JsonObject();
 
         JsonArray jsonColorSequence = new JsonArray();
