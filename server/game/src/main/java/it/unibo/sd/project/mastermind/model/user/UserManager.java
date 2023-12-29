@@ -19,12 +19,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 public class UserManager {
-    private List<Player> users;
-    private final RPCServer rpcServer;
     private final DBManager<Player> userDB;
-
     private final short SUCCESS_HTTP_CODE = 200;
     private final short REGISTRATION_DONE_HTTP_CODE = 201;
+    private final short NO_CONTENT_HTTP_CODE = 204;
     private final short UNAUTHORIZED_HTTP_CODE = 401;
     private final short FORBIDDEN_HTTP_CODE = 403;
     private final short CONFLICT_HTTP_CODE = 409;
@@ -33,11 +31,8 @@ public class UserManager {
     private final String UNAUTHORIZED_MESSAGE = "Unauthorized";
 
     public UserManager() {
-        rpcServer = new RPCServer(getUserManagementCallbacks());
+        RPCServer rpcServer = new RPCServer(getUserManagementCallbacks());
         userDB = new DBManager<>("huesle-db", "users", "username", Player.class);
-        this.users = new ArrayList<>();
-        // TODO initialize users variable with the elements in DB
-        // users.addAll(...)
         Executors.newSingleThreadExecutor().submit(rpcServer);
     }
 
@@ -45,6 +40,7 @@ public class UserManager {
         Map<MessageType, Function<String, String>> userCallbacks = new HashMap<>();
         userCallbacks.put(MessageType.REGISTER_USER, registerUser());
         userCallbacks.put(MessageType.LOGIN_USER, loginUser());
+        userCallbacks.put(MessageType.LOGOUT_USER, logoutUser());
         userCallbacks.put(MessageType.REFRESH_ACCESS_TOKEN, refreshAccessToken());
         return userCallbacks;
     }
@@ -63,7 +59,6 @@ public class UserManager {
 
                 if (registrationResult == null) {
                     // The registration process can go on without problems
-                    users.add(newUser);
                     userDB.insert(newUser);
                     registrationResult = new OperationResult(
                                     REGISTRATION_DONE_HTTP_CODE,
@@ -115,6 +110,32 @@ public class UserManager {
                     loginResult = new OperationResult(UNAUTHORIZED_HTTP_CODE, UNAUTHORIZED_MESSAGE);
             }
             return Presentation.serializerOf(OperationResult.class).serialize(loginResult);
+        };
+    }
+
+    private Function<String, String> logoutUser() {
+        return (refreshToken) -> {
+            OperationResult result = null;
+            try {
+                Optional<Player> optionalPlayer =
+                        userDB.getDocumentByField("refreshToken", refreshToken);
+                if (optionalPlayer.isPresent()) {
+                    Player player = optionalPlayer.get();
+                    // remove the refreshToken from the database
+                    player.setRefreshToken(null);
+                    userDB.update(player.getUsername(), player);
+
+                    result = new OperationResult(
+                            SUCCESS_HTTP_CODE,
+                            "The user " + player.getUsername() + " is successfully logged out");
+                }
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            } finally {
+                if (result == null)
+                    result = new OperationResult(NO_CONTENT_HTTP_CODE, "");
+            }
+            return Presentation.serializerOf(OperationResult.class).serialize(result);
         };
     }
 
