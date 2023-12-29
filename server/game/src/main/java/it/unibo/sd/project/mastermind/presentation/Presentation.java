@@ -48,8 +48,10 @@ public class Presentation {
         deserializers.put(AccessibilitySettings.class, new AccessibilitySettingsDeserializer());
         deserializers.put(Hints.class, new HintsDeserializer());
         deserializers.put(MatchStatus.class, new MatchStatusDeserializer());
+        deserializers.put(Match.class, new MatchDeserializer());
         deserializers.put(SecretCode.class, new SecretCodeDeserializer());
         deserializers.put(Attempt.class, new AttemptDeserializer());
+
     }
 
     public static <T> Serializer<T> serializerOf(Class<T> klass) {
