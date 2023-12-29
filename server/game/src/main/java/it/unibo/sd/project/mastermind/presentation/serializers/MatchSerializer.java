@@ -18,6 +18,7 @@ public class MatchSerializer extends AbstractJsonSerializer<Match>{
         for(Attempt a : match.getMadeAttempts()){
             matchAttempts.add(String.valueOf(match.getMadeAttempts().indexOf(a)), as.toJsonElement(a));
         }
+        jsonMatch.add("attempts", matchAttempts);
         SecretCodeSerializer secretCodeSerializer = new SecretCodeSerializer();
         JsonObject jsonSecretCode = (JsonObject) secretCodeSerializer.toJsonElement(match.getSecretCode());
         jsonMatch.add("secretCode", jsonSecretCode);
