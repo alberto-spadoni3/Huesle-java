@@ -45,16 +45,9 @@ public class WebServer extends AbstractVerticle {
 
         Router router = Router.router(vertx);
 
-        // TODO manage CORS when needed
         router.route().handler(handleCORS());
-
         router.route("/eventbus/*").subRouter(getEventBusRouter());
-        router.route("/api/user/*").subRouter(getUserRouter());
-
-        JWTAuth jwtAccessProvider = getJwtAuthProvider("access.secret");
-        router.route("/api/protected/*")
-                .handler(JWTAuthHandler.create(jwtAccessProvider))
-                .failureHandler(this::manageAuthFailures);
+        router.route("/api/*").subRouter(baseRouter());
 
         vertx
             .createHttpServer()
@@ -66,16 +59,20 @@ public class WebServer extends AbstractVerticle {
             });
     }
 
-    private void manageAuthFailures(RoutingContext routingContext) {
-        HttpServerResponse response = routingContext.response();
-        Throwable cause = routingContext.failure().getCause();
-        if (cause != null)
-            if (cause.getMessage().contains("token expired"))
-                response.setStatusCode(403).end("JWT token expired");
-            else
-                response.setStatusCode(400).end(cause.getMessage())
-;        else
-            response.setStatusCode(500).end("Internal Server Error");
+    private Router baseRouter() {
+        Router router = Router.router(vertx);
+        JWTAuth jwtAccessProvider = getJwtAuthProvider("access.secret");
+
+        // Non-protected routes
+        router.route("/user/*").subRouter(getUserRouter());
+
+        // Protected routes
+        router.route("/protected/*")
+                .handler(JWTAuthHandler.create(jwtAccessProvider))
+                .failureHandler(this::manageAuthFailures)
+                .subRouter(getProtectedRouter());
+
+        return router;
     }
 
     private Router getUserRouter() {
@@ -83,10 +80,10 @@ public class WebServer extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
         router.route().consumes("application/json");
 
-        router.post("/register").blockingHandler(getHandler(
+        router.post("/register").blockingHandler(getUserHandler(
                 MessageType.REGISTER_USER, (routingContext, username) -> routingContext.response().end()));
 
-        router.post("/login").blockingHandler(getHandler(
+        router.post("/login").blockingHandler(getUserHandler(
                 MessageType.LOGIN_USER,
                 (routingContext, response) -> {
                     JsonObject backendResponse = new JsonObject(response);
@@ -130,6 +127,61 @@ public class WebServer extends AbstractVerticle {
         return router;
     }
 
+    private void manageAuthFailures(RoutingContext routingContext) {
+        HttpServerResponse response = routingContext.response();
+        Throwable cause = routingContext.failure().getCause();
+        if (cause != null)
+            if (cause.getMessage().contains("token expired"))
+                response.setStatusCode(403).end("JWT token expired");
+            else
+                response.setStatusCode(400).end(cause.getMessage());
+        else
+            response.setStatusCode(500).end("Internal Server Error");
+    }
+
+    private Router getProtectedRouter() {
+        Router router = Router.router(vertx);
+
+        router.route("/game/*").subRouter(getGameRouter());
+        router.route("/search/*").subRouter(getSearchRouter());
+        router.route("/settings/*").subRouter(getSettingsRouter());
+        router.route("/stats/*").subRouter(getStatsRouter());
+
+        return router;
+    }
+
+    private Router getGameRouter() {
+        Router router = Router.router(vertx);
+
+
+
+        return router;
+    }
+
+    private Router getSearchRouter() {
+        Router router = Router.router(vertx);
+
+
+
+        return router;
+    }
+
+    private Router getSettingsRouter() {
+        Router router = Router.router(vertx);
+
+
+
+        return router;
+    }
+
+    private Router getStatsRouter() {
+        Router router = Router.router(vertx);
+
+
+
+        return router;
+    }
+
     private Handler<RoutingContext> checkRefreshTokenCookiePresence(MessageType messageType,
                                                                     BiConsumer<RoutingContext, String> consumer) {
         return routingContext -> {
@@ -139,7 +191,7 @@ public class WebServer extends AbstractVerticle {
                 String refreshToken = cookie.getValue();
                 if (messageType.getType().equals(MessageType.LOGOUT_USER.getType()))
                     routingContext.response().removeCookies(cookieName);
-                getHandler(messageType, refreshToken, consumer).handle(routingContext);
+                getUserHandler(messageType, refreshToken, consumer).handle(routingContext);
             }
             else {
                 int statusCode = messageType.getType().equals(MessageType.LOGOUT_USER.getType()) ? 204 : 401;
@@ -160,13 +212,13 @@ public class WebServer extends AbstractVerticle {
         return JWTAuth.create(vertx, jwtAuthOptions);
     }
 
-    private Handler<RoutingContext> getHandler(MessageType messageType, BiConsumer<RoutingContext, String> consumer) {
-        return routingContext -> getHandler(messageType, routingContext.body().asString(), consumer).handle(routingContext);
+    private Handler<RoutingContext> getUserHandler(MessageType messageType, BiConsumer<RoutingContext, String> consumer) {
+        return routingContext -> getUserHandler(messageType, routingContext.body().asString(), consumer).handle(routingContext);
     }
 
 
-    private Handler<RoutingContext> getHandler(MessageType messageType, String message,
-                                               BiConsumer<RoutingContext, String> consumer) {
+    private Handler<RoutingContext> getUserHandler(MessageType messageType, String message,
+                                                   BiConsumer<RoutingContext, String> consumer) {
         return routingContext -> gameBackend.call(messageType, message, res -> {
             JsonObject backendResponse = new JsonObject(res);
             int statusCode = backendResponse.getInteger("statusCode");
