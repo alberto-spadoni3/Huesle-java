@@ -4,6 +4,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.http.Cookie;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.PubSecKeyOptions;
@@ -14,12 +15,15 @@ import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import it.unibo.sd.project.webservice.rabbit.MessageType;
 import it.unibo.sd.project.webservice.rabbit.RPCClient;
 import java.io.IOException;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 
@@ -42,7 +46,7 @@ public class WebServer extends AbstractVerticle {
         Router router = Router.router(vertx);
 
         // TODO manage CORS when needed
-        // router.route().handler(CorsHandler.create().addOrigin("http://localhost"));
+        router.route().handler(handleCORS());
 
         router.route("/eventbus/*").subRouter(getEventBusRouter());
         router.route("/api/user/*").subRouter(getUserRouter());
@@ -175,6 +179,18 @@ public class WebServer extends AbstractVerticle {
             else
                 routingContext.response().end(backendResponse.getString("resultMessage"));
         });
+    }
+
+    private Handler<RoutingContext> handleCORS() {
+        List<String> allowedOrigins = List.of("http://localhost", "http://localhost:3000");
+        Set<String> allowedHeaders = Set.of("Content-Type", "Authorization", "origin", "Accept");
+        Set<HttpMethod> allowedMethods = Set.of(HttpMethod.GET, HttpMethod.POST);
+
+        return CorsHandler.create()
+                .addOrigins(allowedOrigins)
+                .allowedHeaders(allowedHeaders)
+                .allowedMethods(allowedMethods)
+                .allowCredentials(true);
     }
 
     private Router getEventBusRouter() {
