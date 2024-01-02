@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.model.match.MatchState;
 import it.unibo.sd.project.mastermind.model.match.MatchStatus;
+import it.unibo.sd.project.mastermind.presentation.Presentation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,14 +18,22 @@ public class MatchStatusDeserializer extends AbstractJsonDeserializer<MatchStatu
             MatchState matchState = MatchState.valueOf(result.get("matchState").getAsString());
             List<Player> players = new ArrayList<>();
             JsonObject jsonPlayers = result.getAsJsonObject("players");
-            PlayerDeserializer ps = new PlayerDeserializer();
-            System.out.println(jsonPlayers.size());
             for(int i = 0; i < jsonPlayers.size(); i++){
-                 players.add(ps.deserializeJson(jsonPlayers.get(String.valueOf(i))));
+                Player player;
+                try {
+                    player = Presentation.deserializeAs(jsonPlayers.get(String.valueOf(i)).toString(), Player.class);
+                    players.add(player);
+                } catch (Exception e){
+                    throw new RuntimeException("Cannot deserialize " + jsonPlayers.get(String.valueOf(i)) + " as Player " + e.getMessage());
+                }
             }
             JsonObject jsonNextPlayer = result.getAsJsonObject("nextPlayer");
-            Player nextPlayer = ps.deserializeJson(jsonNextPlayer);
-
+            Player nextPlayer;
+            try {
+                nextPlayer = Presentation.deserializeAs(jsonNextPlayer.toString(), Player.class);
+            } catch (Exception e){
+                throw new RuntimeException("Cannot deserialize " + jsonNextPlayer + " as Player " + e.getMessage());
+            }
 
             MatchStatus ms = new MatchStatus(players);
             ms.changeNextPlayer(nextPlayer);
