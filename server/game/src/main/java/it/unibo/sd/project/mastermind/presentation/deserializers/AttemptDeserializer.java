@@ -6,9 +6,6 @@ import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.Attempt;
 import it.unibo.sd.project.mastermind.model.Hints;
 import it.unibo.sd.project.mastermind.model.Player;
-import it.unibo.sd.project.mastermind.model.SecretCode;
-import it.unibo.sd.project.mastermind.presentation.Presentation;
-import it.unibo.sd.project.mastermind.presentation.serializers.PlayerSerializer;
 
 import java.util.ArrayList;
 import java.util.List;

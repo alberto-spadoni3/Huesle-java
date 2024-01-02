@@ -1,14 +1,11 @@
 package it.unibo.sd.project.mastermind.presentation.deserializers;
 
-import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.model.match.MatchStatus;
-import it.unibo.sd.project.mastermind.presentation.PlayerTests;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import org.junit.jupiter.api.Test;
 
 public class MatchStatusDeserializerTests {
-    String p1p = " ";
-    String p2p = " ";
+
 
     String start = "{\"matchState\":\"PLAYING\",\"players\":{" +
             "\"0\":{\"username\":\"marior\",\"email\":\"mario.rossi@unibo.it\",\"password\":" +

@@ -1,20 +1,16 @@
 package it.unibo.sd.project.mastermind.presentation.serializers;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.AccessibilitySettings;
 import it.unibo.sd.project.mastermind.model.Attempt;
 import it.unibo.sd.project.mastermind.model.Hints;
 import it.unibo.sd.project.mastermind.model.Player;
-import it.unibo.sd.project.mastermind.presentation.PlayerTests;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AttemptSerializerTests {
     private final String email = "mario.rossi@unibo.it";

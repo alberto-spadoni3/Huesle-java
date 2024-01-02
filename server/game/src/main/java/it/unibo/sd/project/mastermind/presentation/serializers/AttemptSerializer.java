@@ -4,9 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.Attempt;
-import it.unibo.sd.project.mastermind.model.Hints;
-import it.unibo.sd.project.mastermind.model.SecretCode;
-import it.unibo.sd.project.mastermind.presentation.Presentation;
 
 public class AttemptSerializer extends AbstractJsonSerializer<Attempt>{
     @Override

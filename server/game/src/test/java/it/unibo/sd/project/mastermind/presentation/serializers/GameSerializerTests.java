@@ -1,6 +1,5 @@
 package it.unibo.sd.project.mastermind.presentation.serializers;
 
-import it.unibo.sd.project.mastermind.model.AccessibilitySettings;
 import it.unibo.sd.project.mastermind.model.Game;
 import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
