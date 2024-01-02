@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.model.match.MatchStatus;
+import it.unibo.sd.project.mastermind.presentation.Presentation;
 
 public class MatchStatusSerializer extends AbstractJsonSerializer<MatchStatus> {
     @Override
@@ -13,15 +14,13 @@ public class MatchStatusSerializer extends AbstractJsonSerializer<MatchStatus> {
 
         //Serialize players
         JsonObject matchPlayers = new JsonObject();
-        PlayerSerializer ps = new PlayerSerializer();
         for(Player p : matchStatus.getPlayers()){
-            matchPlayers.add(String.valueOf(matchStatus.getPlayers().indexOf(p)), ps.toJsonElement(p));
+            matchPlayers.add(String.valueOf(matchStatus.getPlayers().indexOf(p)), Presentation.serializerOf(Player.class).getJsonElement(p));
         }
         jsonMatchStatus.add("players", matchPlayers);
 
         //Serialize next player
-        JsonObject nextPlayer = new JsonObject();
-        jsonMatchStatus.add("nextPlayer", ps.toJsonElement(matchStatus.getNextPlayer()));
+        jsonMatchStatus.add("nextPlayer", Presentation.serializerOf(Player.class).getJsonElement(matchStatus.getNextPlayer()));
 
         return jsonMatchStatus;
     }
