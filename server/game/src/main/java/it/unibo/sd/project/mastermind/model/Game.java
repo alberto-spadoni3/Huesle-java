@@ -15,4 +15,16 @@ public class Game {
         activeMatches = new ArrayList<>();
         endedMatches = new ArrayList<>();
     }
+
+    public Player getPlayer() {
+        return player;
+    }
+
+    public List<Match> getActiveMatches() {
+        return activeMatches;
+    }
+
+    public List<Match> getEndedMatches() {
+        return endedMatches;
+    }
 }
