@@ -16,6 +16,13 @@ public class Game {
         endedMatches = new ArrayList<>();
     }
 
+    public void setActiveMatches(List<Match> activeMatches){
+        this.activeMatches = activeMatches;
+    }
+    public void setEndedMatches(List<Match> endedMatches) {
+        this.endedMatches = endedMatches;
+    }
+
     public Player getPlayer() {
         return player;
     }

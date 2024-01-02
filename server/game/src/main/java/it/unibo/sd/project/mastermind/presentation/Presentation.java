@@ -51,6 +51,7 @@ public class Presentation {
         deserializers.put(Match.class, new MatchDeserializer());
         deserializers.put(SecretCode.class, new SecretCodeDeserializer());
         deserializers.put(Attempt.class, new AttemptDeserializer());
+        deserializers.put(Game.class, new GameDeserializer());
 
     }
 
