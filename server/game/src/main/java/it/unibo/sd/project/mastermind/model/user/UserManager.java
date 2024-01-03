@@ -7,6 +7,7 @@ import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
+import it.unibo.sd.project.mastermind.model.AbstractManager;
 import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
@@ -18,7 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-public class UserManager {
+public class UserManager extends AbstractManager<Player> {
     private final DBManager<Player> userDB;
     private final short SUCCESS_HTTP_CODE = 200;
     private final short REGISTRATION_DONE_HTTP_CODE = 201;
@@ -31,12 +32,12 @@ public class UserManager {
     private final String UNAUTHORIZED_MESSAGE = "Unauthorized";
 
     public UserManager() {
-        RPCServer rpcServer = new RPCServer(getUserManagementCallbacks());
-        userDB = new DBManager<>("huesle-db", "users", "username", Player.class);
-        Executors.newSingleThreadExecutor().submit(rpcServer);
+        super.init("users", Player.class);
+        userDB = super.database;
     }
 
-    private Map<MessageType, Function<String, String>> getUserManagementCallbacks() {
+    @Override
+    protected Map<MessageType, Function<String, String>> getManagementCallbacks() {
         Map<MessageType, Function<String, String>> userCallbacks = new HashMap<>();
         userCallbacks.put(MessageType.REGISTER_USER, registerUser());
         userCallbacks.put(MessageType.LOGIN_USER, loginUser());
