@@ -18,9 +18,11 @@ public class AttemptDeserializer extends AbstractJsonDeserializer<Attempt>{
             JsonObject result = (JsonObject) jsonElement;
             List<String> colorSequence = new ArrayList<>();
             JsonArray jsonColorSequence = result.getAsJsonArray("colorSequence");
-            for(int i=0; i<jsonColorSequence.size(); i++){
-                colorSequence.add(jsonColorSequence.get(i).getAsString());
-            }
+//            for(int i=0; i<jsonColorSequence.size(); i++){
+//                colorSequence.add(jsonColorSequence.get(i).getAsString());
+//            }
+            for (JsonElement elem : jsonColorSequence)
+                colorSequence.add(elem.getAsString());
             Player attemptMadeBy = null;
             Hints hints = null;
             try {

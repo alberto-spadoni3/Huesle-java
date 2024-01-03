@@ -33,7 +33,7 @@ public class UserTests {
 
     @BeforeAll
     public void setUpTests() throws IOException, TimeoutException {
-        UserManager userManager = new UserManager();
+        new UserManager();
         client = new RPCClient();
         usersToDelete = new ArrayList<>();
         userDB = new DBManager<>("huesle-db", "users", "username", Player.class);

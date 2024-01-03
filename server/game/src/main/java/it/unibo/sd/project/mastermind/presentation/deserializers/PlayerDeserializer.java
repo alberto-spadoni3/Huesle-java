@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.AccessibilitySettings;
 import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.presentation.Presentation;
 
 public class PlayerDeserializer extends AbstractJsonDeserializer<Player> {
     @Override
@@ -21,11 +22,12 @@ public class PlayerDeserializer extends AbstractJsonDeserializer<Player> {
                     // initialize a Player object which was already present in the DB
                     String hashedPassword = jsonPlayer.get("password").getAsString();
                     JsonObject jsonSettings = jsonPlayer.getAsJsonObject("accessibilitySettings");
-                    AccessibilitySettings settings =
-                            new AccessibilitySettings(
-                                    jsonSettings.get("darkMode").getAsBoolean(),
-                                    jsonSettings.get("colorblindMode").getAsBoolean()
-                            );
+                    AccessibilitySettings settings;
+                    try {
+                        settings = Presentation.deserializeAs(jsonSettings.toString(), AccessibilitySettings.class);
+                    } catch (Exception e) {
+                        throw new RuntimeException("Cannot deserialize as " + AccessibilitySettings.class.getName());
+                    }
                     String possibleToken = jsonPlayer.get("refreshToken").getAsString();
                     return new Player(
                             jsonPlayer.get("username").getAsString(),
