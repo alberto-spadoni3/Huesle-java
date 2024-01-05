@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.Random;
 
 public class MatchStatus {
-    private final byte MAX_ATTEMPTS_NUMBER = 10;
     private MatchState matchState;
     private final List<Player> players;
     private Player nextPlayer;
@@ -17,7 +16,7 @@ public class MatchStatus {
         this.matchState = MatchState.PLAYING;
         this.players = players;
         this.nextPlayer = extractFirstPlayer();
-        this.remainingAttempts = MAX_ATTEMPTS_NUMBER;
+        this.remainingAttempts = (byte) 10;
     }
 
     public void changeNextPlayer(Player player) {
@@ -29,10 +28,7 @@ public class MatchStatus {
     }
 
     private Player extractFirstPlayer() {
-        int s = this.getPlayers().size();
-        Random r = new Random();
-
-        return this.players.get(r.nextInt(s - 1));
+        return this.players.get(new Random().nextInt(2));
     }
 
     public void switchPlayer() {

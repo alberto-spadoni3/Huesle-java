@@ -24,7 +24,7 @@ public class AttemptSerializerTests {
     void attemptMadeBySerializationTest(){
         Player player = new Player(username,email,hashedPassword,profilePictureID,new AccessibilitySettings(darkMode, colorblindMode), false );
         List<String> emptyList = new ArrayList<>();
-        Byte b = new Byte(String.valueOf(1));
+        byte b = Byte.parseByte("1");
         Hints hints = new Hints(b, b);
         Attempt attempt = new Attempt(emptyList, player, hints);
         assertEquals(getCustomPlayerAsJson(hashedPassword, profilePictureID, darkMode, colorblindMode), Presentation.serializerOf(Attempt.class).serialize(attempt));
