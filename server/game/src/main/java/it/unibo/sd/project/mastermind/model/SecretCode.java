@@ -2,13 +2,10 @@ package it.unibo.sd.project.mastermind.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class SecretCode {
-    private final int COLOR_SEQUENCE_LENGTH = 4;
-
-    public int getCOLOR_SEQUENCE_LENGTH() {
-        return COLOR_SEQUENCE_LENGTH;
-    }
+    private static final int COLOR_SEQUENCE_LENGTH = 4;
 
     private final List<String> possibleColours = List.of("crimson",
                                                          "coral",
@@ -31,7 +28,11 @@ public class SecretCode {
     }
 
     private ArrayList<String> generateColorSequence() {
-        // TODO: implement a color sequence generator
-        return new ArrayList<String>();
+        ArrayList<String> randomColours = new ArrayList<>(COLOR_SEQUENCE_LENGTH);
+        for (int i = 0; i < COLOR_SEQUENCE_LENGTH; i++) {
+            int randomIndex = (int) Math.floor(new Random().nextDouble() * possibleColours.size());
+            randomColours.add(possibleColours.get(randomIndex));
+        }
+        return randomColours;
     }
 }
