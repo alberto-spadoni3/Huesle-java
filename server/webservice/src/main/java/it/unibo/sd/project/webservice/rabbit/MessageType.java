@@ -1,7 +1,7 @@
 package it.unibo.sd.project.webservice.rabbit;
 
 public enum MessageType {
-    CREATE("create"),
+    SEARCH_MATCH("createMatch"),
     JOIN("join"),
     START("start"),
     FINISH("finish"),
