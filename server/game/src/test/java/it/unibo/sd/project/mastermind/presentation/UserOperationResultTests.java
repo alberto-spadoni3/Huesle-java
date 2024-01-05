@@ -1,19 +1,21 @@
 package it.unibo.sd.project.mastermind.presentation;
 
+import io.vertx.ext.auth.User;
 import it.unibo.sd.project.mastermind.model.AccessibilitySettings;
+import it.unibo.sd.project.mastermind.model.OperationResult;
 import it.unibo.sd.project.mastermind.model.Player;
-import it.unibo.sd.project.mastermind.model.user.OperationResult;
+import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class OperationResultTests {
+public class UserOperationResultTests {
     @Test
     void failedOperationResultSerialization() {
         short statusCode = 400;
         String resultMessage = "error";
-        OperationResult operationResult = new OperationResult(statusCode, resultMessage);
-        String serializerOpResult = Presentation.serializerOf(OperationResult.class).serialize(operationResult);
+        UserOperationResult operationResult = new UserOperationResult(statusCode, resultMessage);
+        String serializerOpResult = Presentation.serializerOf(UserOperationResult.class).serialize(operationResult);
         String expectedResult = getFailedOperationResultAsJson(statusCode, resultMessage);
         assertEquals(expectedResult, serializerOpResult);
     }
@@ -33,8 +35,8 @@ public class OperationResultTests {
 
         Player player = new Player(username,email, hashedPassword, refreshToken,
                                    profilePictureID, new AccessibilitySettings(darkMode, colorblindMode), false);
-        OperationResult operationResult = new OperationResult(statusCode, resultMessage, player, accessToken);
-        String serializerOpResult = Presentation.serializerOf(OperationResult.class).serialize(operationResult);
+        UserOperationResult operationResult = new UserOperationResult(statusCode, resultMessage, player, accessToken);
+        String serializerOpResult = Presentation.serializerOf(UserOperationResult.class).serialize(operationResult);
 
         String jsonPlayer = getCustomPlayerAsJson(username, email, hashedPassword, refreshToken,
                 profilePictureID, darkMode, colorblindMode);
@@ -47,9 +49,9 @@ public class OperationResultTests {
         short statusCode = 400;
         String resultMessage = "error";
 
-        OperationResult deserialized = Presentation.deserializeAs(
+        it.unibo.sd.project.mastermind.model.OperationResult deserialized = Presentation.deserializeAs(
                 getFailedOperationResultAsJson(statusCode, resultMessage),
-                OperationResult.class
+                UserOperationResult.class
         );
 
         assertEquals(statusCode, deserialized.getStatusCode());
@@ -71,9 +73,9 @@ public class OperationResultTests {
 
         String jsonPlayer = getCustomPlayerAsJson(username, email, hashedPassword, refreshToken,
                 profilePictureID, darkMode, colorblindMode);
-        OperationResult deserialized = Presentation.deserializeAs(
+        UserOperationResult deserialized = Presentation.deserializeAs(
                 getSuccessOperationResultAsJson(statusCode, resultMessage, jsonPlayer, accessToken),
-                OperationResult.class
+                UserOperationResult.class
         );
         assertEquals(statusCode, deserialized.getStatusCode());
         assertEquals(resultMessage, deserialized.getResultMessage());

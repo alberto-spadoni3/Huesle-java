@@ -2,7 +2,7 @@ package it.unibo.sd.project.mastermind;
 
 import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
-import it.unibo.sd.project.mastermind.model.user.OperationResult;
+import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import it.unibo.sd.project.mastermind.model.user.UserManager;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import it.unibo.sd.project.mastermind.rabbit.MessageType;
@@ -63,7 +63,7 @@ public class UserTests {
                 MessageType.REGISTER_USER,
                 getRegistrationJson(username, email, clearPassword));
 
-        OperationResult result = Presentation.deserializeAs(response.get(), OperationResult.class);
+        it.unibo.sd.project.mastermind.model.OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         short REGISTRATION_DONE_HTTP_CODE = 201;
         assertEquals(REGISTRATION_DONE_HTTP_CODE, result.getStatusCode());
     }
@@ -91,7 +91,7 @@ public class UserTests {
                 client,
                 MessageType.REGISTER_USER,
                 getRegistrationJson(username + "1", email, clearPassword));
-        OperationResult result = Presentation.deserializeAs(response.get(), OperationResult.class);
+        it.unibo.sd.project.mastermind.model.OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         short VALUE_ALREADY_EXISTS_HTTP_CODE = 409;
         assertEquals(VALUE_ALREADY_EXISTS_HTTP_CODE, result.getStatusCode());
         String EMAIL_ALREADY_EXISTS_MESSAGE = "The email address is already in use";
@@ -101,7 +101,7 @@ public class UserTests {
                 client,
                 MessageType.REGISTER_USER,
                 getRegistrationJson(username, "S" + email, clearPassword));
-        result = Presentation.deserializeAs(response.get(), OperationResult.class);
+        result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         assertEquals(VALUE_ALREADY_EXISTS_HTTP_CODE, result.getStatusCode());
         String USERNAME_ALREADY_EXISTS_MESSAGE = "The username is already in use";
         assertEquals(USERNAME_ALREADY_EXISTS_MESSAGE, result.getResultMessage());
@@ -116,7 +116,7 @@ public class UserTests {
                 MessageType.LOGIN_USER,
                 // right username but wrong password
                 getLoginJson(username, "password12!"));
-        OperationResult result = Presentation.deserializeAs(response.get(), OperationResult.class);
+        it.unibo.sd.project.mastermind.model.OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         short UNAUTHORIZED_HTTP_CODE = 401;
         assertEquals(UNAUTHORIZED_HTTP_CODE, result.getStatusCode());
         String UNAUTHORIZED_MESSAGE = "Unauthorized";
@@ -127,7 +127,7 @@ public class UserTests {
                 MessageType.LOGIN_USER,
                 // right password but wrong username
                 getLoginJson("crypto", clearPassword));
-        result = Presentation.deserializeAs(response.get(), OperationResult.class);
+        result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         assertEquals(UNAUTHORIZED_HTTP_CODE, result.getStatusCode());
         assertEquals(UNAUTHORIZED_MESSAGE, result.getResultMessage());
     }
@@ -140,7 +140,7 @@ public class UserTests {
                 client,
                 MessageType.LOGIN_USER,
                 getLoginJson(username, clearPassword));
-        OperationResult result = Presentation.deserializeAs(response.get(), OperationResult.class);
+        it.unibo.sd.project.mastermind.model.OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         short SUCCESS_HTTP_CODE = 200;
         assertEquals(SUCCESS_HTTP_CODE, result.getStatusCode());
     }

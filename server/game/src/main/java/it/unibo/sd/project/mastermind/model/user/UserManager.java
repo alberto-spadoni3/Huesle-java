@@ -12,10 +12,8 @@ import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import it.unibo.sd.project.mastermind.rabbit.MessageType;
-import it.unibo.sd.project.mastermind.rabbit.RPCServer;
 
 import java.util.*;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
@@ -48,33 +46,33 @@ public class UserManager extends AbstractManager<Player> {
 
     private Function<String, String> registerUser() {
         return (message) -> {
-            OperationResult registrationResult = null;
+            UserOperationResult registrationResult = null;
             try {
                 Player newUser = Presentation.deserializeAs(message, Player.class);
                 if (userDB.isPresentByField("email", newUser.getEmail()))
                     registrationResult =
-                            new OperationResult(CONFLICT_HTTP_CODE, EMAIL_ALREADY_EXISTS_MESSAGE);
+                            new UserOperationResult(CONFLICT_HTTP_CODE, EMAIL_ALREADY_EXISTS_MESSAGE);
                 else if (userDB.isPresentByField("username", newUser.getUsername()))
                     registrationResult =
-                            new OperationResult(CONFLICT_HTTP_CODE, USERNAME_ALREADY_EXISTS_MESSAGE);
+                            new UserOperationResult(CONFLICT_HTTP_CODE, USERNAME_ALREADY_EXISTS_MESSAGE);
 
                 if (registrationResult == null) {
                     // The registration process can go on without problems
                     userDB.insert(newUser);
-                    registrationResult = new OperationResult(
+                    registrationResult = new UserOperationResult(
                                     REGISTRATION_DONE_HTTP_CODE,
                                     String.format("User %s created successfully", newUser.getUsername()));
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
-            return Presentation.serializerOf(OperationResult.class).serialize(registrationResult);
+            return Presentation.serializerOf(UserOperationResult.class).serialize(registrationResult);
         };
     }
 
     private Function<String, String> loginUser() {
         return (message) -> {
-            OperationResult loginResult = null;
+            UserOperationResult loginResult = null;
             try {
                 LoginRequest loginRequest = Presentation.deserializeAs(message, LoginRequest.class);
                 Optional<Player> userToLogin =
@@ -96,7 +94,7 @@ public class UserManager extends AbstractManager<Player> {
                     user.setRefreshToken(refreshToken);
                     userDB.update(user.getUsername(), user);
 
-                    loginResult = new OperationResult(
+                    loginResult = new UserOperationResult(
                             SUCCESS_HTTP_CODE,
                             String.format("User %s logged in", userToLogin.get().getUsername()),
                             user, accessToken);
@@ -108,15 +106,15 @@ public class UserManager extends AbstractManager<Player> {
                     // It means that the username is not present in the DB,
                     // or it is disabled
                     // or the passwords doesn't match
-                    loginResult = new OperationResult(UNAUTHORIZED_HTTP_CODE, UNAUTHORIZED_MESSAGE);
+                    loginResult = new UserOperationResult(UNAUTHORIZED_HTTP_CODE, UNAUTHORIZED_MESSAGE);
             }
-            return Presentation.serializerOf(OperationResult.class).serialize(loginResult);
+            return Presentation.serializerOf(UserOperationResult.class).serialize(loginResult);
         };
     }
 
     private Function<String, String> logoutUser() {
         return (refreshToken) -> {
-            OperationResult result = null;
+            UserOperationResult result = null;
             try {
                 Optional<Player> optionalPlayer =
                         userDB.getDocumentByField("refreshToken", refreshToken);
@@ -126,7 +124,7 @@ public class UserManager extends AbstractManager<Player> {
                     player.setRefreshToken(null);
                     userDB.update(player.getUsername(), player);
 
-                    result = new OperationResult(
+                    result = new UserOperationResult(
                             SUCCESS_HTTP_CODE,
                             "The user " + player.getUsername() + " is successfully logged out");
                 }
@@ -134,15 +132,15 @@ public class UserManager extends AbstractManager<Player> {
                 System.out.println(e.getMessage());
             } finally {
                 if (result == null)
-                    result = new OperationResult(NO_CONTENT_HTTP_CODE, "");
+                    result = new UserOperationResult(NO_CONTENT_HTTP_CODE, "");
             }
-            return Presentation.serializerOf(OperationResult.class).serialize(result);
+            return Presentation.serializerOf(UserOperationResult.class).serialize(result);
         };
     }
 
     private Function<String, String> refreshAccessToken() {
         return refreshToken -> {
-            AtomicReference<OperationResult> result = new AtomicReference<>();
+            AtomicReference<UserOperationResult> result = new AtomicReference<>();
             TokenCredentials credentials = new TokenCredentials(refreshToken);
             try {
                 Optional<Player> optionalPlayer =
@@ -153,7 +151,7 @@ public class UserManager extends AbstractManager<Player> {
                     getJwtAuthProvider("refresh.secret").authenticate(credentials, user -> {
                         if (user.succeeded() && user.result().subject().equals(player.getUsername())) {
                             String newAccessToken = generateToken("access.secret", player.getUsername());
-                            result.set(new OperationResult(
+                            result.set(new UserOperationResult(
                                     SUCCESS_HTTP_CODE,
                                     "Access token refreshed successfully",
                                     player, newAccessToken));
@@ -164,15 +162,15 @@ public class UserManager extends AbstractManager<Player> {
                 System.out.println(e.getMessage());
             } finally {
                 if (result.get() == null)
-                    result.set(new OperationResult(FORBIDDEN_HTTP_CODE, "Forbidden"));
+                    result.set(new UserOperationResult(FORBIDDEN_HTTP_CODE, "Forbidden"));
             }
-            return Presentation.serializerOf(OperationResult.class).serialize(result.get());
+            return Presentation.serializerOf(UserOperationResult.class).serialize(result.get());
         };
     }
 
     private String generateToken(String tokenSecret, String username) {
         String token;
-        final byte TOKEN_EXPIRATION_IN_MINUTES = 2;
+        final byte TOKEN_EXPIRATION_IN_MINUTES = 20;
         JWTOptions jwtOptions = new JWTOptions()
                 .setExpiresInMinutes(TOKEN_EXPIRATION_IN_MINUTES);
         JsonObject tokenData = new JsonObject().put("sub", username);
