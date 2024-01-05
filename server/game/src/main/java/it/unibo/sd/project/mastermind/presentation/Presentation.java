@@ -1,10 +1,9 @@
 package it.unibo.sd.project.mastermind.presentation;
 
 import it.unibo.sd.project.mastermind.model.*;
-import it.unibo.sd.project.mastermind.model.match.Match;
-import it.unibo.sd.project.mastermind.model.match.MatchStatus;
+import it.unibo.sd.project.mastermind.model.match.*;
 import it.unibo.sd.project.mastermind.model.user.LoginRequest;
-import it.unibo.sd.project.mastermind.model.user.OperationResult;
+import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import it.unibo.sd.project.mastermind.presentation.deserializers.*;
 import it.unibo.sd.project.mastermind.presentation.serializers.*;
 
@@ -21,7 +20,6 @@ public class Presentation {
     }
 
     private static void registerSerializers() {
-        //TODO
         serializers.put(AccessibilitySettings.class, new AccessibilitySettingsSerializer());
         serializers.put(Attempt.class, new AttemptSerializer());
         serializers.put(Hints.class, new HintsSerializer());
@@ -32,18 +30,16 @@ public class Presentation {
         serializers.put(Match.class, new MatchSerializer());
         serializers.put(MatchStatus.class, new MatchStatusSerializer());
 
-        serializers.put(OperationResult.class, new OperationResultSerializer());
+        serializers.put(UserOperationResult.class, new OperationResultSerializer());
+        serializers.put(MatchOperationResult.class, new OperationResultSerializer());
 
-
-
-
+        serializers.put(PendingMatchRequest.class, new PendingMatchRequestSerializer());
     }
 
     private static void registerDeserializers() {
-        //TODO
         deserializers.put(Player.class, new PlayerDeserializer());
         deserializers.put(LoginRequest.class, new LoginRequestDeserializer());
-        deserializers.put(OperationResult.class, new OperationResultDeserializer());
+        deserializers.put(UserOperationResult.class, new OperationResultDeserializer());
 
         deserializers.put(AccessibilitySettings.class, new AccessibilitySettingsDeserializer());
         deserializers.put(Hints.class, new HintsDeserializer());
@@ -53,6 +49,8 @@ public class Presentation {
         deserializers.put(Attempt.class, new AttemptDeserializer());
         deserializers.put(Game.class, new GameDeserializer());
 
+        deserializers.put(SearchRequest.class, new SearchRequestDeserializer());
+        deserializers.put(PendingMatchRequest.class, new PendingMatchRequestDeserializer());
     }
 
     public static <T> Serializer<T> serializerOf(Class<T> klass) {
