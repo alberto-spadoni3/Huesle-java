@@ -12,6 +12,7 @@ import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.bridge.BridgeEventType;
 import io.vertx.ext.bridge.PermittedOptions;
+import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -61,6 +62,9 @@ public class WebServer extends AbstractVerticle {
 
     private Router baseRouter() {
         Router router = Router.router(vertx);
+        router.route().handler(BodyHandler.create());
+        router.route().consumes("application/json");
+
         JWTAuth jwtAccessProvider = getJwtAuthProvider("access.secret");
 
         // Non-protected routes
@@ -77,13 +81,11 @@ public class WebServer extends AbstractVerticle {
 
     private Router getUserRouter() {
         Router router = Router.router(vertx);
-        router.route().handler(BodyHandler.create());
-        router.route().consumes("application/json");
 
-        router.post("/register").blockingHandler(getUserHandler(
+        router.post("/register").blockingHandler(getHandler(
                 MessageType.REGISTER_USER, (routingContext, username) -> routingContext.response().end()));
 
-        router.post("/login").blockingHandler(getUserHandler(
+        router.post("/login").blockingHandler(getHandler(
                 MessageType.LOGIN_USER,
                 (routingContext, response) -> {
                     JsonObject backendResponse = new JsonObject(response);
@@ -161,7 +163,41 @@ public class WebServer extends AbstractVerticle {
     private Router getSearchRouter() {
         Router router = Router.router(vertx);
 
+        router.post("/searchMatch").blockingHandler(extractUsername(
+                (routingContext, username) -> {
+                    JsonObject body = routingContext.body().asJsonObject();
+                    boolean isMatchPrivate = body.getBoolean("secret");
+                    JsonObject matchRequest = new JsonObject();
+                    matchRequest
+                            .put("requesterUsername", username)
+                            .put("isMatchPrivate", isMatchPrivate);
 
+                    getHandler(MessageType.SEARCH_MATCH, matchRequest.encode(),
+                            (context, response) -> {
+                                JsonObject backendResponse = new JsonObject(response);
+                                JsonObject responseBody = new JsonObject();
+                                responseBody.put("matchAccessCode", backendResponse.getString("matchAccessCode"));
+                                context.response().end(responseBody.encode());
+                            }).handle(routingContext);
+                }
+        ));
+
+        router.post("/joinPrivateMatch").blockingHandler(extractUsername(
+                (routingContext, username) -> {
+                    JsonObject body = routingContext.body().asJsonObject();
+                    String matchAccessCode = body.getString("matchAccessCode");
+                    JsonObject matchRequest = new JsonObject();
+                    matchRequest
+                            .put("requesterUsername", username)
+                            .put("matchAccessCode", matchAccessCode);
+
+                    getHandler(MessageType.JOIN, matchRequest.encode(),
+                            (context, response) -> {
+                                JsonObject backendResponse = new JsonObject(response);
+                                context.response().end(backendResponse.getString("resultMessage"));
+                            }).handle(routingContext);
+                }
+        ));
 
         return router;
     }
@@ -182,6 +218,16 @@ public class WebServer extends AbstractVerticle {
         return router;
     }
 
+    private Handler<RoutingContext> extractUsername(BiConsumer<RoutingContext, String> consumer) {
+        return routingContext -> {
+            String username = routingContext.user().subject();
+            if (username == null || username.isBlank())
+                routingContext.response().setStatusCode(400).end();
+            else
+                consumer.accept(routingContext, username);
+        };
+    }
+
     private Handler<RoutingContext> checkRefreshTokenCookiePresence(MessageType messageType,
                                                                     BiConsumer<RoutingContext, String> consumer) {
         return routingContext -> {
@@ -191,7 +237,7 @@ public class WebServer extends AbstractVerticle {
                 String refreshToken = cookie.getValue();
                 if (messageType.getType().equals(MessageType.LOGOUT_USER.getType()))
                     routingContext.response().removeCookies(cookieName);
-                getUserHandler(messageType, refreshToken, consumer).handle(routingContext);
+                getHandler(messageType, refreshToken, consumer).handle(routingContext);
             }
             else {
                 int statusCode = messageType.getType().equals(MessageType.LOGOUT_USER.getType()) ? 204 : 401;
@@ -212,13 +258,13 @@ public class WebServer extends AbstractVerticle {
         return JWTAuth.create(vertx, jwtAuthOptions);
     }
 
-    private Handler<RoutingContext> getUserHandler(MessageType messageType, BiConsumer<RoutingContext, String> consumer) {
-        return routingContext -> getUserHandler(messageType, routingContext.body().asString(), consumer).handle(routingContext);
+    private Handler<RoutingContext> getHandler(MessageType messageType, BiConsumer<RoutingContext, String> consumer) {
+        return routingContext -> getHandler(messageType, routingContext.body().asString(), consumer).handle(routingContext);
     }
 
 
-    private Handler<RoutingContext> getUserHandler(MessageType messageType, String message,
-                                                   BiConsumer<RoutingContext, String> consumer) {
+    private Handler<RoutingContext> getHandler(MessageType messageType, String message,
+                                               BiConsumer<RoutingContext, String> consumer) {
         return routingContext -> gameBackend.call(messageType, message, res -> {
             JsonObject backendResponse = new JsonObject(res);
             int statusCode = backendResponse.getInteger("statusCode");
