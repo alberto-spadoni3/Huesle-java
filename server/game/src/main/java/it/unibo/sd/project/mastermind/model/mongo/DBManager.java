@@ -20,10 +20,7 @@ public class DBManager<T> {
     private final MongoCollection<Document> collection;
     private final Class<T> klass;
 
-    public DBManager(String databaseName, String collectionName, String idField, Class<T> klass) {
-        String connectionString = Objects.requireNonNull(System.getenv("MONGO_HOST"));
-        MongoClient mongoClient = MongoClients.create(connectionString);
-        MongoDatabase database = mongoClient.getDatabase(databaseName);
+    public DBManager(MongoDatabase database, String collectionName, String idField, Class<T> klass) {
         this.collection = database.getCollection(collectionName);
         this.ID_FIELD = idField;
         this.klass = klass;
