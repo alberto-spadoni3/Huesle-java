@@ -1,7 +1,9 @@
 package it.unibo.sd.project.mastermind;
 
+import it.unibo.sd.project.mastermind.model.OperationResult;
 import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
+import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
 import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import it.unibo.sd.project.mastermind.model.user.UserManager;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
@@ -36,7 +38,8 @@ public class UserTests {
         new UserManager();
         client = new RPCClient();
         usersToDelete = new ArrayList<>();
-        userDB = new DBManager<>("huesle-db", "users", "username", Player.class);
+        var database = DBSingleton.getInstance().getDatabase();
+        userDB = new DBManager<>(database, "users", "username", Player.class);
         username = "albisyx";
         email = "albisyx@protonmail.ch";
         clearPassword = "passwd123!";
@@ -63,7 +66,7 @@ public class UserTests {
                 MessageType.REGISTER_USER,
                 getRegistrationJson(username, email, clearPassword));
 
-        it.unibo.sd.project.mastermind.model.OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
+        OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         short REGISTRATION_DONE_HTTP_CODE = 201;
         assertEquals(REGISTRATION_DONE_HTTP_CODE, result.getStatusCode());
     }
@@ -91,7 +94,7 @@ public class UserTests {
                 client,
                 MessageType.REGISTER_USER,
                 getRegistrationJson(username + "1", email, clearPassword));
-        it.unibo.sd.project.mastermind.model.OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
+        OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         short VALUE_ALREADY_EXISTS_HTTP_CODE = 409;
         assertEquals(VALUE_ALREADY_EXISTS_HTTP_CODE, result.getStatusCode());
         String EMAIL_ALREADY_EXISTS_MESSAGE = "The email address is already in use";
@@ -116,7 +119,7 @@ public class UserTests {
                 MessageType.LOGIN_USER,
                 // right username but wrong password
                 getLoginJson(username, "password12!"));
-        it.unibo.sd.project.mastermind.model.OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
+        OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         short UNAUTHORIZED_HTTP_CODE = 401;
         assertEquals(UNAUTHORIZED_HTTP_CODE, result.getStatusCode());
         String UNAUTHORIZED_MESSAGE = "Unauthorized";
@@ -140,7 +143,7 @@ public class UserTests {
                 client,
                 MessageType.LOGIN_USER,
                 getLoginJson(username, clearPassword));
-        it.unibo.sd.project.mastermind.model.OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
+        OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         short SUCCESS_HTTP_CODE = 200;
         assertEquals(SUCCESS_HTTP_CODE, result.getStatusCode());
     }
