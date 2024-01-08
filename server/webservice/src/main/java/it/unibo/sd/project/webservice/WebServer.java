@@ -213,7 +213,16 @@ public class WebServer extends AbstractVerticle {
     private Router getStatsRouter() {
         Router router = Router.router(vertx);
 
+        router.get("allMatches").blockingHandler(extractUsername(
+                (routingContext, username) -> {
+                    getHandler(
+                            MessageType.GET_MATCHES_OF_USER,
+                            username,
+                            (context, response) -> {
 
+                            }).handle(routingContext);
+                }
+        ));
 
         return router;
     }

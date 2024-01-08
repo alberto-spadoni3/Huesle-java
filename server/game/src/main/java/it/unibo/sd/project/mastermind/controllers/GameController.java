@@ -1,20 +1,21 @@
 package it.unibo.sd.project.mastermind.controllers;
 
 import com.mongodb.client.MongoDatabase;
-import it.unibo.sd.project.mastermind.model.Manager;
 import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchOperationResult;
 import it.unibo.sd.project.mastermind.model.match.PendingMatchRequest;
 import it.unibo.sd.project.mastermind.model.match.SearchRequest;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
-import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import org.bson.conversions.Bson;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import static com.mongodb.client.model.Filters.*;
@@ -63,7 +64,7 @@ public class GameController {
                             pendingMatchDB.deleteByQuery(pendingReqOfAnotherPlayer);
 
                             matchOperationResult =
-                                    new MatchOperationResult((short) 200, "New public match created");
+                                    new MatchOperationResult((short) 201, "Public match created");
                             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
                         }
                     }
@@ -110,7 +111,7 @@ public class GameController {
                     createMatch(requesterUsername, possiblePrivateMatch.get().getRequesterUsername());
                     pendingMatchDB.deleteByQuery(pendingReqWithSpecificCode);
                     matchOperationResult =
-                            new MatchOperationResult((short) 200, "Private match created");
+                            new MatchOperationResult((short) 201, "Private match created");
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
@@ -120,6 +121,34 @@ public class GameController {
                             new MatchOperationResult((short) 404, "No match found with that access code");
             }
             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
+        };
+    }
+
+    public Function<String, String> getMatchesOfUser() {
+        return username -> {
+            try {
+                // check if there are matches the current user is involved in
+                Bson matchesOfUserQuery = elemMatch("players", in("players", username));
+                AtomicReference<List<Match>> matchesOfUser = new AtomicReference<>();
+                Optional<List<Match>> optionalMatches = matchDB.getDocumentsByQuery(matchesOfUserQuery);
+                optionalMatches.ifPresentOrElse(matchesOfUser::set, () -> matchesOfUser.set(new ArrayList<>()));
+
+                // check if there is a pending request the user has created
+                Bson pendingReqOfCurrentPlayer = eq("requesterUsername", username);
+                AtomicBoolean pendingRePresent = new AtomicBoolean(false);
+                Optional<PendingMatchRequest> optionalPendingReq = pendingMatchDB.getDocumentByQuery(pendingReqOfCurrentPlayer);
+                optionalPendingReq.ifPresent(pendingReq -> pendingRePresent.set(true));
+
+                // compose the results
+                MatchOperationResult matchOperationResult =
+                        new MatchOperationResult(
+                                (short) 200,
+                                "Returning " + matchesOfUser.get().size() + " matches",
+                                matchesOfUser.get(), pendingRePresent.get());
+                return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         };
     }
 
@@ -139,16 +168,15 @@ public class GameController {
 
     private String generateMatchAccessCode() throws Exception {
         Optional<PendingMatchRequest> pendingReqWithDuplicateCode;
-        String secretCode;
+        StringBuilder secretCode;
         do {
-            secretCode = String.valueOf(new Random().nextInt(100000));
-            pendingReqWithDuplicateCode = pendingMatchDB.getDocumentByQuery(eq("matchAccessCode", secretCode));
+            secretCode = new StringBuilder(String.valueOf(new Random().nextInt(100000)));
+            pendingReqWithDuplicateCode = pendingMatchDB.getDocumentByQuery(eq("matchAccessCode", secretCode.toString()));
         } while (pendingReqWithDuplicateCode.isPresent());
 
         while (secretCode.length() < 5) {
-            secretCode = "0" + secretCode;
+            secretCode.insert(0, "0");
         }
-
-        return secretCode;
+        return secretCode.toString();
     }
 }
