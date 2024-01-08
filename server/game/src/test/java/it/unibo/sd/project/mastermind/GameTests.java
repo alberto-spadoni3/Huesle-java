@@ -157,9 +157,9 @@ public class GameTests {
         );
 
         Optional<PendingMatchRequest> optionalMatch = pendingRequestDB.getDocumentByQuery(pendingReqQuery);
-        optionalMatch.ifPresentOrElse(pendingReq -> {
-            assertEquals(matchAccessCode, pendingReq.getMatchAccessCode());
-        }, () -> fail("Pending request with matchAccessCode " + matchAccessCode + " not present in the database"));
+        optionalMatch.ifPresentOrElse(
+                pendingReq -> assertEquals(matchAccessCode, pendingReq.getMatchAccessCode()),
+                () -> fail("Pending request with matchAccessCode " + matchAccessCode + " not present in the database"));
     }
 
     @Test
