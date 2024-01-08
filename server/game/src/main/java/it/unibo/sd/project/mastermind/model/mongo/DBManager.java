@@ -1,18 +1,15 @@
 package it.unibo.sd.project.mastermind.model.mongo;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import it.unibo.sd.project.mastermind.model.Player;
-import org.bson.Document;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class DBManager<T> {
@@ -59,6 +56,17 @@ public class DBManager<T> {
     public Optional<T> getDocumentByQuery(Bson query) throws Exception {
         Document doc = collection.find(query).first();
         return doc == null ? Optional.empty() : Optional.of(convertDocumentTo(doc));
+    }
+
+    public Optional<List<T>> getDocumentsByQuery(Bson query) throws Exception {
+        List<T> foundDocuments = new ArrayList<>();
+        try(MongoCursor<Document> cursor = collection.find(query).iterator()) {
+            if (!cursor.hasNext())
+                return Optional.empty();
+            while (cursor.hasNext())
+                foundDocuments.add(convertDocumentTo(cursor.next()));
+        }
+        return Optional.of(foundDocuments);
     }
 
     private Document convertToDocument(T elem){
