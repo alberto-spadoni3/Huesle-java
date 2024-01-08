@@ -1,5 +1,6 @@
 package it.unibo.sd.project.mastermind.presentation.serializers;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.Player;
@@ -13,9 +14,9 @@ public class MatchStatusSerializer extends AbstractJsonSerializer<MatchStatus> {
         jsonMatchStatus.addProperty("matchState", matchStatus.getMatchState().toString());
 
         //Serialize players
-        JsonObject matchPlayers = new JsonObject();
+        JsonArray matchPlayers = new JsonArray();
         for(Player p : matchStatus.getPlayers()){
-            matchPlayers.add(String.valueOf(matchStatus.getPlayers().indexOf(p)), Presentation.serializerOf(Player.class).getJsonElement(p));
+            matchPlayers.add(Presentation.serializerOf(Player.class).getJsonElement(p));
         }
         jsonMatchStatus.add("players", matchPlayers);
 

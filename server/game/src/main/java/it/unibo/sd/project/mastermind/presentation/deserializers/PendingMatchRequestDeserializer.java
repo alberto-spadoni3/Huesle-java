@@ -11,8 +11,13 @@ public class PendingMatchRequestDeserializer extends AbstractJsonDeserializer<Pe
     protected PendingMatchRequest deserializeJson(JsonElement jsonElement) {
         if (jsonElement.isJsonObject()) {
             JsonObject jsonObject = (JsonObject) jsonElement;
-            if (jsonObject.has("requesterUsername"))
-                return new PendingMatchRequest(jsonObject.get("requesterUsername").getAsString());
+            if (jsonObject.has("requesterUsername")) {
+                String requesterUsername = jsonObject.get("requesterUsername").getAsString();
+                PendingMatchRequest matchRequest = new PendingMatchRequest(requesterUsername);
+                if (jsonObject.has("matchAccessCode"))
+                    matchRequest.setMatchAccessCode(jsonObject.get("matchAccessCode").getAsString());
+                return matchRequest;
+            }
         } else
             throw new RuntimeException("Cannot deserialize element " + jsonElement);
         return null;

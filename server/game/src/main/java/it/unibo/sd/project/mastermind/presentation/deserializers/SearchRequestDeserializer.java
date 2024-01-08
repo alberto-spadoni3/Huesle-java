@@ -12,8 +12,8 @@ public class SearchRequestDeserializer extends AbstractJsonDeserializer<SearchRe
             SearchRequest searchRequest;
             String requesterUsername = jsonObject.get("requesterUsername").getAsString();
             boolean isMatchPrivate = false;
-            if (jsonObject.has("isMatchPrivate"))
-                isMatchPrivate = jsonObject.get("isMatchPrivate").getAsBoolean();
+            if (jsonObject.has("isPrivateMatch"))
+                isMatchPrivate = jsonObject.get("isPrivateMatch").getAsBoolean();
             if (jsonObject.has("matchAccessCode"))
                 searchRequest = new SearchRequest(
                         requesterUsername,

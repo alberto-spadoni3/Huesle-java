@@ -1,12 +1,17 @@
 package it.unibo.sd.project.mastermind.presentation.deserializers;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.OperationResult;
 import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchOperationResult;
 import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class OperationResultDeserializer extends AbstractJsonDeserializer<OperationResult> {
     @Override
@@ -29,9 +34,20 @@ public class OperationResultDeserializer extends AbstractJsonDeserializer<Operat
             }
 
             // in case jsonElement is a MatchOpResult
-            if (result.has("matchAccessCode") && result.get("matchAccessCode").isJsonPrimitive()) {
-                String matchAccessCode = result.get("matchAccessCode").getAsString();
-                return new MatchOperationResult(statusCode, message, matchAccessCode);
+            try {
+                if (result.has("matchAccessCode") && result.get("matchAccessCode").isJsonPrimitive()) {
+                    String matchAccessCode = result.get("matchAccessCode").getAsString();
+                    return new MatchOperationResult(statusCode, message, matchAccessCode);
+                } else if (result.has("matches") && result.get("matches").isJsonArray()) {
+                    List<Match> matches = new ArrayList<>();
+                    JsonArray jsonMatches = result.get("matches").getAsJsonArray();
+                    for (JsonElement element : jsonMatches)
+                        matches.add(Presentation.deserializeAs(element.toString(), Match.class));
+                    boolean pending = result.get("pending").getAsBoolean();
+                    return new MatchOperationResult(statusCode, message, matches, pending);
+                }
+            } catch (Exception e ) {
+                System.out.println(e.getMessage());
             }
 
             // otherwise, return a basic OpResult

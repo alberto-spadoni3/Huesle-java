@@ -1,5 +1,6 @@
 package it.unibo.sd.project.mastermind.presentation.deserializers;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.Player;
@@ -17,16 +18,15 @@ public class MatchStatusDeserializer extends AbstractJsonDeserializer<MatchStatu
             JsonObject result = (JsonObject) jsonElement;
             MatchState matchState = MatchState.valueOf(result.get("matchState").getAsString());
             List<Player> players = new ArrayList<>();
-            JsonObject jsonPlayers = result.getAsJsonObject("players");
-            for(int i = 0; i < jsonPlayers.size(); i++){
-                Player player;
+            JsonArray jsonPlayers = result.getAsJsonArray("players");
+            for(JsonElement elem : jsonPlayers){
                 try {
-                    player = Presentation.deserializeAs(jsonPlayers.get(String.valueOf(i)).toString(), Player.class);
-                    players.add(player);
+                    players.add(Presentation.deserializeAs(elem.toString(), Player.class));
                 } catch (Exception e){
-                    throw new RuntimeException("Cannot deserialize " + jsonPlayers.get(String.valueOf(i)) + " as Player " + e.getMessage());
+                    throw new RuntimeException("Cannot deserialize " + elem + " as Player " + e.getMessage());
                 }
             }
+
             JsonObject jsonNextPlayer = result.getAsJsonObject("nextPlayer");
             Player nextPlayer;
             try {

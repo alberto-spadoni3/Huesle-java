@@ -1,12 +1,16 @@
 package it.unibo.sd.project.mastermind.presentation.serializers;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.OperationResult;
 import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchOperationResult;
 import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
+
+import java.util.List;
 
 public class OperationResultSerializer extends AbstractJsonSerializer<OperationResult> {
     @Override
@@ -25,8 +29,17 @@ public class OperationResultSerializer extends AbstractJsonSerializer<OperationR
             }
         } else if (object instanceof MatchOperationResult matchOperationResult) {
             String matchAccessCode = matchOperationResult.getMatchAccessCode();
+            List<Match> matches = matchOperationResult.getMatches();
+            boolean pendingMatchPresence = matchOperationResult.isPendingMatchPresence();
             if (matchAccessCode != null)
                 jsonOpResult.addProperty("matchAccessCode", matchAccessCode);
+            else if (matches != null) {
+                JsonArray jsonMatches = new JsonArray();
+                for (Match match : matches)
+                    jsonMatches.add(Presentation.serializerOf(Match.class).serialize(match));
+                jsonOpResult.add("matches", jsonMatches);
+                jsonOpResult.addProperty("pending", pendingMatchPresence);
+            }
         }
         return jsonOpResult;
     }

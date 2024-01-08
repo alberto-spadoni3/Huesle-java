@@ -51,6 +51,7 @@ public class Presentation {
 
         deserializers.put(SearchRequest.class, new SearchRequestDeserializer());
         deserializers.put(PendingMatchRequest.class, new PendingMatchRequestDeserializer());
+        deserializers.put(MatchOperationResult.class, new OperationResultDeserializer());
     }
 
     public static <T> Serializer<T> serializerOf(Class<T> klass) {
