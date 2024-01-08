@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import static com.mongodb.client.model.Filters.*;
-import static com.mongodb.client.model.Filters.eq;
 
 public class GameController {
     private final DBManager<PendingMatchRequest> pendingMatchDB;
@@ -128,23 +127,23 @@ public class GameController {
         return username -> {
             try {
                 // check if there are matches the current user is involved in
-                Bson matchesOfUserQuery = elemMatch("players", in("players", username));
+                Bson matchesOfUserQuery = elemMatch("matchStatus.players", eq("username", username));
                 AtomicReference<List<Match>> matchesOfUser = new AtomicReference<>();
                 Optional<List<Match>> optionalMatches = matchDB.getDocumentsByQuery(matchesOfUserQuery);
                 optionalMatches.ifPresentOrElse(matchesOfUser::set, () -> matchesOfUser.set(new ArrayList<>()));
 
                 // check if there is a pending request the user has created
                 Bson pendingReqOfCurrentPlayer = eq("requesterUsername", username);
-                AtomicBoolean pendingRePresent = new AtomicBoolean(false);
+                AtomicBoolean pendingReqPresent = new AtomicBoolean(false);
                 Optional<PendingMatchRequest> optionalPendingReq = pendingMatchDB.getDocumentByQuery(pendingReqOfCurrentPlayer);
-                optionalPendingReq.ifPresent(pendingReq -> pendingRePresent.set(true));
+                optionalPendingReq.ifPresent(pendingReq -> pendingReqPresent.set(true));
 
                 // compose the results
                 MatchOperationResult matchOperationResult =
                         new MatchOperationResult(
                                 (short) 200,
                                 "Returning " + matchesOfUser.get().size() + " matches",
-                                matchesOfUser.get(), pendingRePresent.get());
+                                matchesOfUser.get(), pendingReqPresent.get());
                 return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
             } catch (Exception e) {
                 throw new RuntimeException(e);

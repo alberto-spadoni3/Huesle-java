@@ -1,5 +1,6 @@
 package it.unibo.sd.project.mastermind.presentation.serializers;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.Attempt;
@@ -15,12 +16,14 @@ public class MatchSerializer extends AbstractJsonSerializer<Match>{
         jsonMatch.addProperty("UUID", match.getMatchID().toString());
 
         jsonMatch.add("matchStatus", Presentation.serializerOf(MatchStatus.class).getJsonElement(match.getMatchStatus()));
-        JsonObject matchAttempts = new JsonObject();
-        for(Attempt a : match.getMadeAttempts()){
-            matchAttempts.add(String.valueOf(match.getMadeAttempts().indexOf(a)), Presentation.serializerOf(Attempt.class).getJsonElement(a));
+
+        JsonArray matchAttempts = new JsonArray();
+        for(Attempt attempt : match.getMadeAttempts()) {
+            matchAttempts.add(Presentation.serializerOf(Attempt.class).getJsonElement(attempt));
         }
         jsonMatch.add("attempts", matchAttempts);
-        JsonObject jsonSecretCode = (JsonObject) Presentation.serializerOf(SecretCode.class).getJsonElement(match.getSecretCode());
+
+        JsonArray jsonSecretCode = (JsonArray) Presentation.serializerOf(SecretCode.class).getJsonElement(match.getSecretCode());
         jsonMatch.add("secretCode", jsonSecretCode);
         return jsonMatch;
     }

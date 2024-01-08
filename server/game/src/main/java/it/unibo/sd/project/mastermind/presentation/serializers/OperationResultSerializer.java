@@ -36,7 +36,7 @@ public class OperationResultSerializer extends AbstractJsonSerializer<OperationR
             else if (matches != null) {
                 JsonArray jsonMatches = new JsonArray();
                 for (Match match : matches)
-                    jsonMatches.add(Presentation.serializerOf(Match.class).serialize(match));
+                    jsonMatches.add(Presentation.serializerOf(Match.class).getJsonElement(match));
                 jsonOpResult.add("matches", jsonMatches);
                 jsonOpResult.addProperty("pending", pendingMatchPresence);
             }
