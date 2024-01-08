@@ -9,8 +9,9 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class UserManager extends AbstractManager {
-    public UserManager() {
-        super.init();
+    public UserManager(boolean forTesting) {
+        if (forTesting) super.initForTesting();
+        else super.init();
     }
 
     @Override

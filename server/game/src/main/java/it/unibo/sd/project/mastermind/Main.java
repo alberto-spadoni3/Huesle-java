@@ -5,7 +5,8 @@ import it.unibo.sd.project.mastermind.model.user.UserManager;
 
 public class Main {
     public static void main(String[] args) {
-        UserManager userManager = new UserManager();
-        GameManager gameManager = new GameManager();
+        boolean forTesting = false;
+        UserManager userManager = new UserManager(forTesting);
+        GameManager gameManager = new GameManager(forTesting);
     }
 }

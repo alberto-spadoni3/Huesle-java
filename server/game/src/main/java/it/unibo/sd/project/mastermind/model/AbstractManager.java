@@ -17,5 +17,10 @@ public abstract class AbstractManager implements Manager {
         Executors.newSingleThreadExecutor().submit(new RPCServer(getManagementCallbacks()));
     }
 
+    public void initForTesting() {
+        database = DBSingleton.getInstance().getTestDatabase();
+        Executors.newSingleThreadExecutor().submit(new RPCServer(getManagementCallbacks()));
+    }
+
     protected abstract Map<MessageType, Function<String, String>> getManagementCallbacks();
 }

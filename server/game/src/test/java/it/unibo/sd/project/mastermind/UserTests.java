@@ -27,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class UserTests {
     private ExecutorService executorService;
     private RPCClient client;
-    private List<Player> usersToDelete;
     private DBManager<Player> userDB;
     private String username;
     private String email;
@@ -35,16 +34,15 @@ public class UserTests {
 
     @BeforeAll
     public void setUpTests() throws IOException, TimeoutException {
-        new UserManager();
+        new UserManager(true);
         client = new RPCClient();
-        usersToDelete = new ArrayList<>();
-        var database = DBSingleton.getInstance().getDatabase();
-        userDB = new DBManager<>(database, "users", "username", Player.class);
+        var testDatabase = DBSingleton.getInstance().getTestDatabase();
+        // Drop the possible database to avoid conflicts
+        testDatabase.drop();
+        userDB = new DBManager<>(testDatabase, "users", "username", Player.class);
         username = "albisyx";
         email = "albisyx@protonmail.ch";
         clearPassword = "passwd123!";
-        // Delete the possible user with this username
-        userDB.remove(username);
     }
 
     @BeforeEach

@@ -8,8 +8,9 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class GameManager extends AbstractManager {
-    public GameManager() {
-        super.init();
+    public GameManager(boolean forTesting) {
+        if (forTesting) super.initForTesting();
+        else super.init();
     }
 
     @Override
@@ -18,6 +19,7 @@ public class GameManager extends AbstractManager {
         GameController gameController = new GameController(database);
         gameCallbacks.put(MessageType.SEARCH_MATCH, gameController.searchMatch());
         gameCallbacks.put(MessageType.JOIN, gameController.joinPrivateMatch());
+        gameCallbacks.put(MessageType.GET_MATCHES_OF_USER, gameController.getMatchesOfUser());
         return gameCallbacks;
     }
 }

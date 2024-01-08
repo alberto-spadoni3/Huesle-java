@@ -7,14 +7,15 @@ import com.mongodb.client.MongoDatabase;
 import java.util.Objects;
 
 public class DBSingleton {
+    public static final String DATABASE_NAME = "huesle-db";
     private static DBSingleton instance;
     private final MongoDatabase database;
+    private final MongoClient mongoClient;
 
     private DBSingleton() {
-        String databaseName = "huesle-db";
         String connectionString = Objects.requireNonNull(System.getenv("MONGO_HOST"));
-        MongoClient mongoClient = MongoClients.create(connectionString);
-        this.database = mongoClient.getDatabase(databaseName);
+        mongoClient = MongoClients.create(connectionString);
+        this.database = mongoClient.getDatabase(DATABASE_NAME);
     }
 
     public static DBSingleton getInstance() {
@@ -30,5 +31,9 @@ public class DBSingleton {
 
     public MongoDatabase getDatabase() {
         return database;
+    }
+
+    public MongoDatabase getTestDatabase() {
+        return mongoClient.getDatabase(DATABASE_NAME + "-test");
     }
 }
