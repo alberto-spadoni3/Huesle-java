@@ -3,7 +3,7 @@ package it.unibo.sd.project.mastermind.rabbit;
 public enum MessageType {
     SEARCH_MATCH("createMatch"),
     JOIN("join"),
-    START("start"),
+    GET_MATCHES_OF_USER("getMatches"),
     FINISH("finish"),
     UPDATE("update"),
     DISCONNECT("disconnect"),
