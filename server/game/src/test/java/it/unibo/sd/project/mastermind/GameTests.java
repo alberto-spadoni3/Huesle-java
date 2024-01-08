@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -201,6 +202,28 @@ public class GameTests {
 
         // check if there is a match in the database
         checkMatchOfPlayerInDB(player3);
+    }
+
+    @Test
+    @Order(9)
+    void getAllMatchesOfPlayer() throws Exception {
+        CompletableFuture<String> response = callAsync(
+                client,
+                MessageType.GET_MATCHES_OF_USER,
+                player2.getUsername());
+
+        MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
+        assertEquals(200, operationResult.getStatusCode());
+
+        List<Match> matches = operationResult.getMatches();
+        // since player2 was involved in the creation of two matches, the response should contain them all
+        assertEquals(2, matches.size());
+        AtomicBoolean isPlayerInAllMatches = new AtomicBoolean(true);
+        matches.forEach(match -> {
+            if (!match.getMatchStatus().getPlayers().contains(player2))
+                isPlayerInAllMatches.set(false);
+        });
+        assertTrue(isPlayerInAllMatches.get());
     }
 
     private CompletableFuture<String> callAsync(RPCClient client, MessageType messageType, String requestBody) {
