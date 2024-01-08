@@ -18,22 +18,16 @@ public class AttemptDeserializer extends AbstractJsonDeserializer<Attempt>{
             JsonObject result = (JsonObject) jsonElement;
             List<String> colorSequence = new ArrayList<>();
             JsonArray jsonColorSequence = result.getAsJsonArray("colorSequence");
-//            for(int i=0; i<jsonColorSequence.size(); i++){
-//                colorSequence.add(jsonColorSequence.get(i).getAsString());
-//            }
             for (JsonElement elem : jsonColorSequence)
                 colorSequence.add(elem.getAsString());
-            Player attemptMadeBy = null;
-            Hints hints = null;
+
+            Player attemptMadeBy;
+            Hints hints;
             try {
                 attemptMadeBy = Presentation.deserializeAs(result.get("attemptMadeBy").toString(), Player.class);
-            } catch (Exception e) {
-                throw new RuntimeException("Cannot deserialize " + result.get("attemptMadeBy") + " as Player " + e.getMessage());
-            }
-            try {
                 hints = Presentation.deserializeAs(result.get("hints").toString(), Hints.class);
-            } catch (Exception e){
-                throw new RuntimeException("Cannot deserialize " + result.get("hints") + " as Hints " + e.getMessage());
+            } catch (Exception e) {
+                throw new RuntimeException("Cannot deserialize " + jsonElement + " - " + e.getMessage());
             }
 
             return new Attempt(colorSequence,attemptMadeBy,hints);

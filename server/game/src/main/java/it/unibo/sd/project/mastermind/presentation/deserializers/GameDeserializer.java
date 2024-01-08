@@ -1,5 +1,6 @@
 package it.unibo.sd.project.mastermind.presentation.deserializers;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.Game;
@@ -19,10 +20,10 @@ public class GameDeserializer extends AbstractJsonDeserializer<Game>{
             try {
                 player = Presentation.deserializeAs(result.get("player").toString(), Player.class);
 
-                JsonObject jsonActiveMatches = result.getAsJsonObject("activeMatches");
+                JsonArray jsonActiveMatches = result.getAsJsonArray("activeMatches");
                 List<Match> activeMatches = extractMatches(jsonActiveMatches);
 
-                JsonObject jsonEndedMatches = result.getAsJsonObject("endedMatches");
+                JsonArray jsonEndedMatches = result.getAsJsonArray("endedMatches");
                 List<Match> endedMatches = extractMatches(jsonEndedMatches);
 
                 Game game = new Game(player);
@@ -37,14 +38,13 @@ public class GameDeserializer extends AbstractJsonDeserializer<Game>{
         }
     }
 
-    private List<Match> extractMatches(JsonObject jsonMatches) {
+    private List<Match> extractMatches(JsonArray jsonMatches) {
         List<Match> matches = new ArrayList<>();
-        for(int i = 0; i< jsonMatches.size(); i++){
+        for(JsonElement elem : jsonMatches){
             try {
-                Match match = Presentation.deserializerOf(Match.class).deserialize(jsonMatches.get(String.valueOf(i)).getAsString());
-                matches.add(match);
+                matches.add(Presentation.deserializerOf(Match.class).deserialize(elem.toString()));
             } catch (Exception e) {
-                throw new RuntimeException("Cannot deserialize " + jsonMatches.get(String.valueOf(i)) + " as Match " + e.getMessage());
+                throw new RuntimeException("Cannot deserialize " + elem + " as Match - " + e.getMessage());
             }
         }
         return matches;

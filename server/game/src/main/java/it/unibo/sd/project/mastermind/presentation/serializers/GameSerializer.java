@@ -1,5 +1,6 @@
 package it.unibo.sd.project.mastermind.presentation.serializers;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.Game;
@@ -12,16 +13,19 @@ public class GameSerializer extends AbstractJsonSerializer<Game>{
     protected JsonElement toJsonElement(Game game) {
         JsonObject jsonGame = new JsonObject();
         jsonGame.add("player", Presentation.serializerOf(Player.class).getJsonElement(game.getPlayer()));
-        JsonObject activeMatches = new JsonObject();
-        for(int i = 0; i < game.getActiveMatches().size(); i++){
-            activeMatches.add(String.valueOf(i), Presentation.serializerOf(Match.class).getJsonElement(game.getActiveMatches().get(i)));
+
+        JsonArray activeMatches = new JsonArray();
+        for(Match match : game.getActiveMatches()){
+            activeMatches.add(Presentation.serializerOf(Match.class).getJsonElement(match));
         }
         jsonGame.add("activeMatches", activeMatches);
-        JsonObject endedMatches = new JsonObject();
-        for(int i = 0; i < game.getEndedMatches().size(); i++){
-            endedMatches.add(String.valueOf(i), Presentation.serializerOf(Match.class).getJsonElement(game.getEndedMatches().get(i)));
+
+        JsonArray endedMatches = new JsonArray();
+        for(Match match : game.getEndedMatches()){
+            endedMatches.add(Presentation.serializerOf(Match.class).getJsonElement(match));
         }
         jsonGame.add("endedMatches", endedMatches);
+
         return jsonGame;
     }
 }
