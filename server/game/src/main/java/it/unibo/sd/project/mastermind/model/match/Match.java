@@ -9,10 +9,12 @@ import java.util.List;
 import java.util.UUID;
 
 public class Match {
+    public static final byte ATTEMPTS = 10;
     private final UUID matchID;
-    private List<Attempt> madeAttempts;
-    private final SecretCode secretCode;
     private MatchStatus matchStatus;
+    private List<Attempt> madeAttempts;
+    private byte remainingAttempts;
+    private final SecretCode secretCode;
 
     // Constructor used when creating a new match
     public Match(List<Player> players) {
@@ -20,21 +22,17 @@ public class Match {
         this.secretCode = new SecretCode();
         this.matchStatus = new MatchStatus(players);
         this.madeAttempts = new ArrayList<>();
+        this.remainingAttempts = ATTEMPTS;
     }
 
-    // Constructor used when the match is taken from the database
     public Match(UUID matchID, MatchStatus status, List<Attempt> attempts, SecretCode code) {
         this.matchID = matchID;
         this.matchStatus = status;
         this.madeAttempts = attempts;
         this.secretCode = code;
+        this.remainingAttempts = (byte) (ATTEMPTS - madeAttempts.size());
     }
 
-    public void tryToGuess(Attempt attempt) {
-        //TODO
-        attempt.computeHints(this.secretCode);
-        madeAttempts.add(attempt);
-    }
     public UUID getMatchID() {
         return matchID;
     }
@@ -42,10 +40,22 @@ public class Match {
     public MatchStatus getMatchStatus() {
         return matchStatus;
     }
+
     public List<Attempt> getMadeAttempts() {
         return madeAttempts;
     }
+
     public SecretCode getSecretCode() {
         return secretCode;
+    }
+
+    public void tryToGuess(Attempt attempt) {
+        //TODO
+        attempt.computeHints(this.secretCode);
+        madeAttempts.add(attempt);
+    }
+
+    public boolean isOver() {
+        return List.of(MatchState.DRAW, MatchState.VICTORY).contains(matchStatus.getMatchState());
     }
 }
