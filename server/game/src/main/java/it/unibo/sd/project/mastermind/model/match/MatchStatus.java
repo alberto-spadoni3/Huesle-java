@@ -32,7 +32,7 @@ public class MatchStatus {
         this.nextPlayer = nextPlayer;
     }
 
-    public MatchState getMatchState() {
+    public MatchState getState() {
         return matchState;
     }
 
@@ -56,7 +56,7 @@ public class MatchStatus {
         this.nextPlayer = player;
     }
 
-    public void changeState(MatchState newState) {
+    public void setState(MatchState newState) {
         this.matchState = newState;
     }
 

@@ -11,17 +11,19 @@ public class MatchStatusSerializer extends AbstractJsonSerializer<MatchStatus> {
     @Override
     protected JsonElement toJsonElement(MatchStatus matchStatus) {
         JsonObject jsonMatchStatus = new JsonObject();
-        jsonMatchStatus.addProperty("matchState", matchStatus.getMatchState().toString());
+        jsonMatchStatus.addProperty("matchState", matchStatus.getState().toString());
 
         //Serialize players
         JsonArray matchPlayers = new JsonArray();
-        for(Player p : matchStatus.getPlayers()){
+        for(Player p : matchStatus.getPlayers()) {
             matchPlayers.add(Presentation.serializerOf(Player.class).getJsonElement(p));
         }
         jsonMatchStatus.add("players", matchPlayers);
 
         //Serialize next player
         jsonMatchStatus.add("nextPlayer", Presentation.serializerOf(Player.class).getJsonElement(matchStatus.getNextPlayer()));
+
+        jsonMatchStatus.addProperty("abandoned", matchStatus.isAbandoned());
 
         return jsonMatchStatus;
     }

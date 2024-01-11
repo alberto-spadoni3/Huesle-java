@@ -56,6 +56,6 @@ public class Match {
     }
 
     public boolean isOver() {
-        return List.of(MatchState.DRAW, MatchState.VICTORY).contains(matchStatus.getMatchState());
+        return List.of(MatchState.DRAW, MatchState.VICTORY).contains(matchStatus.getState());
     }
 }

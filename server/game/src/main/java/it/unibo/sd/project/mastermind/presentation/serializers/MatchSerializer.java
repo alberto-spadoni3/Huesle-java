@@ -13,7 +13,7 @@ public class MatchSerializer extends AbstractJsonSerializer<Match>{
     @Override
     protected JsonElement toJsonElement(Match match) {
         JsonObject jsonMatch = new JsonObject();
-        jsonMatch.addProperty("UUID", match.getMatchID().toString());
+        jsonMatch.addProperty("_id", match.getMatchID().toString());
 
         jsonMatch.add("matchStatus", Presentation.serializerOf(MatchStatus.class).getJsonElement(match.getMatchStatus()));
 

@@ -17,6 +17,7 @@ public class MatchStatusDeserializer extends AbstractJsonDeserializer<MatchStatu
         if (jsonElement.isJsonObject()) {
             JsonObject result = (JsonObject) jsonElement;
             MatchState matchState = MatchState.valueOf(result.get("matchState").getAsString());
+
             List<Player> players = new ArrayList<>();
             JsonArray jsonPlayers = result.getAsJsonArray("players");
             for(JsonElement elem : jsonPlayers){
@@ -35,10 +36,11 @@ public class MatchStatusDeserializer extends AbstractJsonDeserializer<MatchStatu
                 throw new RuntimeException("Cannot deserialize " + jsonNextPlayer + " as Player " + e.getMessage());
             }
 
-            MatchStatus ms = new MatchStatus(players);
-            ms.changeNextPlayer(nextPlayer);
-            ms.changeState(matchState);
-            return ms;
+            MatchStatus matchStatus = new MatchStatus(players, matchState, nextPlayer);
+            if (result.get("abandoned").getAsBoolean())
+                matchStatus.setAbandoned();
+
+            return matchStatus;
         } else {
             throw new RuntimeException("Cannot deserialize " + jsonElement + " as MatchStatus");
         }

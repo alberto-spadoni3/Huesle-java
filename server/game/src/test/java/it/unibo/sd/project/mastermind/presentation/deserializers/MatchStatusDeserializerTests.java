@@ -22,7 +22,7 @@ public class MatchStatusDeserializerTests {
     @Test
     void matchStatusDeserializerTest() throws Exception {
         MatchStatus m = Presentation.deserializeAs(start, MatchStatus.class);
-        System.out.println(m.getMatchState());
+        System.out.println(m.getState());
         System.out.println(m.getPlayers());
         System.out.println(m.getNextPlayer());
 

@@ -19,7 +19,7 @@ public class MatchDeserializer extends AbstractJsonDeserializer<Match> {
         if (jsonElement.isJsonObject()) {
             JsonObject result = (JsonObject) jsonElement;
 
-            UUID matchUUID = UUID.fromString(result.get("UUID").getAsString());
+            UUID matchUUID = UUID.fromString(result.get("_id").getAsString());
             MatchStatus matchStatus;
             try {
                 matchStatus = Presentation.deserializeAs(result.get("matchStatus").toString(), MatchStatus.class);
