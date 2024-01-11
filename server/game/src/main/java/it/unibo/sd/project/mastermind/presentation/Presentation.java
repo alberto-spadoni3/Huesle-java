@@ -49,7 +49,7 @@ public class Presentation {
         deserializers.put(Attempt.class, new AttemptDeserializer());
         deserializers.put(Game.class, new GameDeserializer());
 
-        deserializers.put(SearchRequest.class, new SearchRequestDeserializer());
+        deserializers.put(MatchRequest.class, new MatchRequestDeserializer());
         deserializers.put(PendingMatchRequest.class, new PendingMatchRequestDeserializer());
         deserializers.put(MatchOperationResult.class, new OperationResultDeserializer());
     }
