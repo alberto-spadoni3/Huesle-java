@@ -14,12 +14,12 @@ public abstract class AbstractManager implements Manager {
 
     public void init() {
         database = DBSingleton.getInstance().getDatabase();
-        Executors.newSingleThreadExecutor().submit(new RPCServer(getManagementCallbacks()));
+        Executors.newSingleThreadExecutor().submit(new RPCServer(getManagementCallbacks(), this.getClass().getSimpleName()));
     }
 
     public void initForTesting() {
         database = DBSingleton.getInstance().getTestDatabase();
-        Executors.newSingleThreadExecutor().submit(new RPCServer(getManagementCallbacks()));
+        Executors.newSingleThreadExecutor().submit(new RPCServer(getManagementCallbacks(), this.getClass().getSimpleName()));
     }
 
     protected abstract Map<MessageType, Function<String, String>> getManagementCallbacks();

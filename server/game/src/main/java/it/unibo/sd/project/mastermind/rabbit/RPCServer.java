@@ -11,21 +11,23 @@ import java.util.function.Function;
 public class RPCServer implements Runnable {
     private static final String EXCHANGE_NAME = "Web";
     private final Map<MessageType, Function<String, String>> map;
+    private final String className;
 
-    public RPCServer(Map<MessageType, Function<String,String>> map) {
+    public RPCServer(Map<MessageType, Function<String,String>> map, String className) {
         this.map = map;
+        this.className = className;
     }
 
     @Override
     public void run() {
         try {
-            startServer();
+            startServer(className);
         } catch (IOException | TimeoutException e) {
             System.out.println(e.getMessage());
         }
     }
 
-    private void startServer() throws IOException, TimeoutException {
+    private void startServer(String className) throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(System.getenv("RABBIT_HOST"));
         try (Connection connection = factory.newConnection();
@@ -34,7 +36,7 @@ public class RPCServer implements Runnable {
             channel.exchangeDeclare(EXCHANGE_NAME, "direct");
             var callbacks = createCallbackMap(channel);
 
-            System.out.println("[x] Awaiting RPC requests");
+            System.out.println("[" + className + "] Awaiting RPC requests");
 
             Object monitor = new Object();
             callbacks.forEach((queue, callback) -> {
@@ -45,7 +47,7 @@ public class RPCServer implements Runnable {
                             getDeliverCallback(callback, channel, monitor),
                             consumerTag -> { });
                 } catch (IOException e) {
-                    System.err.println(e.getMessage());
+                    System.err.println("[" + className + "] " + e.getMessage());
                 }
             });
 
@@ -55,7 +57,7 @@ public class RPCServer implements Runnable {
                     try {
                         monitor.wait();
                     } catch (InterruptedException e) {
-                        System.err.println(e.getMessage());
+                        System.err.println("[" + className + "] " + e.getMessage());
                     }
                 }
             }
@@ -70,7 +72,7 @@ public class RPCServer implements Runnable {
                 channel.queueBind(queueName, EXCHANGE_NAME, t.getType());
                 callbackMap.put(queueName, c);
             } catch (IOException e) {
-                System.err.println(e.getMessage());
+                System.err.println("[" + className + "] " + e.getMessage());
             }
         });
         return callbackMap;
@@ -87,9 +89,9 @@ public class RPCServer implements Runnable {
             try {
                 response = callback.apply(new String(delivery.getBody(), "UTF-8"));
             } catch (RuntimeException e) {
-                System.out.println("[.] " + e);
+                System.out.println("[" + className + "] " + e.getMessage());
             } finally {
-                System.out.println("RPC server responding " + response + " in queue " + delivery.getProperties().getReplyTo());
+                System.out.println("[" + className + "] RPC server responding " + response + " in queue " + delivery.getProperties().getReplyTo());
                 channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.getBytes("UTF-8"));
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
