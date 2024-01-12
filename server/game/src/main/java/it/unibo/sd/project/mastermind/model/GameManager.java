@@ -18,8 +18,10 @@ public class GameManager extends AbstractManager {
         Map<MessageType, Function<String, String>> gameCallbacks = new HashMap<>();
         GameController gameController = new GameController(database);
         gameCallbacks.put(MessageType.SEARCH_MATCH, gameController.searchMatch());
-        gameCallbacks.put(MessageType.JOIN, gameController.joinPrivateMatch());
+        gameCallbacks.put(MessageType.JOIN_PRIVATE_MATCH, gameController.joinPrivateMatch());
         gameCallbacks.put(MessageType.GET_MATCHES_OF_USER, gameController.getMatchesOfUser());
+        gameCallbacks.put(MessageType.GET_MATCH, gameController.getMatchByID());
+        gameCallbacks.put(MessageType.LEAVE_MATCH, gameController.leaveMatchByID());
         return gameCallbacks;
     }
 }

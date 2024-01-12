@@ -6,13 +6,13 @@ import io.vertx.core.Promise;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.bridge.BridgeEventType;
 import io.vertx.ext.bridge.PermittedOptions;
-import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -145,7 +145,6 @@ public class WebServer extends AbstractVerticle {
         Router router = Router.router(vertx);
 
         router.route("/game/*").subRouter(getGameRouter());
-        router.route("/search/*").subRouter(getSearchRouter());
         router.route("/settings/*").subRouter(getSettingsRouter());
         router.route("/stats/*").subRouter(getStatsRouter());
 
@@ -155,14 +154,6 @@ public class WebServer extends AbstractVerticle {
     private Router getGameRouter() {
         Router router = Router.router(vertx);
 
-
-
-        return router;
-    }
-
-    private Router getSearchRouter() {
-        Router router = Router.router(vertx);
-
         router.post("/searchMatch").blockingHandler(extractUsername(
                 (routingContext, username) -> {
                     JsonObject body = routingContext.body().asJsonObject();
@@ -170,7 +161,7 @@ public class WebServer extends AbstractVerticle {
                     JsonObject matchRequest = new JsonObject();
                     matchRequest
                             .put("requesterUsername", username)
-                            .put("isMatchPrivate", isMatchPrivate);
+                            .put("isPrivateMatch", isMatchPrivate);
 
                     getHandler(MessageType.SEARCH_MATCH, matchRequest.encode(),
                             (context, response) -> {
@@ -184,14 +175,62 @@ public class WebServer extends AbstractVerticle {
 
         router.post("/joinPrivateMatch").blockingHandler(extractUsername(
                 (routingContext, username) -> {
-                    JsonObject body = routingContext.body().asJsonObject();
-                    String matchAccessCode = body.getString("matchAccessCode");
+                    String matchAccessCode = routingContext.body().asJsonObject().getString("matchAccessCode");
                     JsonObject matchRequest = new JsonObject();
                     matchRequest
                             .put("requesterUsername", username)
                             .put("matchAccessCode", matchAccessCode);
 
-                    getHandler(MessageType.JOIN, matchRequest.encode(),
+                    getHandler(MessageType.JOIN_PRIVATE_MATCH, matchRequest.encode(),
+                            (context, response) -> {
+                                JsonObject backendResponse = new JsonObject(response);
+                                context.response().end(backendResponse.getString("resultMessage"));
+                            }).handle(routingContext);
+                }
+        ));
+
+        router.get("/getMatches").blockingHandler(extractUsername(
+                (routingContext, username) -> {
+                    getHandler(
+                            MessageType.GET_MATCHES_OF_USER,
+                            username,
+                            (context, response) -> {
+                                JsonObject backendResponse = new JsonObject(response);
+                                JsonObject responseBody = new JsonObject();
+                                responseBody
+                                        .put("matches", backendResponse.getJsonArray("matches"))
+                                        .put("pending", backendResponse.getBoolean("pending"));
+                                context.response().end(responseBody.encode());
+                            }).handle(routingContext);
+                }
+        ));
+
+        router.get("/getMatch").blockingHandler(extractUsername(
+                (routingContext, username) -> {
+                    String matchID = routingContext.queryParam("matchId").get(0);
+                    getHandler(
+                            MessageType.GET_MATCH,
+                            matchID,
+                            (context, response) -> {
+                                JsonObject backendResponse = new JsonObject(response);
+                                JsonObject responseBody = new JsonObject();
+                                responseBody
+                                        .put("matches", backendResponse.getJsonArray("matches").getJsonObject(0));
+                                context.response().end(responseBody.encode());
+                            }).handle(routingContext);
+                }
+        ));
+
+        router.get("/leaveMatch").blockingHandler(extractUsername(
+                (routingContext, username) -> {
+                    String matchID = routingContext.body().asJsonObject().getString("matchId");
+                    JsonObject request = new JsonObject()
+                            .put("requesterUsername", username)
+                            .put("matchID", matchID);
+
+                    getHandler(
+                            MessageType.LEAVE_MATCH,
+                            request.encode(),
                             (context, response) -> {
                                 JsonObject backendResponse = new JsonObject(response);
                                 context.response().end(backendResponse.getString("resultMessage"));
@@ -213,16 +252,7 @@ public class WebServer extends AbstractVerticle {
     private Router getStatsRouter() {
         Router router = Router.router(vertx);
 
-        router.get("allMatches").blockingHandler(extractUsername(
-                (routingContext, username) -> {
-                    getHandler(
-                            MessageType.GET_MATCHES_OF_USER,
-                            username,
-                            (context, response) -> {
 
-                            }).handle(routingContext);
-                }
-        ));
 
         return router;
     }

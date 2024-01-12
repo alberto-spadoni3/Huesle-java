@@ -2,21 +2,16 @@ package it.unibo.sd.project.mastermind.controllers;
 
 import com.mongodb.client.MongoDatabase;
 import it.unibo.sd.project.mastermind.model.Player;
-import it.unibo.sd.project.mastermind.model.match.Match;
-import it.unibo.sd.project.mastermind.model.match.MatchOperationResult;
-import it.unibo.sd.project.mastermind.model.match.PendingMatchRequest;
-import it.unibo.sd.project.mastermind.model.match.SearchRequest;
+import it.unibo.sd.project.mastermind.model.match.*;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import org.bson.conversions.Bson;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static com.mongodb.client.model.Filters.*;
 
@@ -28,15 +23,15 @@ public class GameController {
     public GameController(MongoDatabase database) {
         pendingMatchDB = new DBManager<>(database, "pendingRequests", "requesterUsername", PendingMatchRequest.class);
         userDB = new DBManager<>(database, "users", "username", Player.class);
-        matchDB = new DBManager<>(database, "matches", "matchID", Match.class);
+        matchDB = new DBManager<>(database, "matches", "_id", Match.class);
     }
 
     public Function<String, String> searchMatch() {
         return message -> {
             MatchOperationResult matchOperationResult = null;
             try {
-                SearchRequest request = Presentation.deserializeAs(message, SearchRequest.class);
-                String requesterUsername = request.getRequester();
+                MatchRequest request = Presentation.deserializeAs(message, MatchRequest.class);
+                String requesterUsername = request.getRequesterUsername();
 
                 // check if there is a pendingRequest made by the current user
                 Bson pendingReqOfCurrentPlayer =
@@ -80,7 +75,7 @@ public class GameController {
                     matchOperationResult =
                             new MatchOperationResult(
                                     (short) 200,
-                                    "Searching another player",
+                                    "Searching another player...",
                                     pendingMatchRequest.getMatchAccessCode());
                 }
             } catch (Exception e) {
@@ -97,8 +92,8 @@ public class GameController {
         return message -> {
             MatchOperationResult matchOperationResult = null;
             try {
-                SearchRequest request = Presentation.deserializeAs(message, SearchRequest.class);
-                String requesterUsername = request.getRequester();
+                MatchRequest request = Presentation.deserializeAs(message, MatchRequest.class);
+                String requesterUsername = request.getRequesterUsername();
 
                 // check if there is a pending request with the same access code
                 Bson pendingReqWithSpecificCode =
@@ -148,6 +143,68 @@ public class GameController {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+        };
+    }
+
+    public Function<String, String> getMatchByID() {
+        return matchID -> {
+            AtomicReference<MatchOperationResult> matchOperationResult = new AtomicReference<>();
+            try {
+                Optional<Match> optionalMatch = matchDB.getDocumentByField("_id", matchID);
+                optionalMatch.ifPresentOrElse(match -> {
+                    matchOperationResult.set(new MatchOperationResult(
+                            (short) 200,
+                            "Returning the match with ID " + matchID,
+                            List.of(match), false
+                    ));
+                }, () -> matchOperationResult.set(new MatchOperationResult(
+                        (short) 400, "Match not found for the ID " + matchID
+                )));
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+            return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult.get());
+        };
+    }
+
+    public Function<String, String> leaveMatchByID() {
+        return message -> {
+            MatchOperationResult matchOperationResult = null;
+            try {
+                MatchRequest matchRequest = Presentation.deserializeAs(message, MatchRequest.class);
+                String requesterUsername = matchRequest.getRequesterUsername();
+                Bson matchToLeaveQuery = and(
+                        eq(matchRequest.getMatchID()),
+                        elemMatch("matchStatus.players", eq("username", requesterUsername)));
+                Optional<Match> optionalMatch = matchDB.getDocumentByQuery(matchToLeaveQuery);
+                if (optionalMatch.isPresent()) {
+                    Match matchToLeave = optionalMatch.get();
+                    if (!matchToLeave.isOver()) {
+                        MatchStatus matchStatus = matchToLeave.getMatchStatus();
+                        matchStatus.setState(MatchState.VICTORY);
+                        Stream<Player> otherPlayer = matchToLeave
+                                .getMatchStatus()
+                                .getPlayers()
+                                .stream()
+                                .filter(player -> !Objects.equals(player.getUsername(), requesterUsername));
+                        otherPlayer.findFirst().ifPresent(p -> matchStatus.changeNextPlayer(p.getUsername()));
+                        matchStatus.setAbandoned();
+                        // TODO: emit match over
+                        matchDB.update(matchRequest.getMatchID(), matchToLeave);
+                        matchOperationResult = new MatchOperationResult(
+                                (short) 200,
+                                "Match with ID " + matchToLeave.getMatchID() + " left by " + requesterUsername);
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            } finally {
+                if (matchOperationResult == null)
+                    matchOperationResult = new MatchOperationResult(
+                            (short) 400,
+                            "Invalid match selected");
+            }
+            return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
         };
     }
 
