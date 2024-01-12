@@ -7,10 +7,7 @@ import it.unibo.sd.project.mastermind.controllers.UserController;
 import it.unibo.sd.project.mastermind.model.GameManager;
 import it.unibo.sd.project.mastermind.model.OperationResult;
 import it.unibo.sd.project.mastermind.model.Player;
-import it.unibo.sd.project.mastermind.model.match.Match;
-import it.unibo.sd.project.mastermind.model.match.MatchOperationResult;
-import it.unibo.sd.project.mastermind.model.match.MatchState;
-import it.unibo.sd.project.mastermind.model.match.PendingMatchRequest;
+import it.unibo.sd.project.mastermind.model.match.*;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
 import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
@@ -40,6 +37,7 @@ public class GameTests {
     private Player player2;
     private Player player3;
     private String matchAccessCode;
+    private List<Match> matchesOfPlayer2;
 
     @BeforeAll
     public void setUpTests() throws Exception {
@@ -49,7 +47,7 @@ public class GameTests {
         // Drop the possible existing database to avoid conflicts
         testDatabase.drop();
 
-        this.matchDB = new DBManager<>(testDatabase, "matches", "matchID", Match.class);
+        this.matchDB = new DBManager<>(testDatabase, "matches", "_id", Match.class);
         this.pendingRequestDB = new DBManager<>(testDatabase, "pendingRequests", "requesterUsername", PendingMatchRequest.class);
 
         // register at least three users so that two matches can be created
@@ -75,6 +73,7 @@ public class GameTests {
                 player1.getUsername());
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
+        assertEquals(200, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
         assertEquals(0, operationResult.getMatches().size());
     }
@@ -91,6 +90,7 @@ public class GameTests {
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the searching process should succeed with statusCode 200, meaning that a pending request has been added
         assertEquals(200, operationResult.getStatusCode());
+        System.out.println(operationResult.getResultMessage());
 
         // check if there is the supposed pending request
         Bson pendingReqQuery = Filters.and(
@@ -119,6 +119,7 @@ public class GameTests {
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the searching process should fail with statusCode 400, meaning that a pending request of that user already exists
         assertEquals(400, operationResult.getStatusCode());
+        System.out.println(operationResult.getResultMessage());
     }
     
     @Test
@@ -132,6 +133,7 @@ public class GameTests {
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the result should indicates that a public match between player1 and player2 has been created
         assertEquals(201, operationResult.getStatusCode());
+        System.out.println(operationResult.getResultMessage());
         
         // check if there is a match in the database
         checkMatchOfPlayerInDB(player2);
@@ -147,6 +149,7 @@ public class GameTests {
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         assertEquals(200, operationResult.getStatusCode());
+        System.out.println(operationResult.getResultMessage());
         matchAccessCode = operationResult.getMatchAccessCode();
         assertNotNull(matchAccessCode);
 
@@ -173,6 +176,7 @@ public class GameTests {
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the searching process should fail with statusCode 400, meaning that a pending request of that user already exists
         assertEquals(400, operationResult.getStatusCode());
+        System.out.println(operationResult.getResultMessage());
     }
 
     @Test
@@ -180,12 +184,13 @@ public class GameTests {
     void joinPrivateMatchWithIncorrectCode() throws Exception {
         CompletableFuture<String> response = callAsync(
                 client,
-                MessageType.JOIN,
+                MessageType.JOIN_PRIVATE_MATCH,
                 getRequest(player3, matchAccessCode + 1));
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the searching process should fail with statusCode 400, meaning that a pending request already exists
         assertEquals(404, operationResult.getStatusCode());
+        System.out.println(operationResult.getResultMessage());
     }
 
     @Test
@@ -193,12 +198,13 @@ public class GameTests {
     void joinPrivateMatchWithCorrectCode() throws Exception {
         CompletableFuture<String> response = callAsync(
                 client,
-                MessageType.JOIN,
+                MessageType.JOIN_PRIVATE_MATCH,
                 getRequest(player3, matchAccessCode));
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the result should indicate that a public match between player2 and player3 has been created
         assertEquals(201, operationResult.getStatusCode());
+        System.out.println(operationResult.getResultMessage());
 
         // check if there is a match in the database
         checkMatchOfPlayerInDB(player3);
@@ -214,17 +220,64 @@ public class GameTests {
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         assertEquals(200, operationResult.getStatusCode());
+        System.out.println(operationResult.getResultMessage());
 
-        List<Match> matches = operationResult.getMatches();
+        // saving matches list in a class field in order to use it in the next tests
+        matchesOfPlayer2 = operationResult.getMatches();
+
         // since player2 was involved in the creation of two matches, the response should contain them all
-        assertEquals(2, matches.size());
+        assertEquals(2, matchesOfPlayer2.size());
         AtomicBoolean isPlayerInAllMatches = new AtomicBoolean(true);
-        matches.forEach(match -> {
+        matchesOfPlayer2.forEach(match -> {
             if (!match.getMatchStatus().getPlayers().contains(player2))
                 isPlayerInAllMatches.set(false);
         });
         assertTrue(isPlayerInAllMatches.get());
     }
+
+    @Test
+    @Order(9)
+    void getMatchByID() throws Exception {
+        String matchID = matchesOfPlayer2.get(0).getMatchID().toString();
+        CompletableFuture<String> response = callAsync(
+                client,
+                MessageType.GET_MATCH,
+                matchID);
+
+        MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
+        assertEquals(200, operationResult.getStatusCode());
+        System.out.println(operationResult.getResultMessage());
+        assertEquals(1, operationResult.getMatches().size());
+        assertEquals(matchID, operationResult.getMatches().get(0).getMatchID().toString());
+    }
+
+    @Test
+    @Order(10)
+    void leaveMatchByID() throws Exception {
+        String matchID = matchesOfPlayer2.get(1).getMatchID().toString();
+        JsonObject request = new JsonObject();
+        request.addProperty("requesterUsername", player2.getUsername());
+        request.addProperty("matchID", matchID);
+        CompletableFuture<String> response = callAsync(
+                client,
+                MessageType.LEAVE_MATCH,
+                request.toString());
+
+        OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
+        assertEquals(200, operationResult.getStatusCode());
+        System.out.println(operationResult.getResultMessage());
+
+        // check if the leaved match is marked as abandoned
+        Optional<Match> optionalMatch = matchDB.getDocumentByQuery(Filters.eq(matchID));
+        optionalMatch.ifPresentOrElse(leavedMatch -> {
+            assertEquals(matchID, leavedMatch.getMatchID().toString());
+            assertEquals(MatchState.VICTORY, leavedMatch.getMatchStatus().getState());
+            assertNotEquals(leavedMatch.getMatchStatus().getNextPlayer().getUsername(), player2.getUsername());
+            assertTrue(leavedMatch.getMatchStatus().isAbandoned());
+        }, () -> fail("The leaved match with ID " + matchID + " was not found in the database."));
+    }
+
+    // PRIVATE METHODS
 
     private CompletableFuture<String> callAsync(RPCClient client, MessageType messageType, String requestBody) {
         final CompletableFuture<String> result = new CompletableFuture<>();
@@ -238,7 +291,7 @@ public class GameTests {
         optionalMatch.ifPresentOrElse(match -> {
             assertTrue(match.getMatchStatus().getPlayers().contains(player));
             assertEquals(0, match.getMadeAttempts().size());
-            assertEquals(MatchState.PLAYING, match.getMatchStatus().getMatchState());
+            assertEquals(MatchState.PLAYING, match.getMatchStatus().getState());
         }, () -> fail("Match not present in the database"));
     }
 
