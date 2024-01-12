@@ -151,13 +151,12 @@ public class GameController {
             AtomicReference<MatchOperationResult> matchOperationResult = new AtomicReference<>();
             try {
                 Optional<Match> optionalMatch = matchDB.getDocumentByField("_id", matchID);
-                optionalMatch.ifPresentOrElse(match -> {
-                    matchOperationResult.set(new MatchOperationResult(
+                optionalMatch.ifPresentOrElse(match -> matchOperationResult.set(
+                        new MatchOperationResult(
                             (short) 200,
                             "Returning the match with ID " + matchID,
                             List.of(match), false
-                    ));
-                }, () -> matchOperationResult.set(new MatchOperationResult(
+                )), () -> matchOperationResult.set(new MatchOperationResult(
                         (short) 400, "Match not found for the ID " + matchID
                 )));
             } catch (Exception e) {

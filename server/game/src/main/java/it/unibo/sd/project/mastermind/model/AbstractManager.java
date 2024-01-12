@@ -1,10 +1,10 @@
 package it.unibo.sd.project.mastermind.model;
 
 import com.mongodb.client.MongoDatabase;
-import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
 import it.unibo.sd.project.mastermind.rabbit.MessageType;
 import it.unibo.sd.project.mastermind.rabbit.RPCServer;
+
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.function.Function;

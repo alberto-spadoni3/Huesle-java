@@ -24,14 +24,6 @@ public class MatchStatus {
         this.nextPlayer = nextPlayer;
     }
 
-    public void setMatchState(MatchState matchState) {
-        this.matchState = matchState;
-    }
-
-    public void setNextPlayer(String nextPlayer) {
-        this.nextPlayer = nextPlayer;
-    }
-
     public MatchState getState() {
         return matchState;
     }

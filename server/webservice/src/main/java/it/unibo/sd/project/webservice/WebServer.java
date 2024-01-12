@@ -6,7 +6,6 @@ import io.vertx.core.Promise;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
@@ -22,6 +21,7 @@ import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import it.unibo.sd.project.webservice.rabbit.MessageType;
 import it.unibo.sd.project.webservice.rabbit.RPCClient;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -145,8 +145,8 @@ public class WebServer extends AbstractVerticle {
         Router router = Router.router(vertx);
 
         router.route("/game/*").subRouter(getGameRouter());
-        router.route("/settings/*").subRouter(getSettingsRouter());
-        router.route("/stats/*").subRouter(getStatsRouter());
+        // router.route("/settings/*").subRouter(getSettingsRouter());
+        // router.route("/stats/*").subRouter(getStatsRouter());
 
         return router;
     }
@@ -190,19 +190,17 @@ public class WebServer extends AbstractVerticle {
         ));
 
         router.get("/getMatches").blockingHandler(extractUsername(
-                (routingContext, username) -> {
-                    getHandler(
-                            MessageType.GET_MATCHES_OF_USER,
-                            username,
-                            (context, response) -> {
-                                JsonObject backendResponse = new JsonObject(response);
-                                JsonObject responseBody = new JsonObject();
-                                responseBody
-                                        .put("matches", backendResponse.getJsonArray("matches"))
-                                        .put("pending", backendResponse.getBoolean("pending"));
-                                context.response().end(responseBody.encode());
-                            }).handle(routingContext);
-                }
+                (routingContext, username) -> getHandler(
+                        MessageType.GET_MATCHES_OF_USER,
+                        username,
+                        (context, response) -> {
+                            JsonObject backendResponse = new JsonObject(response);
+                            JsonObject responseBody = new JsonObject();
+                            responseBody
+                                    .put("matches", backendResponse.getJsonArray("matches"))
+                                    .put("pending", backendResponse.getBoolean("pending"));
+                            context.response().end(responseBody.encode());
+                        }).handle(routingContext)
         ));
 
         router.get("/getMatch").blockingHandler(extractUsername(
@@ -241,7 +239,7 @@ public class WebServer extends AbstractVerticle {
         return router;
     }
 
-    private Router getSettingsRouter() {
+    /*private Router getSettingsRouter() {
         Router router = Router.router(vertx);
 
 
@@ -255,7 +253,7 @@ public class WebServer extends AbstractVerticle {
 
 
         return router;
-    }
+    }*/
 
     private Handler<RoutingContext> extractUsername(BiConsumer<RoutingContext, String> consumer) {
         return routingContext -> {

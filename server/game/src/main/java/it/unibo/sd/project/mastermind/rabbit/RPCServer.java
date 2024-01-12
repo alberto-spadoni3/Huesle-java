@@ -3,6 +3,7 @@ package it.unibo.sd.project.mastermind.rabbit;
 import com.rabbitmq.client.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -87,12 +88,15 @@ public class RPCServer implements Runnable {
 
             String response = "";
             try {
-                response = callback.apply(new String(delivery.getBody(), "UTF-8"));
+                response = callback.apply(new String(delivery.getBody(), StandardCharsets.UTF_8));
             } catch (RuntimeException e) {
                 System.out.println("[" + className + "] " + e.getMessage());
             } finally {
                 System.out.println("[" + className + "] RPC server responding " + response + " in queue " + delivery.getProperties().getReplyTo());
-                channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.getBytes("UTF-8"));
+                channel.basicPublish(
+                        "", delivery.getProperties().getReplyTo(),
+                        replyProps, response.getBytes(
+                        StandardCharsets.UTF_8));
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
                 //RabbitMq consumer worker thread notifies the RPC server owner thread
