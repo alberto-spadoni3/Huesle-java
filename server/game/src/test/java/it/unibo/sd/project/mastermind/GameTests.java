@@ -272,7 +272,7 @@ public class GameTests {
         optionalMatch.ifPresentOrElse(leavedMatch -> {
             assertEquals(matchID, leavedMatch.getMatchID().toString());
             assertEquals(MatchState.VICTORY, leavedMatch.getMatchStatus().getState());
-            assertNotEquals(leavedMatch.getMatchStatus().getNextPlayer().getUsername(), player2.getUsername());
+            assertNotEquals(leavedMatch.getMatchStatus().getNextPlayer(), player2.getUsername());
             assertTrue(leavedMatch.getMatchStatus().isAbandoned());
         }, () -> fail("The leaved match with ID " + matchID + " was not found in the database."));
     }
