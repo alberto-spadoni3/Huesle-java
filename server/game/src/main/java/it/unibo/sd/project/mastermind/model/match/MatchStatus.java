@@ -9,7 +9,7 @@ import java.util.Random;
 public class MatchStatus {
     private MatchState matchState;
     private final List<Player> players;
-    private Player nextPlayer;
+    private String nextPlayer;
     private boolean abandoned;
 
     public MatchStatus(List<Player> players) {
@@ -18,7 +18,7 @@ public class MatchStatus {
         this.nextPlayer = extractFirstPlayer();
     }
 
-    public MatchStatus(List<Player> players, MatchState matchState, Player nextPlayer) {
+    public MatchStatus(List<Player> players, MatchState matchState, String nextPlayer) {
         this.players = players;
         this.matchState = matchState;
         this.nextPlayer = nextPlayer;
@@ -28,7 +28,7 @@ public class MatchStatus {
         this.matchState = matchState;
     }
 
-    public void setNextPlayer(Player nextPlayer) {
+    public void setNextPlayer(String nextPlayer) {
         this.nextPlayer = nextPlayer;
     }
 
@@ -36,7 +36,7 @@ public class MatchStatus {
         return matchState;
     }
 
-    public Player getNextPlayer() {
+    public String getNextPlayer() {
         return nextPlayer;
     }
 
@@ -52,7 +52,7 @@ public class MatchStatus {
         this.abandoned = true;
     }
 
-    public void changeNextPlayer(Player player) {
+    public void changeNextPlayer(String player) {
         this.nextPlayer = player;
     }
 
@@ -60,14 +60,14 @@ public class MatchStatus {
         this.matchState = newState;
     }
 
-    private Player extractFirstPlayer() {
-        return this.players.get(new Random().nextInt(2));
+    private String extractFirstPlayer() {
+        return this.players.get(new Random().nextInt(2)).getUsername();
     }
 
     public void switchPlayer() {
-        Optional<Player> player = this.players.stream().filter((p) -> p != nextPlayer).findFirst();
+        Optional<Player> player = this.players.stream().filter((p) -> !p.getUsername().equals(nextPlayer)).findFirst();
         player.ifPresentOrElse(
-                value -> this.nextPlayer = value,
+                p -> this.nextPlayer = p.getUsername(),
                 () -> { throw new RuntimeException("Problems in changing the player for the next turn"); });
     }
 }

@@ -20,8 +20,7 @@ public class MatchStatusSerializer extends AbstractJsonSerializer<MatchStatus> {
         }
         jsonMatchStatus.add("players", matchPlayers);
 
-        //Serialize next player
-        jsonMatchStatus.add("nextPlayer", Presentation.serializerOf(Player.class).getJsonElement(matchStatus.getNextPlayer()));
+        jsonMatchStatus.addProperty("nextPlayer", matchStatus.getNextPlayer());
 
         jsonMatchStatus.addProperty("abandoned", matchStatus.isAbandoned());
 
