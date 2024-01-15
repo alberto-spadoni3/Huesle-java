@@ -1,5 +1,6 @@
 package it.unibo.sd.project.mastermind.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -7,6 +8,12 @@ public class Attempt {
     private final List<String> colorSequence;
     private final Player attemptMadeBy;
     private Hints hints;
+
+    public Attempt(List<String> colorSequence, Player attemptMadeBy) {
+        this.colorSequence = colorSequence;
+        this.attemptMadeBy = attemptMadeBy;
+        this.hints = null;
+    }
 
     public Attempt(List<String> colorSequence, Player attemptMadeBy, Hints hints) {
         this.colorSequence = colorSequence;
@@ -16,8 +23,21 @@ public class Attempt {
 
     public void computeHints(SecretCode secretCode) {
         //TODO
-        byte zero = Byte.parseByte("0");
-        this.hints = new Hints(zero, zero);
+        if (colorSequence != null && hints == null) {
+            byte rightPositions = 0;
+            for (int i = 0; i < colorSequence.size(); i++)
+                if (colorSequence.get(i).equals(secretCode.getCode().get(i)))
+                    rightPositions++;
+
+            byte rightColours = (byte) -rightPositions;
+            List<String> temporarySequence = new ArrayList<>(secretCode.getCode());
+            for (String color : colorSequence)
+                if (temporarySequence.contains(color)) {
+                    temporarySequence.remove(color);
+                    rightColours++;
+                }
+            this.hints = new Hints(rightPositions, rightColours);
+        }
     }
 
     public List<String> getColorSequence() {
