@@ -1,20 +1,17 @@
 package it.unibo.sd.project.mastermind.model.match;
 
-public class MatchRequest {
-    private String requesterUsername;
+import it.unibo.sd.project.mastermind.model.OperationRequest;
+
+public class MatchRequest extends OperationRequest {
     private boolean isMatchPrivate;
     private String matchAccessCode;
-    private String matchID;
+    protected String matchID;
 
     public MatchRequest(String requesterUsername) {
-        this.requesterUsername = requesterUsername;
+        super(requesterUsername);
         this.isMatchPrivate = false;
         this.matchAccessCode = null;
         this.matchID = null;
-    }
-
-    public String getRequesterUsername() {
-        return requesterUsername;
     }
 
     public boolean isMatchPrivate() {

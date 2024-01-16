@@ -1,21 +1,13 @@
 package it.unibo.sd.project.mastermind.model.match;
 
-public class PendingMatchRequest {
-    private final String requesterUsername;
+import it.unibo.sd.project.mastermind.model.OperationRequest;
+
+public class PendingMatchRequest extends OperationRequest {
     private String matchAccessCode;
 
     public PendingMatchRequest(String requesterUsername) {
-        this.requesterUsername = requesterUsername;
+        super(requesterUsername);
         this.matchAccessCode = null;
-    }
-
-    public PendingMatchRequest(String requesterUsername, String matchAccessCode) {
-        this.requesterUsername = requesterUsername;
-        this.matchAccessCode = matchAccessCode;
-    }
-
-    public String getRequesterUsername() {
-        return requesterUsername;
     }
 
     public String getMatchAccessCode() {
