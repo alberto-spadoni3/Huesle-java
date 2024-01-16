@@ -50,7 +50,7 @@ public class RPCClient implements AutoCloseable {
                 call(messageType,message,responseConsumer);
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.err.println(e.getMessage());
         }
     }
