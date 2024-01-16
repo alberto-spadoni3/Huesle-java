@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.Attempt;
 import it.unibo.sd.project.mastermind.model.GuessRequest;
-import it.unibo.sd.project.mastermind.model.user.LoginRequest;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 
 public class GuessRequestDeserializer extends AbstractJsonDeserializer<GuessRequest> {
