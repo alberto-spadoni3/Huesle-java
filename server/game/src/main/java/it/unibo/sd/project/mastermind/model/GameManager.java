@@ -22,6 +22,7 @@ public class GameManager extends AbstractManager {
         gameCallbacks.put(MessageType.GET_MATCHES_OF_USER, gameController.getMatchesOfUser());
         gameCallbacks.put(MessageType.GET_MATCH, gameController.getMatchByID());
         gameCallbacks.put(MessageType.LEAVE_MATCH, gameController.leaveMatchByID());
+        gameCallbacks.put(MessageType.DO_GUESS, gameController.doGuess());
         return gameCallbacks;
     }
 }

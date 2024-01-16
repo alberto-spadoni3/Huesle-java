@@ -20,15 +20,15 @@ public class Presentation {
     }
 
     private static void registerSerializers() {
+        serializers.put(Player.class, new PlayerSerializer());
+
+        serializers.put(Game.class, new GameSerializer());
+        serializers.put(Match.class, new MatchSerializer());
+        serializers.put(MatchStatus.class, new MatchStatusSerializer());
+        serializers.put(SecretCode.class, new SecretCodeSerializer());
         serializers.put(AccessibilitySettings.class, new AccessibilitySettingsSerializer());
         serializers.put(Attempt.class, new AttemptSerializer());
         serializers.put(Hints.class, new HintsSerializer());
-        serializers.put(Game.class, new GameSerializer());
-        serializers.put(Player.class, new PlayerSerializer());
-        serializers.put(SecretCode.class, new SecretCodeSerializer());
-
-        serializers.put(Match.class, new MatchSerializer());
-        serializers.put(MatchStatus.class, new MatchStatusSerializer());
 
         serializers.put(UserOperationResult.class, new OperationResultSerializer());
         serializers.put(MatchOperationResult.class, new OperationResultSerializer());
@@ -38,20 +38,22 @@ public class Presentation {
 
     private static void registerDeserializers() {
         deserializers.put(Player.class, new PlayerDeserializer());
-        deserializers.put(LoginRequest.class, new LoginRequestDeserializer());
+
         deserializers.put(UserOperationResult.class, new OperationResultDeserializer());
+        deserializers.put(MatchOperationResult.class, new OperationResultDeserializer());
 
-        deserializers.put(AccessibilitySettings.class, new AccessibilitySettingsDeserializer());
-        deserializers.put(Hints.class, new HintsDeserializer());
-        deserializers.put(MatchStatus.class, new MatchStatusDeserializer());
-        deserializers.put(Match.class, new MatchDeserializer());
-        deserializers.put(SecretCode.class, new SecretCodeDeserializer());
-        deserializers.put(Attempt.class, new AttemptDeserializer());
         deserializers.put(Game.class, new GameDeserializer());
+        deserializers.put(Match.class, new MatchDeserializer());
+        deserializers.put(MatchStatus.class, new MatchStatusDeserializer());
+        deserializers.put(SecretCode.class, new SecretCodeDeserializer());
+        deserializers.put(AccessibilitySettings.class, new AccessibilitySettingsDeserializer());
+        deserializers.put(Attempt.class, new AttemptDeserializer());
+        deserializers.put(Hints.class, new HintsDeserializer());
 
+        deserializers.put(LoginRequest.class, new LoginRequestDeserializer());
         deserializers.put(MatchRequest.class, new MatchRequestDeserializer());
         deserializers.put(PendingMatchRequest.class, new PendingMatchRequestDeserializer());
-        deserializers.put(MatchOperationResult.class, new OperationResultDeserializer());
+        deserializers.put(GuessRequest.class, new GuessRequestDeserializer());
     }
 
     public static <T> Serializer<T> serializerOf(Class<T> klass) {

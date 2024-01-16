@@ -1,6 +1,8 @@
 package it.unibo.sd.project.mastermind.controllers;
 
 import com.mongodb.client.MongoDatabase;
+import it.unibo.sd.project.mastermind.model.GuessOperationResult;
+import it.unibo.sd.project.mastermind.model.GuessRequest;
 import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.model.match.*;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
@@ -178,7 +180,7 @@ public class GameController {
                 Optional<Match> optionalMatch = matchDB.getDocumentByQuery(matchToLeaveQuery);
                 if (optionalMatch.isPresent()) {
                     Match matchToLeave = optionalMatch.get();
-                    if (!matchToLeave.isOver()) {
+                    if (matchToLeave.isNotOver()) {
                         MatchStatus matchStatus = matchToLeave.getMatchStatus();
                         matchStatus.setState(MatchState.VICTORY);
                         Stream<Player> otherPlayer = matchToLeave
@@ -204,6 +206,35 @@ public class GameController {
                             "Invalid match selected");
             }
             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
+        };
+    }
+
+    public Function<String, String> doGuess() {
+        return message -> {
+            GuessOperationResult guessOperationResult = null;
+            try {
+                GuessRequest guessRequest = Presentation.deserializeAs(message, GuessRequest.class);
+                String requesterUsername = guessRequest.getRequesterUsername();
+                Bson matchToPlayQuery = and(
+                        eq(guessRequest.getMatchID()),
+                        elemMatch("matchStatus.players", eq("username", requesterUsername)));
+                Optional<Match> optionalMatch = matchDB.getDocumentByQuery(matchToPlayQuery);
+                if (optionalMatch.isPresent() && optionalMatch.get().isNotOver() && optionalMatch.get().isPlayerTurn(requesterUsername)) {
+                    Match match = optionalMatch.get();
+                    match.tryToGuess(guessRequest.getAttempt());
+                    matchDB.update(match.getMatchID().toString(), match);
+
+                    // TODO if the match is over, emit matchOver. Otherwise, emit newMove
+
+                    guessOperationResult = new GuessOperationResult((short) 200, "Guess made succesfully", match);
+                }
+            } catch (Exception e ) {
+                System.out.println(e.getMessage());
+            } finally {
+                if (guessOperationResult == null)
+                    guessOperationResult = new GuessOperationResult((short) 400, "Problems with selected match");
+            }
+            return Presentation.serializerOf(GuessOperationResult.class).serialize(guessOperationResult);
         };
     }
 

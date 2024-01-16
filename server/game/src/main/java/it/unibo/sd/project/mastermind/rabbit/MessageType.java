@@ -6,6 +6,7 @@ public enum MessageType {
     GET_MATCHES_OF_USER("getMatches"),
     GET_MATCH("getMatch"),
     LEAVE_MATCH("leaveMatch"),
+    DO_GUESS("doGuess"),
 
     // User-related types
     REGISTER_USER("register"),

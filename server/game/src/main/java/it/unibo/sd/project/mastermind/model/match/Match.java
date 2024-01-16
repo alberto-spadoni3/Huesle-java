@@ -50,12 +50,24 @@ public class Match {
     }
 
     public void tryToGuess(Attempt attempt) {
-        //TODO
-        attempt.computeHints(this.secretCode);
-        madeAttempts.add(attempt);
+        if (matchStatus.getNextPlayer().equals(attempt.getPlayer().getUsername())) {
+            attempt.computeHints(this.secretCode);
+            madeAttempts.add(attempt);
+            remainingAttempts--;
+            if (attempt.getHints().getRightPositions() == SecretCode.COLOR_SEQUENCE_LENGTH)
+                matchStatus.setState(MatchState.VICTORY);
+            else if (remainingAttempts > 0)
+                matchStatus.switchPlayer();
+            else
+                matchStatus.setState(MatchState.DRAW);
+        }
     }
 
-    public boolean isOver() {
-        return List.of(MatchState.DRAW, MatchState.VICTORY).contains(matchStatus.getState());
+    public boolean isNotOver() {
+        return !List.of(MatchState.DRAW, MatchState.VICTORY).contains(matchStatus.getState());
+    }
+
+    public boolean isPlayerTurn(String playerUsername) {
+        return matchStatus.getNextPlayer().equals(playerUsername);
     }
 }
