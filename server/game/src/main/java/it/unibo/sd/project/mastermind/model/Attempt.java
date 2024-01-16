@@ -6,23 +6,22 @@ import java.util.Objects;
 
 public class Attempt {
     private final List<String> colorSequence;
-    private final Player attemptMadeBy;
+    private final String attemptMadeBy;
     private Hints hints;
 
-    public Attempt(List<String> colorSequence, Player attemptMadeBy) {
+    public Attempt(List<String> colorSequence, String attemptMadeBy) {
         this.colorSequence = colorSequence;
         this.attemptMadeBy = attemptMadeBy;
         this.hints = null;
     }
 
-    public Attempt(List<String> colorSequence, Player attemptMadeBy, Hints hints) {
+    public Attempt(List<String> colorSequence, String attemptMadeBy, Hints hints) {
         this.colorSequence = colorSequence;
         this.attemptMadeBy = attemptMadeBy;
         this.hints = hints;
     }
 
     public void computeHints(SecretCode secretCode) {
-        //TODO
         if (colorSequence != null && hints == null) {
             byte rightPositions = 0;
             for (int i = 0; i < colorSequence.size(); i++)
@@ -44,7 +43,7 @@ public class Attempt {
         return List.copyOf(this.colorSequence);
     }
 
-    public Player getPlayer() {
+    public String getPlayer() {
         return attemptMadeBy;
     }
 

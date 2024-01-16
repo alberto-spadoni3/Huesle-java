@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.Attempt;
 import it.unibo.sd.project.mastermind.model.Hints;
-import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 
 public class AttemptSerializer extends AbstractJsonSerializer<Attempt>{
@@ -21,9 +20,8 @@ public class AttemptSerializer extends AbstractJsonSerializer<Attempt>{
         JsonObject jsonHints = (JsonObject) Presentation.serializerOf(Hints.class).getJsonElement(attempt.getHints());
 
         jsonAttempt.add("hints", jsonHints);
-        //Player
-        JsonObject jsonPlayer = (JsonObject) Presentation.serializerOf(Player.class).getJsonElement(attempt.getPlayer());
-        jsonAttempt.add("attemptMadeBy", jsonPlayer);
+
+        jsonAttempt.addProperty("attemptMadeBy", attempt.getPlayer());
 
         return jsonAttempt;
     }

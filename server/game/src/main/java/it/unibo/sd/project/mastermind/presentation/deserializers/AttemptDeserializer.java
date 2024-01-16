@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.Attempt;
 import it.unibo.sd.project.mastermind.model.Hints;
-import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 
 import java.util.ArrayList;
@@ -21,16 +20,16 @@ public class AttemptDeserializer extends AbstractJsonDeserializer<Attempt>{
             for (JsonElement elem : jsonColorSequence)
                 colorSequence.add(elem.getAsString());
 
-            Player attemptMadeBy;
-            Hints hints;
-            try {
-                attemptMadeBy = Presentation.deserializeAs(result.get("attemptMadeBy").toString(), Player.class);
-                hints = Presentation.deserializeAs(result.get("hints").toString(), Hints.class);
-            } catch (Exception e) {
-                throw new RuntimeException("Cannot deserialize " + jsonElement + " - " + e.getMessage());
+            String attemptMadeBy = result.get("attemptMadeBy").getAsString();
+            Hints hints = null;
+            if (result.has("hints") && result.get("hints").isJsonObject()) {
+                try {
+                    hints = Presentation.deserializeAs(result.get("hints").toString(), Hints.class);
+                } catch (Exception e) {
+                    throw new RuntimeException("Cannot deserialize " + jsonElement + " - " + e.getMessage());
+                }
             }
-
-            return new Attempt(colorSequence,attemptMadeBy,hints);
+            return new Attempt(colorSequence, attemptMadeBy, hints);
         } else {
             throw new RuntimeException("Cannot deserialize " + jsonElement + " as Attempt");
         }

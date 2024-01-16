@@ -33,8 +33,7 @@ public class GameLogicTests {
 
     @Test
     void testHintsComputation() {
-        Player firstPlayer = getPlayerFromUsername(match.getMatchStatus().getNextPlayer());
-        Attempt attempt1 = new Attempt(List.of("crimson", "gold", "coral", "coral"), firstPlayer);
+        Attempt attempt1 = new Attempt(List.of("crimson", "gold", "coral", "coral"), match.getMatchStatus().getNextPlayer());
         match.tryToGuess(attempt1);
         assertEquals(1, match.getMadeAttempts().size());
 
@@ -42,8 +41,7 @@ public class GameLogicTests {
         assertEquals(0, attempt1.getHints().getRightPositions());
         assertEquals(2, attempt1.getHints().getRightColours());
 
-        Player secondPlayer = getPlayerFromUsername(match.getMatchStatus().getNextPlayer());
-        Attempt attempt2 = new Attempt(List.of("gold", "coral", "rebeccapurple", "forestgreen"), secondPlayer);
+        Attempt attempt2 = new Attempt(List.of("gold", "coral", "rebeccapurple", "forestgreen"), match.getMatchStatus().getNextPlayer());
         match.tryToGuess(attempt2);
         assertEquals(2, match.getMadeAttempts().size());
 
@@ -58,8 +56,7 @@ public class GameLogicTests {
 
         MatchStatus matchStatus = match.getMatchStatus();
         for (int i = 0; i < Match.ATTEMPTS; i++) {
-            Player nextPlayer = getPlayerFromUsername(matchStatus.getNextPlayer());
-            Attempt attempt = getAttempt(randomCode, nextPlayer);
+            Attempt attempt = getAttempt(randomCode, matchStatus.getNextPlayer());
             match.tryToGuess(attempt);
         }
         assertEquals(10, match.getMadeAttempts().size());
@@ -76,9 +73,8 @@ public class GameLogicTests {
 
         MatchStatus matchStatus = match.getMatchStatus();
         for (int i = 0; i < Match.ATTEMPTS; i++) {
-            Player nextPlayer = getPlayerFromUsername(matchStatus.getNextPlayer());
-            if (i == 9) attempt = getAttempt(secretCode, nextPlayer);
-            else attempt = getAttempt(randomCode, nextPlayer);
+            if (i == 9) attempt = getAttempt(secretCode, matchStatus.getNextPlayer());
+            else attempt = getAttempt(randomCode, matchStatus.getNextPlayer());
             match.tryToGuess(attempt);
         }
         assertEquals(10, match.getMadeAttempts().size());
@@ -96,12 +92,8 @@ public class GameLogicTests {
         return randomCode;
     }
 
-    private Attempt getAttempt(List<String> colorSequence, Player player) {
-        return new Attempt(colorSequence, player);
-    }
-
-    private Player getPlayerFromUsername(String username) {
-        return player1.getUsername().equals(username) ? player1 : player2;
+    private Attempt getAttempt(List<String> colorSequence, String playerUsername) {
+        return new Attempt(colorSequence, playerUsername);
     }
 
     private Match getMatch() {

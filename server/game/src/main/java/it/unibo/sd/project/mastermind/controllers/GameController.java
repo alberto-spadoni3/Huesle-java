@@ -1,6 +1,7 @@
 package it.unibo.sd.project.mastermind.controllers;
 
 import com.mongodb.client.MongoDatabase;
+import it.unibo.sd.project.mastermind.model.Attempt;
 import it.unibo.sd.project.mastermind.model.GuessOperationResult;
 import it.unibo.sd.project.mastermind.model.GuessRequest;
 import it.unibo.sd.project.mastermind.model.Player;
@@ -219,14 +220,15 @@ public class GameController {
                         eq(guessRequest.getMatchID()),
                         elemMatch("matchStatus.players", eq("username", requesterUsername)));
                 Optional<Match> optionalMatch = matchDB.getDocumentByQuery(matchToPlayQuery);
+                Attempt attempt = guessRequest.getAttempt();
                 if (optionalMatch.isPresent() && optionalMatch.get().isNotOver() && optionalMatch.get().isPlayerTurn(requesterUsername)) {
                     Match match = optionalMatch.get();
-                    match.tryToGuess(guessRequest.getAttempt());
+                    match.tryToGuess(attempt);
                     matchDB.update(match.getMatchID().toString(), match);
 
                     // TODO if the match is over, emit matchOver. Otherwise, emit newMove
 
-                    guessOperationResult = new GuessOperationResult((short) 200, "Guess made succesfully", match);
+                    guessOperationResult = new GuessOperationResult((short) 200, "Guess made succesfully", attempt.getHints());
                 }
             } catch (Exception e ) {
                 System.out.println(e.getMessage());
