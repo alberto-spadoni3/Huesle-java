@@ -33,18 +33,19 @@ public class Match {
         this.remainingAttempts = (byte) (ATTEMPTS - madeAttempts.size());
     }
 
-    public void tryToGuess(Attempt attempt) {
-        if (matchStatus.getNextPlayer().equals(attempt.getPlayer().getUsername())) {
-            attempt.computeHints(this.secretCode);
-            madeAttempts.add(attempt);
-            remainingAttempts--;
-            if (attempt.getHints().getRightPositions() == SecretCode.COLOR_SEQUENCE_LENGTH)
-                matchStatus.setState(MatchState.VICTORY);
-            else if (remainingAttempts > 0)
-                matchStatus.switchPlayer();
-            else
-                matchStatus.setState(MatchState.DRAW);
-        }
+    public void tryToGuess(Attempt attempt) throws RuntimeException {
+        if (!matchStatus.getNextPlayer().equals(attempt.getPlayer()))
+            throw new RuntimeException("This is not " + attempt.getPlayer() + " turn.");
+
+        attempt.computeHints(this.secretCode);
+        madeAttempts.add(attempt);
+        remainingAttempts--;
+        if (attempt.getHints().getRightPositions() == SecretCode.COLOR_SEQUENCE_LENGTH)
+            matchStatus.setState(MatchState.VICTORY);
+        else if (remainingAttempts > 0)
+            matchStatus.switchPlayer();
+        else
+            matchStatus.setState(MatchState.DRAW);
     }
 
     public UUID getMatchID() {

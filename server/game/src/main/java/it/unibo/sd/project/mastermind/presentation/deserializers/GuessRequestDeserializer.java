@@ -14,18 +14,22 @@ public class GuessRequestDeserializer extends AbstractJsonDeserializer<GuessRequ
         if (jsonElement.isJsonObject()) {
             JsonObject jsonObject = (JsonObject) jsonElement;
             String requesterUsername = jsonObject.get("requesterUsername").getAsString();
-            if (jsonObject.has("sequence")) {
-                JsonArray jsonSequence = jsonObject.getAsJsonArray("sequence");
+            if (jsonObject.has("matchID") && jsonObject.has("colorSequence")) {
+                String matchID = jsonObject.get("matchID").getAsString();
+                JsonObject jsonAttempt = new JsonObject();
+                JsonArray jsonSequence = jsonObject.getAsJsonArray("colorSequence");
+                jsonAttempt.addProperty("attemptMadeBy", requesterUsername);
+                jsonAttempt.add("colorSequence", jsonSequence);
                 Attempt madeAttempt = null;
                 try {
-                    madeAttempt = Presentation.deserializeAs(jsonSequence.toString(), Attempt.class);
+                    madeAttempt = Presentation.deserializeAs(jsonAttempt.toString(), Attempt.class);
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
-                return new GuessRequest(requesterUsername, madeAttempt);
+                return new GuessRequest(requesterUsername, matchID, madeAttempt);
             } else
-                throw new RuntimeException("Cannot deserialize as " + LoginRequest.class.getName());
+                throw new RuntimeException("Cannot deserialize as " + GuessRequest.class.getName());
         } else
-            throw new RuntimeException("Cannot deserialize as " + LoginRequest.class.getName());
+            throw new RuntimeException("Cannot deserialize as " + GuessRequest.class.getName());
     }
 }

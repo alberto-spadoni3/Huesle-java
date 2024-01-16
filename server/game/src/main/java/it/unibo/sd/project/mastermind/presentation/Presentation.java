@@ -32,6 +32,7 @@ public class Presentation {
 
         serializers.put(UserOperationResult.class, new OperationResultSerializer());
         serializers.put(MatchOperationResult.class, new OperationResultSerializer());
+        serializers.put(GuessOperationResult.class, new OperationResultSerializer());
 
         serializers.put(PendingMatchRequest.class, new PendingMatchRequestSerializer());
     }
@@ -41,6 +42,7 @@ public class Presentation {
 
         deserializers.put(UserOperationResult.class, new OperationResultDeserializer());
         deserializers.put(MatchOperationResult.class, new OperationResultDeserializer());
+        deserializers.put(GuessOperationResult.class, new OperationResultDeserializer());
 
         deserializers.put(Game.class, new GameDeserializer());
         deserializers.put(Match.class, new MatchDeserializer());

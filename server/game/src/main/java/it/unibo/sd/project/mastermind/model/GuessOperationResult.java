@@ -1,21 +1,19 @@
 package it.unibo.sd.project.mastermind.model;
 
-import it.unibo.sd.project.mastermind.model.match.Match;
-
 public class GuessOperationResult extends OperationResult {
-    private final Match playedMatch;
+    private final Hints submittedAttemptHints;
 
     public GuessOperationResult(short statusCode, String resultMessage) {
         super(statusCode, resultMessage);
-        playedMatch = null;
+        submittedAttemptHints = null;
     }
 
-    public GuessOperationResult(short statusCode, String resultMessage, Match playedMatch) {
+    public GuessOperationResult(short statusCode, String resultMessage, Hints submittedAttemptHints) {
         super(statusCode, resultMessage);
-        this.playedMatch = playedMatch;
+        this.submittedAttemptHints = submittedAttemptHints;
     }
 
-    public Match getPlayedMatch() {
-        return playedMatch;
+    public Hints getSubmittedAttemptHints() {
+        return submittedAttemptHints;
     }
 }

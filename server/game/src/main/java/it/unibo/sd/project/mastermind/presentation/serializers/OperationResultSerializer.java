@@ -3,9 +3,7 @@ package it.unibo.sd.project.mastermind.presentation.serializers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import it.unibo.sd.project.mastermind.model.GuessOperationResult;
-import it.unibo.sd.project.mastermind.model.OperationResult;
-import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.*;
 import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchOperationResult;
 import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
@@ -42,10 +40,10 @@ public class OperationResultSerializer extends AbstractJsonSerializer<OperationR
                 jsonOpResult.addProperty("pending", pendingMatchPresence);
             }
         } else if (object instanceof GuessOperationResult guessOperationResult) {
-            if (guessOperationResult.getPlayedMatch() != null) {
-                Match playedMatch = guessOperationResult.getPlayedMatch();
-                JsonElement jsonMatch = Presentation.serializerOf(Match.class).getJsonElement(playedMatch);
-                jsonOpResult.add("playedMatch", jsonMatch);
+            if (guessOperationResult.getSubmittedAttemptHints() != null) {
+                Hints submittedAttemptHints = guessOperationResult.getSubmittedAttemptHints();
+                JsonElement jsonSubmittedAttemptHints = Presentation.serializerOf(Hints.class).getJsonElement(submittedAttemptHints);
+                jsonOpResult.add("submittedAttemptHints", jsonSubmittedAttemptHints);
             }
         }
         return jsonOpResult;

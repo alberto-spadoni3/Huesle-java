@@ -5,7 +5,7 @@ import it.unibo.sd.project.mastermind.model.OperationRequest;
 public class MatchRequest extends OperationRequest {
     private boolean isMatchPrivate;
     private String matchAccessCode;
-    protected String matchID;
+    private String matchID;
 
     public MatchRequest(String requesterUsername) {
         super(requesterUsername);
