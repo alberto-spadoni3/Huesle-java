@@ -14,7 +14,7 @@ public class LoginRequestTests {
                 LoginRequest.class
         );
 
-        assertEquals(username, deserializedRequest.getUsername());
+        assertEquals(username, deserializedRequest.getRequesterUsername());
         assertEquals(clearPassword, deserializedRequest.getClearPassword());
     }
 

@@ -4,16 +4,14 @@ import it.unibo.sd.project.mastermind.model.OperationResult;
 import it.unibo.sd.project.mastermind.model.Player;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
-import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import it.unibo.sd.project.mastermind.model.user.UserManager;
+import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import it.unibo.sd.project.mastermind.rabbit.MessageType;
 import it.unibo.sd.project.mastermind.rabbit.RPCClient;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -33,8 +31,11 @@ public class UserTests {
     private String clearPassword;
 
     @BeforeAll
-    public void setUpTests() throws IOException, TimeoutException {
+    public void setUpTests() throws IOException, TimeoutException, InterruptedException {
         new UserManager(true);
+        // this 10 millisecond waiting time guarantees that the RPCServer inside
+        // UserManager has started before tests execution
+        Thread.sleep(10);
         client = new RPCClient();
         var testDatabase = DBSingleton.getInstance().getTestDatabase();
         // Drop the possible database to avoid conflicts

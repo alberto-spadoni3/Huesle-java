@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class GameTests {
+public class GameOperationsTests {
     private ExecutorService executorService;
     private RPCClient client;
     private DBManager<Match> matchDB;

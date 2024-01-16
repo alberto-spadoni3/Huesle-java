@@ -1,16 +1,13 @@
 package it.unibo.sd.project.mastermind.model.user;
 
-public class LoginRequest {
-    private final String username;
+import it.unibo.sd.project.mastermind.model.OperationRequest;
+
+public class LoginRequest extends OperationRequest {
     private final String clearPassword;
 
     public LoginRequest(String username, String clearPassword) {
-        this.username = username;
+        super(username);
         this.clearPassword = clearPassword;
-    }
-
-    public String getUsername() {
-        return username;
     }
 
     public String getClearPassword() {

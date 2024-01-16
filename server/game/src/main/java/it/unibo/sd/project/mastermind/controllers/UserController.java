@@ -68,7 +68,7 @@ public class UserController {
                 Optional<Player> userToLogin =
                         userDB.getDocumentByField(
                                 "username",
-                                loginRequest.getUsername()
+                                loginRequest.getRequesterUsername()
                         );
                 if (userToLogin.isPresent() &&
                         !userToLogin.get().isDisabled() &&

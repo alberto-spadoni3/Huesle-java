@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 public class SecretCode {
-    private static final int COLOR_SEQUENCE_LENGTH = 4;
+    public static final int COLOR_SEQUENCE_LENGTH = 4;
 
     private final List<String> possibleColours = List.of("crimson",
                                                          "coral",

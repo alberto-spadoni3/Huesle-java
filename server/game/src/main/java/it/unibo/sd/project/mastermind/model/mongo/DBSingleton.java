@@ -10,12 +10,13 @@ public class DBSingleton {
     public static final String DATABASE_NAME = "huesle-db";
     private static DBSingleton instance;
     private final MongoDatabase database;
-    private final MongoClient mongoClient;
+    private final MongoDatabase testDatabase;
 
     private DBSingleton() {
         String connectionString = Objects.requireNonNull(System.getenv("MONGO_HOST"));
-        mongoClient = MongoClients.create(connectionString);
-        this.database = mongoClient.getDatabase(DATABASE_NAME);
+        MongoClient mongoClient = MongoClients.create(connectionString);
+        database = mongoClient.getDatabase(DATABASE_NAME);
+        testDatabase = mongoClient.getDatabase(DATABASE_NAME + "-test");
     }
 
     public static DBSingleton getInstance() {
@@ -34,6 +35,6 @@ public class DBSingleton {
     }
 
     public MongoDatabase getTestDatabase() {
-        return mongoClient.getDatabase(DATABASE_NAME + "-test");
+        return testDatabase;
     }
 }
