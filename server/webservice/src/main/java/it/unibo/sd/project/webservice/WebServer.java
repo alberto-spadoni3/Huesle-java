@@ -6,6 +6,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
@@ -23,7 +24,9 @@ import it.unibo.sd.project.webservice.rabbit.MessageType;
 import it.unibo.sd.project.webservice.rabbit.RPCClient;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
@@ -211,15 +214,30 @@ public class WebServer extends AbstractVerticle {
                             matchID,
                             (context, response) -> {
                                 JsonObject backendResponse = new JsonObject(response);
+                                JsonArray matches = backendResponse.getJsonArray("matches");
+                                // create an object containing the profilePicture of each player
+                                // in order to satisfy client's needs
+                                JsonArray players = matches
+                                        .getJsonObject(0)
+                                        .getJsonObject("matchStatus")
+                                        .getJsonArray("players");
+
+                                JsonArray profilePics = new JsonArray();
+                                for (int i = 0; i < players.getList().size(); i++)
+                                    profilePics.add(new JsonObject()
+                                            .put("username", players.getJsonObject(i).getString("username"))
+                                            .put("picId", players.getJsonObject(i).getInteger("profilePictureID")));
+
                                 JsonObject responseBody = new JsonObject();
                                 responseBody
-                                        .put("matches", backendResponse.getJsonArray("matches").getJsonObject(0));
+                                        .put("matches", matches)
+                                        .put("profile_pics", profilePics);
                                 context.response().end(responseBody.encode());
                             }).handle(routingContext);
                 }
         ));
 
-        router.get("/leaveMatch").blockingHandler(extractUsername(
+        router.put("/leaveMatch").blockingHandler(extractUsername(
                 (routingContext, username) -> {
                     String matchID = routingContext.body().asJsonObject().getString("matchId");
                     JsonObject request = new JsonObject()
@@ -233,6 +251,32 @@ public class WebServer extends AbstractVerticle {
                                 JsonObject backendResponse = new JsonObject(response);
                                 context.response().end(backendResponse.getString("resultMessage"));
                             }).handle(routingContext);
+                }
+        ));
+
+        router.put("/doGuess").blockingHandler(extractUsername(
+                (routingContext, username) -> {
+                    JsonObject body = routingContext.body().asJsonObject();
+                    String matchID = body.getString("matchId");
+                    JsonArray sequence = body.getJsonArray("sequence");
+                    JsonObject request = new JsonObject()
+                            .put("requesterUsername", username)
+                            .put("matchID", matchID)
+                            .put("colorSequence", sequence);
+
+                    getHandler(
+                            MessageType.DO_GUESS,
+                            request.encode(),
+                            (context, response) -> {
+                                JsonObject backendResponse = new JsonObject(response);
+                                JsonObject submittedAttemptHints = backendResponse.getJsonObject("submittedAttemptHints");
+                                JsonObject jsonResponse = new JsonObject()
+                                        .put("rightP", submittedAttemptHints.getInteger("rightPositions"))
+                                        .put("rightC", submittedAttemptHints.getInteger("rightColours"))
+                                        .put("status", new JsonObject()); // the client expects this but it may be useless
+                                context.response().end(jsonResponse.encode());
+                            }
+                    ).handle(routingContext);
                 }
         ));
 
@@ -319,7 +363,7 @@ public class WebServer extends AbstractVerticle {
     private Handler<RoutingContext> handleCORS() {
         List<String> allowedOrigins = List.of("http://localhost", "http://localhost:3000");
         Set<String> allowedHeaders = Set.of("Content-Type", "Authorization", "origin", "Accept");
-        Set<HttpMethod> allowedMethods = Set.of(HttpMethod.GET, HttpMethod.POST);
+        Set<HttpMethod> allowedMethods = Set.of(HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT);
 
         return CorsHandler.create()
                 .addOrigins(allowedOrigins)
