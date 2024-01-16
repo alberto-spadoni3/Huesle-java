@@ -11,8 +11,8 @@ import java.util.UUID;
 public class Match {
     public static final byte ATTEMPTS = 10;
     private final UUID matchID;
-    private MatchStatus matchStatus;
-    private List<Attempt> madeAttempts;
+    private final MatchStatus matchStatus;
+    private final List<Attempt> madeAttempts;
     private byte remainingAttempts;
     private final SecretCode secretCode;
 
@@ -33,6 +33,20 @@ public class Match {
         this.remainingAttempts = (byte) (ATTEMPTS - madeAttempts.size());
     }
 
+    public void tryToGuess(Attempt attempt) {
+        if (matchStatus.getNextPlayer().equals(attempt.getPlayer().getUsername())) {
+            attempt.computeHints(this.secretCode);
+            madeAttempts.add(attempt);
+            remainingAttempts--;
+            if (attempt.getHints().getRightPositions() == SecretCode.COLOR_SEQUENCE_LENGTH)
+                matchStatus.setState(MatchState.VICTORY);
+            else if (remainingAttempts > 0)
+                matchStatus.switchPlayer();
+            else
+                matchStatus.setState(MatchState.DRAW);
+        }
+    }
+
     public UUID getMatchID() {
         return matchID;
     }
@@ -47,20 +61,6 @@ public class Match {
 
     public SecretCode getSecretCode() {
         return secretCode;
-    }
-
-    public void tryToGuess(Attempt attempt) {
-        if (matchStatus.getNextPlayer().equals(attempt.getPlayer().getUsername())) {
-            attempt.computeHints(this.secretCode);
-            madeAttempts.add(attempt);
-            remainingAttempts--;
-            if (attempt.getHints().getRightPositions() == SecretCode.COLOR_SEQUENCE_LENGTH)
-                matchStatus.setState(MatchState.VICTORY);
-            else if (remainingAttempts > 0)
-                matchStatus.switchPlayer();
-            else
-                matchStatus.setState(MatchState.DRAW);
-        }
     }
 
     public boolean isNotOver() {

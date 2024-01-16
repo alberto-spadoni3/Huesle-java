@@ -5,6 +5,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
@@ -34,13 +35,13 @@ public class RPCClient implements AutoCloseable {
                         .build();
                 channel.exchangeDeclare(EXCHANGE_NAME, "direct");
                 channel.basicPublish(EXCHANGE_NAME, messageType.getType(),
-                        props, message.getBytes("UTF-8"));
+                        props, message.getBytes(StandardCharsets.UTF_8));
                 System.out.println("[x] Sent '" + messageType.getType() + "':'" + message + "'");
                 //channel.queuePurge(replyQueueName);
                 channel.basicQos(1); // accept only one unack-ed message at a time
                 channel.basicConsume(replyQueueName, false, (consumerTag, delivery) -> {
                     if (delivery.getProperties().getCorrelationId().equals(corrId)) {
-                        responseConsumer.accept(new String(delivery.getBody(), "UTF-8"));
+                        responseConsumer.accept(new String(delivery.getBody(), StandardCharsets.UTF_8));
                         channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                     }
                 }, consumerTag -> { });

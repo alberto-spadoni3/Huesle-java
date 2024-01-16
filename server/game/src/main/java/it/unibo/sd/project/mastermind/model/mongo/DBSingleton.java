@@ -8,26 +8,22 @@ import java.util.Objects;
 
 public class DBSingleton {
     public static final String DATABASE_NAME = "huesle-db";
-    private static DBSingleton instance;
     private final MongoDatabase database;
     private final MongoDatabase testDatabase;
+
+    private static final class InstanceHolder {
+        private static final DBSingleton INSTANCE = new DBSingleton();
+    }
+
+    public static DBSingleton getInstance() {
+        return InstanceHolder.INSTANCE;
+    }
 
     private DBSingleton() {
         String connectionString = Objects.requireNonNull(System.getenv("MONGO_HOST"));
         MongoClient mongoClient = MongoClients.create(connectionString);
         database = mongoClient.getDatabase(DATABASE_NAME);
         testDatabase = mongoClient.getDatabase(DATABASE_NAME + "-test");
-    }
-
-    public static DBSingleton getInstance() {
-        if (instance == null) {
-            synchronized (DBSingleton.class) {
-                if (instance == null) {
-                    instance = new DBSingleton();
-                }
-            }
-        }
-        return instance;
     }
 
     public MongoDatabase getDatabase() {

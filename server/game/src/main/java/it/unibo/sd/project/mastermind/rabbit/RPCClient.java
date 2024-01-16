@@ -26,7 +26,7 @@ public class RPCClient implements AutoCloseable {
 
     public void call(MessageType messageType, String message, Consumer<String> responseConsumer) {
         final String corrId = UUID.randomUUID().toString();
-        String replyQueueName = null;
+        String replyQueueName;
         try {
             replyQueueName = channel.queueDeclare().getQueue();
             AMQP.BasicProperties props = new AMQP.BasicProperties
