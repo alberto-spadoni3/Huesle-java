@@ -1,12 +1,11 @@
 package it.unibo.sd.project.mastermind;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import it.unibo.sd.project.mastermind.controllers.UserController;
-import it.unibo.sd.project.mastermind.model.GameManager;
-import it.unibo.sd.project.mastermind.model.OperationResult;
-import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.*;
 import it.unibo.sd.project.mastermind.model.match.*;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
@@ -81,7 +80,7 @@ public class GameOperationsTests {
     @Test
     @Order(2)
     void searchPublicMatch() throws Exception {
-        String request = getRequest(player1, false);
+        String request = getRequestForMatch(player1, false);
         CompletableFuture<String> response = callAsync(
                 client,
                 MessageType.SEARCH_MATCH,
@@ -114,7 +113,7 @@ public class GameOperationsTests {
         CompletableFuture<String> response = callAsync(
                 client,
                 MessageType.SEARCH_MATCH,
-                getRequest(player1, false));
+                getRequestForMatch(player1, false));
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the searching process should fail with statusCode 400, meaning that a pending request of that user already exists
@@ -128,7 +127,7 @@ public class GameOperationsTests {
         CompletableFuture<String> response = callAsync(
                 client,
                 MessageType.SEARCH_MATCH,
-                getRequest(player2, false));
+                getRequestForMatch(player2, false));
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the result should indicates that a public match between player1 and player2 has been created
@@ -145,7 +144,7 @@ public class GameOperationsTests {
         CompletableFuture<String> response = callAsync(
                 client,
                 MessageType.SEARCH_MATCH,
-                getRequest(player2, true));
+                getRequestForMatch(player2, true));
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         assertEquals(200, operationResult.getStatusCode());
@@ -171,7 +170,7 @@ public class GameOperationsTests {
         CompletableFuture<String> response = callAsync(
                 client,
                 MessageType.SEARCH_MATCH,
-                getRequest(player2, true));
+                getRequestForMatch(player2, true));
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the searching process should fail with statusCode 400, meaning that a pending request of that user already exists
@@ -185,7 +184,7 @@ public class GameOperationsTests {
         CompletableFuture<String> response = callAsync(
                 client,
                 MessageType.JOIN_PRIVATE_MATCH,
-                getRequest(player3, matchAccessCode + 1));
+                getRequestForMatch(player3, matchAccessCode + 1));
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the searching process should fail with statusCode 400, meaning that a pending request already exists
@@ -199,7 +198,7 @@ public class GameOperationsTests {
         CompletableFuture<String> response = callAsync(
                 client,
                 MessageType.JOIN_PRIVATE_MATCH,
-                getRequest(player3, matchAccessCode));
+                getRequestForMatch(player3, matchAccessCode));
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the result should indicate that a public match between player2 and player3 has been created
@@ -237,6 +236,39 @@ public class GameOperationsTests {
 
     @Test
     @Order(9)
+    void doGuess() throws Exception {
+        // Let's first try to do a guess NOT made from the current next player
+        JsonObject faultyRequest = getRequestForGuess(true);
+
+        CompletableFuture<String> failedResponse = callAsync(
+                client,
+                MessageType.DO_GUESS,
+                faultyRequest.toString());
+
+        OperationResult operationResult = Presentation.deserializeAs(failedResponse.get(), GuessOperationResult.class);
+        // the request should fail and the guess should not be submitted
+        assertEquals(400, operationResult.getStatusCode());
+        System.out.println(operationResult.getResultMessage());
+
+        // Now let's try again with a correct request
+        JsonObject correctRequest = getRequestForGuess(false);
+        CompletableFuture<String> successfulResponse = callAsync(
+                client,
+                MessageType.DO_GUESS,
+                correctRequest.toString());
+
+        GuessOperationResult guessOperationResult = Presentation.deserializeAs(successfulResponse.get(), GuessOperationResult.class);
+        // the request should fail and the guess should not be submitted
+        assertEquals(200, guessOperationResult.getStatusCode());
+        System.out.println(guessOperationResult.getResultMessage());
+        // check if the result contains the computed hints
+        Hints submittedAttemptHints = guessOperationResult.getSubmittedAttemptHints();
+        assertNotNull(submittedAttemptHints);
+        System.out.printf("rightPositions: %d, rightColours: %d%n", submittedAttemptHints.getRightPositions(), submittedAttemptHints.getRightColours());
+    }
+
+    @Test
+    @Order(10)
     void getMatchByID() throws Exception {
         String matchID = matchesOfPlayer2.get(0).getMatchID().toString();
         CompletableFuture<String> response = callAsync(
@@ -252,7 +284,7 @@ public class GameOperationsTests {
     }
 
     @Test
-    @Order(10)
+    @Order(11)
     void leaveMatchByID() throws Exception {
         String matchID = matchesOfPlayer2.get(1).getMatchID().toString();
         JsonObject request = new JsonObject();
@@ -277,8 +309,8 @@ public class GameOperationsTests {
         }, () -> fail("The leaved match with ID " + matchID + " was not found in the database."));
     }
 
-    // PRIVATE METHODS
 
+    // PRIVATE METHODS
     private CompletableFuture<String> callAsync(RPCClient client, MessageType messageType, String requestBody) {
         final CompletableFuture<String> result = new CompletableFuture<>();
         executorService.execute(() -> client.call(messageType, requestBody, result::complete));
@@ -308,20 +340,42 @@ public class GameOperationsTests {
         }
     }
 
-    private String getRequest(Player player, boolean privateMatch) {
-        return getRequest(player, privateMatch, null);
+    private String getRequestForMatch(Player player, boolean privateMatch) {
+        return getRequestForMatch(player, privateMatch, null);
     }
 
-    private String getRequest(Player player, String matchAccessCode) {
-        return getRequest(player, true, matchAccessCode);
+    private String getRequestForMatch(Player player, String matchAccessCode) {
+        return getRequestForMatch(player, true, matchAccessCode);
     }
 
-    private String getRequest(Player player, boolean privateMatch, String matchAccessCode) {
+    private String getRequestForMatch(Player player, boolean privateMatch, String matchAccessCode) {
         JsonObject request = new JsonObject();
         request.addProperty("requesterUsername", player.getUsername());
         request.addProperty("isPrivateMatch", privateMatch);
         if (matchAccessCode != null)
             request.addProperty("matchAccessCode", matchAccessCode);
         return request.toString();
+    }
+
+    private JsonObject getRequestForGuess(boolean hasToFail) {
+        JsonObject request = new JsonObject();
+
+        // the requesterUsername must correspond to the match's next player
+        Match match = matchesOfPlayer2.get(0);
+        String nextPlayer = match.getMatchStatus().getNextPlayer();
+        // if the request has to fail, the requester must not correspond to the match's next player
+        String requesterUsername = hasToFail ?
+                (player2.getUsername().equals(nextPlayer) ? player1.getUsername() : player2.getUsername()) :
+                (player2.getUsername().equals(nextPlayer) ? player2.getUsername() : player1.getUsername());
+        request.addProperty("requesterUsername", requesterUsername);
+
+        String matchID = match.getMatchID().toString();
+        request.addProperty("matchID", matchID);
+
+        JsonArray colorSequence = new JsonArray();
+        for (String color : List.of("crimson", "gold", "coral", "coral"))
+            colorSequence.add(color);
+        request.add("colorSequence", colorSequence);
+        return request;
     }
 }
