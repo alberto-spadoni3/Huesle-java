@@ -36,6 +36,11 @@ public class MatchStatus {
         return players;
     }
 
+    public void updatePlayers(List<Player> updatedPlayers) {
+        this.players.clear();
+        this.players.addAll(updatedPlayers);
+    }
+
     public boolean isAbandoned() {
         return abandoned;
     }

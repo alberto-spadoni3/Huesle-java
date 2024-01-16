@@ -128,7 +128,9 @@ public class GameController {
                 Bson matchesOfUserQuery = elemMatch("matchStatus.players", eq("username", username));
                 AtomicReference<List<Match>> matchesOfUser = new AtomicReference<>();
                 Optional<List<Match>> optionalMatches = matchDB.getDocumentsByQuery(matchesOfUserQuery);
-                optionalMatches.ifPresentOrElse(matchesOfUser::set, () -> matchesOfUser.set(new ArrayList<>()));
+                optionalMatches.ifPresentOrElse(
+                        matches -> matchesOfUser.set(updateMatches(matches)),
+                        () -> matchesOfUser.set(new ArrayList<>()));
 
                 // check if there is a pending request the user has created
                 Bson pendingReqOfCurrentPlayer = eq("requesterUsername", username);
@@ -154,16 +156,18 @@ public class GameController {
             AtomicReference<MatchOperationResult> matchOperationResult = new AtomicReference<>();
             try {
                 Optional<Match> optionalMatch = matchDB.getDocumentByField("_id", matchID);
-                optionalMatch.ifPresentOrElse(match -> matchOperationResult.set(
+                optionalMatch.ifPresent(match -> matchOperationResult.set(
                         new MatchOperationResult(
                             (short) 200,
                             "Returning the match with ID " + matchID,
-                            List.of(match), false
-                )), () -> matchOperationResult.set(new MatchOperationResult(
-                        (short) 400, "Match not found for the ID " + matchID
-                )));
+                            updateMatches(List.of(match)), false)));
             } catch (Exception e) {
                 System.out.println(e.getMessage());
+            } finally {
+                if (matchOperationResult.get() == null)
+                    matchOperationResult.set(new MatchOperationResult(
+                            (short) 400, "Match not found for the ID " + matchID
+                    ));
             }
             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult.get());
         };
@@ -247,6 +251,24 @@ public class GameController {
         List<Player> players = List.of(player1, player2);
         Match newMatch = new Match(players);
         matchDB.insert(newMatch);
+    }
+
+    private List<Match> updateMatches(List<Match> matches) {
+        // before returning found matches, we first need to update
+        // the players inside them because they could be changed after the match creation.
+        // Finally, we update the related documents in the database
+        try {
+            for (Match match : matches) {
+                List<Player> updatedPlayers = new ArrayList<>(2);
+                for (Player player : match.getMatchStatus().getPlayers())
+                    updatedPlayers.add(getPlayer(player.getUsername()));
+                match.getMatchStatus().updatePlayers(updatedPlayers);
+                matchDB.update(match.getMatchID().toString(), match);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return matches;
     }
 
     private Player getPlayer(String username) throws Exception {
