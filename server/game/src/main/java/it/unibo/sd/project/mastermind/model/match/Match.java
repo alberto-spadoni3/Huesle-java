@@ -34,8 +34,8 @@ public class Match {
     }
 
     public void tryToGuess(Attempt attempt) throws RuntimeException {
-        if (!matchStatus.getNextPlayer().equals(attempt.getPlayer()))
-            throw new RuntimeException("This is not " + attempt.getPlayer() + " turn.");
+        if (!matchStatus.getNextPlayer().equals(attempt.madeBy()))
+            throw new RuntimeException("This is not " + attempt.madeBy() + " turn.");
 
         attempt.computeHints(this.secretCode);
         madeAttempts.add(attempt);

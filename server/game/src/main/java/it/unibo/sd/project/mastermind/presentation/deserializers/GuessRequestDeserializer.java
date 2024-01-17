@@ -17,7 +17,7 @@ public class GuessRequestDeserializer extends AbstractJsonDeserializer<GuessRequ
                 String matchID = jsonObject.get("matchID").getAsString();
                 JsonObject jsonAttempt = new JsonObject();
                 JsonArray jsonSequence = jsonObject.getAsJsonArray("colorSequence");
-                jsonAttempt.addProperty("attemptMadeBy", requesterUsername);
+                jsonAttempt.addProperty("madeBy", requesterUsername);
                 jsonAttempt.add("colorSequence", jsonSequence);
                 Attempt madeAttempt = null;
                 try {
