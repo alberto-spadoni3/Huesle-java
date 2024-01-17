@@ -24,9 +24,7 @@ import it.unibo.sd.project.webservice.rabbit.MessageType;
 import it.unibo.sd.project.webservice.rabbit.RPCClient;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
@@ -269,11 +267,12 @@ public class WebServer extends AbstractVerticle {
                             request.encode(),
                             (context, response) -> {
                                 JsonObject backendResponse = new JsonObject(response);
+                                JsonObject updatedStatus = backendResponse.getJsonObject("updatedStatus");
                                 JsonObject submittedAttemptHints = backendResponse.getJsonObject("submittedAttemptHints");
                                 JsonObject jsonResponse = new JsonObject()
                                         .put("rightP", submittedAttemptHints.getInteger("rightPositions"))
                                         .put("rightC", submittedAttemptHints.getInteger("rightColours"))
-                                        .put("status", new JsonObject()); // the client expects this but it may be useless
+                                        .put("status", updatedStatus); // the client expects this but it may be useless
                                 context.response().end(jsonResponse.encode());
                             }
                     ).handle(routingContext);

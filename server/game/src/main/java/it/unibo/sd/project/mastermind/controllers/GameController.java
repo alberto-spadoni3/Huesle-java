@@ -232,7 +232,10 @@ public class GameController {
 
                     // TODO if the match is over, emit matchOver. Otherwise, emit newMove
 
-                    guessOperationResult = new GuessOperationResult((short) 200, "Guess made succesfully", attempt.getHints());
+                    guessOperationResult = new GuessOperationResult(
+                            (short) 200, "Guess made succesfully",
+                            match.getMatchStatus(),
+                            attempt.getHints());
                 }
             } catch (Exception e ) {
                 System.out.println(e.getMessage());

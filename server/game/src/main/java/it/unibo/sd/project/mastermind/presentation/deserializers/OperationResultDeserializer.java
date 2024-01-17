@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.*;
 import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchOperationResult;
+import it.unibo.sd.project.mastermind.model.match.MatchStatus;
 import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 
@@ -43,10 +44,12 @@ public class OperationResultDeserializer extends AbstractJsonDeserializer<Operat
                 }
 
                 // in case jsonElement is a GuessOpResult
-                if (result.has("submittedAttemptHints") && result.get("submittedAttemptHints").isJsonObject()) {
+                if (result.has("updatedStatus") && result.has("submittedAttemptHints")) {
+                    JsonObject jsonUpdatedStatus = result.get("updatedStatus").getAsJsonObject();
+                    MatchStatus updatedStatus = Presentation.deserializeAs(jsonUpdatedStatus.toString(), MatchStatus.class);
                     JsonObject jsonAttemptHints = result.get("submittedAttemptHints").getAsJsonObject();
                     Hints hints = Presentation.deserializeAs(jsonAttemptHints.toString(), Hints.class);
-                    return new GuessOperationResult(statusCode, message, hints);
+                    return new GuessOperationResult(statusCode, message, updatedStatus, hints);
                 }
             } catch (Exception e ) {
                 System.out.println(e.getMessage());
