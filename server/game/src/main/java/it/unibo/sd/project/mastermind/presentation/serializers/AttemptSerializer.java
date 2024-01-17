@@ -21,7 +21,7 @@ public class AttemptSerializer extends AbstractJsonSerializer<Attempt>{
 
         jsonAttempt.add("hints", jsonHints);
 
-        jsonAttempt.addProperty("attemptMadeBy", attempt.getPlayer());
+        jsonAttempt.addProperty("madeBy", attempt.madeBy());
 
         return jsonAttempt;
     }

@@ -20,7 +20,7 @@ public class AttemptDeserializer extends AbstractJsonDeserializer<Attempt>{
             for (JsonElement elem : jsonColorSequence)
                 colorSequence.add(elem.getAsString());
 
-            String attemptMadeBy = result.get("attemptMadeBy").getAsString();
+            String attemptMadeBy = result.get("madeBy").getAsString();
             Hints hints = null;
             if (result.has("hints") && result.get("hints").isJsonObject()) {
                 try {
