@@ -3,7 +3,7 @@ import ArrowRightRoundedIcon from "@mui/icons-material/ArrowRightRounded";
 import { Stack, IconButton, Skeleton, Button } from "@mui/material";
 import { useEffect, useState } from "react";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
-import { BACKEND_UPDATE_USERPIC_ENDPOIND } from "../api/backend_endpoints";
+import { BACKEND_UPDATE_USER_PIC_ENDPOINT } from "../api/backend_endpoints";
 import { useSnackbar } from "notistack";
 import UserPicture from "./UserPicture";
 import useAuth from "../hooks/useAuth";
@@ -30,7 +30,7 @@ const UserPictureSelector = ({ size }) => {
     const updateUserPicture = async () => {
         try {
             const response = await axiosPrivate.put(
-                BACKEND_UPDATE_USERPIC_ENDPOIND,
+                BACKEND_UPDATE_USER_PIC_ENDPOINT,
                 JSON.stringify({ profilePicID: picSelector })
             );
 

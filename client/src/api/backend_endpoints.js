@@ -11,9 +11,9 @@ export const BACKEND_LOGOUT_ENDPOINT = "/user/logout";
 export const BACKEND_DELETE_USER_ENDPOINT = "/user/delete";
 
 //Match Search
-export const BACKEND_SEARCH_MATCH_ENDPOINT = "/protected/search/searchMatch";
+export const BACKEND_SEARCH_MATCH_ENDPOINT = "/protected/game/searchMatch";
 export const BACKEND_JOIN_PRIVATE_MATCH_ENDPOINT =
-  "/protected/search/joinPrivateMatch";
+  "/protected/game/joinPrivateMatch";
 
 //Game Moves
 export const BACKEND_GET_MATCH_ENDPOINT = "/protected/game/getMatch";
@@ -24,8 +24,8 @@ export const BACKEND_LEAVE_MATCH_ENDPOINT = "/protected/game/leaveMatch";
 export const BACKEND_SOCKET_ENDPOINT = "http://localhost:8081";
 
 //Stats Management
-export const BACKEND_GET_MATCHES_ENDPOINT = "/protected/stats/allMatches";
-export const BACKEND_UPDATE_USERPIC_ENDPOIND =
+export const BACKEND_GET_MATCHES_ENDPOINT = "/protected/game/getMatches";
+export const BACKEND_UPDATE_USER_PIC_ENDPOINT =
   "/protected/settings/profilePics";
 export const BACKEND_GET_USER_STATS_ENDPOINT = "/protected/stats/userStats";
 
