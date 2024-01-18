@@ -2,8 +2,6 @@ package it.unibo.sd.project.mastermind.model;
 
 import it.unibo.sd.project.mastermind.model.match.MatchStatus;
 
-;
-
 public class GuessOperationResult extends OperationResult {
     private final MatchStatus updatedState;
     private final Hints submittedAttemptHints;
