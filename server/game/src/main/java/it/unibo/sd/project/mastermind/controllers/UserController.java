@@ -30,6 +30,10 @@ public class UserController {
     private final String USERNAME_ALREADY_EXISTS_MESSAGE = "The username is already in use";
     private final String UNAUTHORIZED_MESSAGE = "Unauthorized";
 
+    private enum TokenType {
+        ACCESS, REFRESH
+    }
+
     public UserController(MongoDatabase database) {
         this.userDB = new DBManager<>(database, "users", "username", Player.class);
     }
@@ -77,8 +81,8 @@ public class UserController {
                     Player user = userToLogin.get();
 
                     // generate access and refresh tokens
-                    String accessToken = generateToken("access.secret", user.getUsername());
-                    String refreshToken = generateToken("refresh.secret", user.getUsername());
+                    String accessToken = generateToken(TokenType.ACCESS, user.getUsername());
+                    String refreshToken = generateToken(TokenType.REFRESH, user.getUsername());
 
                     // Save the refresh token in the database
                     user.setRefreshToken(refreshToken);
@@ -122,7 +126,9 @@ public class UserController {
                 System.out.println(e.getMessage());
             } finally {
                 if (result == null)
-                    result = new UserOperationResult(NO_CONTENT_HTTP_CODE, "");
+                    result = new UserOperationResult(
+                            NO_CONTENT_HTTP_CODE,
+                            "The user was already logged out");
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(result);
         };
@@ -138,9 +144,9 @@ public class UserController {
                 if (optionalPlayer.isPresent()) {
                     Player player = optionalPlayer.get();
                     // check the signature and expiration of the refreshToken
-                    getJwtAuthProvider("refresh.secret").authenticate(credentials, user -> {
+                    getJwtAuthProvider(TokenType.REFRESH).authenticate(credentials, user -> {
                         if (user.succeeded() && user.result().subject().equals(player.getUsername())) {
-                            String newAccessToken = generateToken("access.secret", player.getUsername());
+                            String newAccessToken = generateToken(TokenType.ACCESS, player.getUsername());
                             result.set(new UserOperationResult(
                                     SUCCESS_HTTP_CODE,
                                     "Access token refreshed successfully",
@@ -158,23 +164,23 @@ public class UserController {
         };
     }
 
-    private String generateToken(String tokenSecret, String username) {
-        String token;
+    private String generateToken(TokenType tokenType, String username) {
         final byte TOKEN_EXPIRATION_IN_MINUTES = 20;
-        JWTOptions jwtOptions = new JWTOptions()
-                .setExpiresInMinutes(TOKEN_EXPIRATION_IN_MINUTES);
+        JWTOptions jwtOptions = new JWTOptions().setExpiresInMinutes(TOKEN_EXPIRATION_IN_MINUTES);
         JsonObject tokenData = new JsonObject().put("sub", username);
-        JWTAuth jwtAuth = getJwtAuthProvider(tokenSecret);
-        token = jwtAuth.generateToken(tokenData, jwtOptions);
-        return token;
+        JWTAuth jwtAuth = getJwtAuthProvider(tokenType);
+        return jwtAuth.generateToken(tokenData, jwtOptions);
     }
 
-    private JWTAuth getJwtAuthProvider(String symmetricKey) {
-        //TODO: change this password with a random generated string inside an environment variable
+    private JWTAuth getJwtAuthProvider(TokenType tokenType) {
         JWTAuthOptions jwtAuthOptions = new JWTAuthOptions()
                 .addPubSecKey(new PubSecKeyOptions()
                         .setAlgorithm("HS256")
-                        .setBuffer(symmetricKey));
+                        .setBuffer(
+                            tokenType.equals(TokenType.ACCESS) ?
+                                    System.getenv("ACCESS_TOKEN_SECRET") :
+                                    System.getenv("REFRESH_TOKEN_SECRET")
+                        ));
         return JWTAuth.create(Vertx.vertx(), jwtAuthOptions);
     }
 }

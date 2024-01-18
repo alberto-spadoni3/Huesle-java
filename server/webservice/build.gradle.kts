@@ -21,7 +21,7 @@ java {
 
 // Task used to run the microservice related to the web service
 task("web-service", JavaExec::class) {
-    environment = mapOf("RABBIT_HOST" to "localhost")
+    environment = mapOf("RABBIT_HOST" to "localhost", "ACCESS_TOKEN_SECRET" to "secret")
     mainClass.set("it.unibo.sd.project.webservice.Main")
     classpath = sourceSets["main"].runtimeClasspath
 }

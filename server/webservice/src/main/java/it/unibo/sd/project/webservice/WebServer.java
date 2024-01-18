@@ -66,7 +66,7 @@ public class WebServer extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
         router.route().consumes("application/json");
 
-        JWTAuth jwtAccessProvider = getJwtAuthProvider("access.secret");
+        JWTAuth jwtAccessProvider = getJwtAuthProvider();
 
         // Non-protected routes
         router.route("/user/*").subRouter(getUserRouter());
@@ -329,8 +329,8 @@ public class WebServer extends AbstractVerticle {
         };
     }
 
-    private JWTAuth getJwtAuthProvider(String symmetricKey) {
-        //TODO: change this password with a random generated string inside an environment variable
+    private JWTAuth getJwtAuthProvider() {
+        String symmetricKey = System.getenv("ACCESS_TOKEN_SECRET");
         JWTAuthOptions jwtAuthOptions = new JWTAuthOptions()
                 .addPubSecKey(new PubSecKeyOptions()
                         .setAlgorithm("HS256")
