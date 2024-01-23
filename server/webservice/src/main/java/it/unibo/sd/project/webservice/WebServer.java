@@ -191,13 +191,11 @@ public class WebServer extends AbstractVerticle {
         ));
 
         router.delete("/searchMatch").blockingHandler(extractUsername(
-                (routingContext, username) -> {
-                    getHandler(MessageType.CANCEL_MATCH_SEARCH, username,
-                            (context, response) -> {
-                                JsonObject backendResponse = new JsonObject(response);
-                                context.response().end(backendResponse.getString("resultMessage"));
-                            }).handle(routingContext);
-                }
+                (routingContext, username) -> getHandler(MessageType.CANCEL_MATCH_SEARCH, username,
+                        (context, response) -> {
+                            JsonObject backendResponse = new JsonObject(response);
+                            context.response().end(backendResponse.getString("resultMessage"));
+                        }).handle(routingContext)
         ));
 
         router.post("/joinPrivateMatch").blockingHandler(extractUsername(
