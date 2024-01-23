@@ -21,10 +21,8 @@ import GameContext from "./context/GameContext";
 import GameRules from "./components/GameRules";
 import Match from "./components/Match";
 import { SocketProvider } from "./context/SocketProvider";
-
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
-import NotificationsList from "./components/NotificationsList";
 import ScrollToTop from "./components/ScrollToTop";
 
 const App = () => {
