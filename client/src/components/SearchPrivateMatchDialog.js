@@ -9,11 +9,15 @@ import {
     DialogTitle,
     Slide,
 } from "@mui/material";
-import { BACKEND_SEARCH_MATCH_ENDPOINT } from "../api/backend_endpoints";
+import {
+    BACKEND_SEARCH_MATCH_ENDPOINT,
+    BASE_NOTIFICATION_ADDRESS,
+} from "../api/backend_endpoints";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 import useSocket from "../hooks/useSocket";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import useAuth from "../hooks/useAuth";
 
 const Transition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -27,8 +31,9 @@ export default function SearchPrivateMatchDialog({
 }) {
     const { enqueueSnackbar } = useSnackbar();
     const axiosPrivate = useAxiosPrivate();
-    const { socket, MessageTypes } = useSocket();
+    const { socket, socketOpened } = useSocket();
     const navigate = useNavigate();
+    const { auth } = useAuth();
 
     const handleClose = async (event) => {
         event.preventDefault();
@@ -48,12 +53,15 @@ export default function SearchPrivateMatchDialog({
     };
 
     useEffect(() => {
-        // socket.off(MessageTypes.NEW_MATCH).on(MessageTypes.NEW_MATCH, data => {
-        //     socket.off(MessageTypes.NEW_MATCH);
-        //     setConnectOpen(false);
-        //     setSearchOver(false);
-        //     navigate("/dashboard", { replace: true });
-        // });
+        if (socketOpened)
+            socket.registerHandler(
+                BASE_NOTIFICATION_ADDRESS + auth.username,
+                (_e, _m) => {
+                    setConnectOpen(false);
+                    setSearchOver(false);
+                    navigate("/dashboard", { replace: true });
+                }
+            );
 
         window.addEventListener("unload", handleClose);
         return () => {

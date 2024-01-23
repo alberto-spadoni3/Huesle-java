@@ -8,8 +8,8 @@ import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
 import useLogout from "../hooks/useLogout";
 import { useNavigate } from "react-router-dom";
-import * as PropTypes from "prop-types";
-w
+import PropTypes from "prop-types";
+
 function StyledBadge(props) {
     return null;
 }
@@ -22,6 +22,7 @@ StyledBadge.propTypes = {
         vertical: PropTypes.string,
     }),
 };
+
 export default function DashboardMenu({ anchorEl, setAnchorEl, open }) {
     const logout = useLogout();
     const navigate = useNavigate();

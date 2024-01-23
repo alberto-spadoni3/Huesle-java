@@ -11,7 +11,7 @@ import Slide from "@mui/material/Slide";
 import { BACKEND_JOIN_PRIVATE_MATCH_ENDPOINT } from "../api/backend_endpoints";
 import { useState } from "react";
 import { useSnackbar } from "notistack";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 
 const Transition = forwardRef(function Transition(props, ref) {
@@ -21,15 +21,15 @@ const Transition = forwardRef(function Transition(props, ref) {
 export default function JoinPrivateMatchDialog({ open, setOpen }) {
     const [searchingOpen, setSearchingOpen] = useState(false);
 
-    const [secretCode, setSecretCode] = useState("");
+    const [matchAccessCode, setMatchAccessCode] = useState("");
     const { enqueueSnackbar } = useSnackbar();
-    const axiosPrivate = useAxiosPrivate()
+    const axiosPrivate = useAxiosPrivate();
     const navigate = useNavigate();
 
     const handleSearch = async (event) => {
         event.preventDefault();
 
-        if(secretCode.length != 5) {
+        if (matchAccessCode.length != 5) {
             enqueueSnackbar("Secret Code not valid", {
                 variant: "warning",
                 autoHideDuration: 2500,
@@ -42,7 +42,7 @@ export default function JoinPrivateMatchDialog({ open, setOpen }) {
         try {
             const response = await axiosPrivate.post(
                 BACKEND_JOIN_PRIVATE_MATCH_ENDPOINT,
-                JSON.stringify({ secretCode })
+                JSON.stringify({ matchAccessCode })
             );
             if (response) {
                 navigate("/dashboard", { replace: true });
@@ -62,7 +62,7 @@ export default function JoinPrivateMatchDialog({ open, setOpen }) {
 
     const handleSearchClose = () => {
         setSearchingOpen(false);
-        setSecretCode("");
+        setMatchAccessCode("");
     };
 
     return (
@@ -82,23 +82,33 @@ export default function JoinPrivateMatchDialog({ open, setOpen }) {
                         id="alert-dialog-slide-description"
                         textAlign="center"
                     >
-                        Insert the secret code and hit SEARCH
+                        Insert the access code and press Search
                     </DialogContentText>
                     <TextField
                         margin="normal"
                         required
                         fullWidth
-                        id="secretCode"
-                        label="Secret Code"
-                        name="secretCode"
-                        onChange={(e) => setSecretCode(e.target.value)}
-                        value={secretCode}
+                        id="matchAccessCode"
+                        label="Match Access Code"
+                        name="matchAccessCode"
+                        onChange={(e) => setMatchAccessCode(e.target.value)}
+                        value={matchAccessCode}
                         autoComplete="off"
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button sx={{color:"text.secondary"}} onClick={handleCodeClose}>Cancel</Button>
-                    <Button sx={{color:"text.secondary"}} onClick={handleSearch}>Search</Button>
+                    <Button
+                        sx={{ color: "text.secondary" }}
+                        onClick={handleCodeClose}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        sx={{ color: "text.secondary" }}
+                        onClick={handleSearch}
+                    >
+                        Search
+                    </Button>
                 </DialogActions>
             </Dialog>
             <Dialog
@@ -108,18 +118,23 @@ export default function JoinPrivateMatchDialog({ open, setOpen }) {
                 onClose={handleSearchClose}
                 aria-describedby="alert-dialog-slide-description"
             >
-                <DialogTitle>{"Ricerca Partita Privata"}</DialogTitle>
+                <DialogTitle>{"Private match search"}</DialogTitle>
                 <DialogContent>
                     <DialogContentText
                         id="alert-dialog-slide-description"
                         textAlign="center"
                     >
-                        Secret Code: {secretCode}
+                        Secret Code: {matchAccessCode}
                     </DialogContentText>
                     <LinearProgress sx={{ m: 1.5 }} color="inherit" />
                 </DialogContent>
                 <DialogActions>
-                    <Button sx={{color:"text.secondary"}} onClick={handleSearchClose}>Cancel</Button>
+                    <Button
+                        sx={{ color: "text.secondary" }}
+                        onClick={handleSearchClose}
+                    >
+                        Cancel
+                    </Button>
                 </DialogActions>
             </Dialog>
         </div>

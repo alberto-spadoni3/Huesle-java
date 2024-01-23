@@ -17,12 +17,14 @@ import useAuth from "../hooks/useAuth";
 import BottomBar from "./BottomBar";
 import UserPicture from "./UserPicture";
 import ConfirmationDialog from "./ConfirmationDialog";
-import { BACKEND_LEAVE_MATCH_ENDPOINT } from "../api/backend_endpoints";
+import {
+    BACKEND_LEAVE_MATCH_ENDPOINT,
+    BASE_NOTIFICATION_ADDRESS,
+} from "../api/backend_endpoints";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import useSocket from "../hooks/useSocket";
 
 const Match = () => {
-    const BASE_ADDRESS = "huesle.";
     const {
         id,
         loadBoard,
@@ -50,8 +52,9 @@ const Match = () => {
         console.log("match");
         if (socketOpened) {
             try {
-                socket.registerHandler(BASE_ADDRESS + auth.username, (_e, _m) =>
-                    loadBoard()
+                socket.registerHandler(
+                    BASE_NOTIFICATION_ADDRESS + auth.username,
+                    (_e, _m) => loadBoard()
                 );
             } catch (error) {
                 console.log(error);

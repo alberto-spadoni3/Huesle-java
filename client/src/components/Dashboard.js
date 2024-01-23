@@ -14,7 +14,10 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
-import { BACKEND_GET_MATCHES_ENDPOINT } from "../api/backend_endpoints";
+import {
+    BACKEND_GET_MATCHES_ENDPOINT,
+    BASE_NOTIFICATION_ADDRESS,
+} from "../api/backend_endpoints";
 import useAuth from "../hooks/useAuth";
 import useGameData from "../hooks/useGameData";
 import useSocket from "../hooks/useSocket";
@@ -22,7 +25,6 @@ import BottomBar from "./BottomBar";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 
 const Dashboard = () => {
-    const BASE_ADDRESS = "huesle.";
     const navigate = useNavigate();
     const axiosPrivate = useAxiosPrivate();
     const { auth } = useAuth();
@@ -97,8 +99,9 @@ const Dashboard = () => {
         //registerHandler(auth.username, (_) => updateMatches());
         if (socketOpened) {
             try {
-                socket.registerHandler(BASE_ADDRESS + auth.username, (_e, _m) =>
-                    updateMatches()
+                socket.registerHandler(
+                    BASE_NOTIFICATION_ADDRESS + auth.username,
+                    (_e, _m) => updateMatches()
                 );
             } catch (error) {
                 console.log(error);

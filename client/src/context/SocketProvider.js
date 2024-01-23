@@ -1,13 +1,15 @@
 import { useState, createContext, useEffect } from "react";
 import EventBus from "@vertx/eventbus-bridge-client.js";
 import useAuth from "../hooks/useAuth";
-import { BACKEND_SOCKET_ENDPOINT } from "../api/backend_endpoints";
+import {
+    BACKEND_SOCKET_ENDPOINT,
+    BASE_NOTIFICATION_ADDRESS,
+} from "../api/backend_endpoints";
 import { useSnackbar } from "notistack";
 
 const SocketContext = createContext({});
 
 export const SocketProvider = ({ children }) => {
-    const BASE_ADDRESS = "huesle.";
     const { auth } = useAuth();
     const [socket, setSocket] = useState({});
     const [socketOpened, setSocketOpened] = useState(false);
@@ -27,7 +29,7 @@ export const SocketProvider = ({ children }) => {
             socket.onopen = () => {
                 setSocketOpened(true);
                 socket.registerHandler(
-                    BASE_ADDRESS + auth.username,
+                    BASE_NOTIFICATION_ADDRESS + auth.username,
                     (_, message) => {
                         const body = JSON.parse(message.body);
                         console.log(body);
@@ -68,55 +70,6 @@ export const SocketProvider = ({ children }) => {
         };
     }, [auth]);
 
-    // useEffect(() => {
-    //     if (socketOpened) {
-    //         socket.registerHandler(
-    //             BASE_ADDRESS + auth.username,
-    //             (_, message) => {
-    //                 const body = JSON.parse(message.body);
-    //                 console.log(body);
-    //                 const notificationType = body.notificationType;
-    //                 const opponent = body.originPlayer;
-    //                 switch (notificationType) {
-    //                     case NotificationTypes.NEW_MATCH:
-    //                         enqueueSnackbar("New match found", {
-    //                             variant: "info",
-    //                             autoHideDuration: 2500,
-    //                         });
-    //                         break;
-    //                     case NotificationTypes.NEW_MOVE:
-    //                         enqueueSnackbar(
-    //                             "New move made on match against " + opponent,
-    //                             {
-    //                                 variant: "info",
-    //                                 autoHideDuration: 2500,
-    //                             }
-    //                         );
-    //                         break;
-    //                     case NotificationTypes.MATCH_OVER:
-    //                         enqueueSnackbar(
-    //                             "Match against " + opponent + " is over!",
-    //                             {
-    //                                 variant: "info",
-    //                                 autoHideDuration: 2500,
-    //                             }
-    //                         );
-    //                         break;
-    //                 }
-    //             }
-    //         );
-    //     }
-    // }, [socket]);
-
-    const registerHandler = (username, callback) => {
-        if (socketOpened) {
-            console.log("reg1");
-            socket.registerHandler(BASE_ADDRESS + username, (_, msg) =>
-                callback(msg)
-            );
-        }
-    };
-
     const closeSocket = () => {
         if (socketOpened) {
             socket.close();
@@ -135,7 +88,6 @@ export const SocketProvider = ({ children }) => {
         <SocketContext.Provider
             value={{
                 socket,
-                registerHandler,
                 closeSocket,
                 socketOpened,
                 NotificationTypes,
