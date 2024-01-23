@@ -46,9 +46,7 @@ public class NotificationService extends AbstractVerticle {
     private void notify(String matchID, String originPlayer, JsonObject notificationData) {
         clientsSocket.get(matchID).stream()
                 .filter(playerInRoom -> !playerInRoom.equals(originPlayer))
-                .forEach(playerToBeNotified -> {
-                    vertx.eventBus().publish(WebServer.BASE_ADDRESS + playerToBeNotified, notificationData.encode());
-                });
+                .forEach(playerToBeNotified -> vertx.eventBus().publish(WebServer.BASE_ADDRESS + playerToBeNotified, notificationData.encode()));
         if (notificationData.getString("notificationType").equals(MessageType.MATCH_OVER.getType()))
             clientsSocket.remove(matchID);
     }

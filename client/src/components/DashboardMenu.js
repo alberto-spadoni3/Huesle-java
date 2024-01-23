@@ -61,14 +61,14 @@ export default function DashboardMenu({ anchorEl, setAnchorEl, open }) {
                 horizontal: "center",
             }}
         >
-            <MenuItem onClick={(e) => navigate("/rules")}>
+            <MenuItem onClick={(_e) => navigate("/rules")}>
                 <ListItemIcon>
                     <QuestionMarkIcon fontSize="small" />
                 </ListItemIcon>
                 How To Play
             </MenuItem>
             <Divider />
-            <MenuItem onClick={(e) => navigate("/settings")}>
+            <MenuItem onClick={(_e) => navigate("/settings")}>
                 <ListItemIcon>
                     <Settings fontSize="small" />
                 </ListItemIcon>

@@ -36,7 +36,7 @@ const BottomBar = () => {
                     spacing={3}
                 >
                     <IconButton
-                        onClick={(e) => navigate("/user/profile")}
+                        onClick={(_e) => navigate("/user/profile")}
                         aria-label="Open menu"
                         sx={{ padding: 0 }}
                     >

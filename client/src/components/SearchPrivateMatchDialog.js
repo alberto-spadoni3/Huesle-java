@@ -7,12 +7,11 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
-    Slide } from "@mui/material";
-import {
-    BACKEND_SEARCH_MATCH_ENDPOINT,
-} from "../api/backend_endpoints";
+    Slide,
+} from "@mui/material";
+import { BACKEND_SEARCH_MATCH_ENDPOINT } from "../api/backend_endpoints";
 import { useSnackbar } from "notistack";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useSocket from "../hooks/useSocket";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 
@@ -24,20 +23,17 @@ export default function SearchPrivateMatchDialog({
     connectOpen,
     setConnectOpen,
     secretCode,
-    setSearchOver
+    setSearchOver,
 }) {
-
     const { enqueueSnackbar } = useSnackbar();
-    const axiosPrivate = useAxiosPrivate()
-    const {socket, MessageTypes} = useSocket();
+    const axiosPrivate = useAxiosPrivate();
+    const { socket, MessageTypes } = useSocket();
     const navigate = useNavigate();
 
     const handleClose = async (event) => {
         event.preventDefault();
         try {
-            await axiosPrivate.delete(
-                BACKEND_SEARCH_MATCH_ENDPOINT,
-            );
+            await axiosPrivate.delete(BACKEND_SEARCH_MATCH_ENDPOINT);
             enqueueSnackbar("Stopped hosting the private match", {
                 variant: "info",
                 autoHideDuration: 2500,
@@ -52,16 +48,16 @@ export default function SearchPrivateMatchDialog({
     };
 
     useEffect(() => {
-        socket.off(MessageTypes.NEW_MATCH).on(MessageTypes.NEW_MATCH, data => {
-            socket.off(MessageTypes.NEW_MATCH);
-            setConnectOpen(false);
-            setSearchOver(false);
-            navigate("/dashboard", { replace: true });
-        });
+        // socket.off(MessageTypes.NEW_MATCH).on(MessageTypes.NEW_MATCH, data => {
+        //     socket.off(MessageTypes.NEW_MATCH);
+        //     setConnectOpen(false);
+        //     setSearchOver(false);
+        //     navigate("/dashboard", { replace: true });
+        // });
 
-        window.addEventListener('unload', handleClose);
+        window.addEventListener("unload", handleClose);
         return () => {
-            window.removeEventListener('unload', handleClose);
+            window.removeEventListener("unload", handleClose);
         };
     }, [connectOpen]);
 
@@ -85,7 +81,12 @@ export default function SearchPrivateMatchDialog({
                     <LinearProgress sx={{ m: 1.5 }} color="inherit" />
                 </DialogContent>
                 <DialogActions>
-                    <Button sx={{color:"text.secondary"}} onClick={handleClose}>Cancel</Button>
+                    <Button
+                        sx={{ color: "text.secondary" }}
+                        onClick={handleClose}
+                    >
+                        Cancel
+                    </Button>
                 </DialogActions>
             </Dialog>
         </div>

@@ -1,9 +1,7 @@
-import { useState, createContext, useEffect } from "react";
+import { useState, createContext } from "react";
 import useAuth from "../hooks/useAuth";
 import { axiosPrivate } from "../api/axios";
 import { BACKEND_GET_MATCH_ENDPOINT } from "../api/backend_endpoints";
-import useSocket from "../hooks/useSocket";
-import { useSnackbar } from "notistack";
 
 const GameDataContext = createContext({});
 
@@ -26,10 +24,6 @@ export const GameDataProvider = ({ children }) => {
     const [endGame, setEndGame] = useState(false);
 
     const { auth } = useAuth();
-
-    const { socket, registerHandler, NotificationTypes } = useSocket();
-
-    const { enqueueSnackbar } = useSnackbar();
 
     const NUMBER_OF_ATTEMPTS = 10;
     const PEGS_PER_ROW = 4;
@@ -115,39 +109,6 @@ export const GameDataProvider = ({ children }) => {
             return Promise.resolve();
         }
     }
-
-    // useEffect(() => {
-    //     console.log("snackbar");
-    //     registerHandler(auth.username, (message) => {
-    //         const body = JSON.parse(message.body);
-    //         console.log(body);
-    //         const notificationType = body.notificationType;
-    //         const opponent = body.originPlayer;
-    //         switch (notificationType) {
-    //             case NotificationTypes.NEW_MATCH:
-    //                 enqueueSnackbar("New match found", {
-    //                     variant: "info",
-    //                     autoHideDuration: 2500,
-    //                 });
-    //                 break;
-    //             case NotificationTypes.NEW_MOVE:
-    //                 enqueueSnackbar(
-    //                     "New move made on match against " + opponent,
-    //                     {
-    //                         variant: "info",
-    //                         autoHideDuration: 2500,
-    //                     }
-    //                 );
-    //                 break;
-    //             case NotificationTypes.MATCH_OVER:
-    //                 enqueueSnackbar("Match against " + opponent + " is over!", {
-    //                     variant: "info",
-    //                     autoHideDuration: 2500,
-    //                 });
-    //                 break;
-    //         }
-    //     });
-    // }, [socket]);
 
     return (
         <GameDataContext.Provider
