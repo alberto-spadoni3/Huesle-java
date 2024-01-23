@@ -21,7 +21,7 @@ export const BACKEND_DO_GUESS_ENDPOINT = "/protected/game/doGuess";
 export const BACKEND_LEAVE_MATCH_ENDPOINT = "/protected/game/leaveMatch";
 
 //Socket
-export const BACKEND_SOCKET_ENDPOINT = "http://localhost:8081";
+export const BACKEND_SOCKET_ENDPOINT = "http://localhost:8080/eventbus";
 
 //Stats Management
 export const BACKEND_GET_MATCHES_ENDPOINT = "/protected/game/getMatches";

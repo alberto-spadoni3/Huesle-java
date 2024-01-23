@@ -1,70 +1,144 @@
 import { useState, createContext, useEffect } from "react";
-import socketIOClient from "socket.io-client";
+import EventBus from "@vertx/eventbus-bridge-client.js";
 import useAuth from "../hooks/useAuth";
-import {BACKEND_SOCKET_ENDPOINT} from "../api/backend_endpoints";
-import {useSnackbar} from "notistack";
+import { BACKEND_SOCKET_ENDPOINT } from "../api/backend_endpoints";
+import { useSnackbar } from "notistack";
 
 const SocketContext = createContext({});
 
 export const SocketProvider = ({ children }) => {
-    const {auth} = useAuth();
-
-    const [socket, setSocket] = useState(socketIOClient());
-
+    const BASE_ADDRESS = "huesle.";
+    const { auth } = useAuth();
+    const [socket, setSocket] = useState({});
+    const [socketOpened, setSocketOpened] = useState(false);
     const { enqueueSnackbar } = useSnackbar();
 
+    const socketOptions = {
+        vertxbus_reconnect_attempts_max: 500, // Max reconnect attempts
+        vertxbus_reconnect_delay_min: 500, // Initial delay (in ms) before first reconnect attempt
+        vertxbus_reconnect_delay_max: 2000,
+    };
+
     useEffect(() => {
-        setSocket(socketIOClient(BACKEND_SOCKET_ENDPOINT, {
-            withCredentials: true,
-            transports: ["websocket"],
-            auth: {
-                username: auth.username
-            }
-        }));
+        if (Object.keys(auth).length > 0) {
+            const socket = new EventBus(BACKEND_SOCKET_ENDPOINT, socketOptions);
+            socket.enableReconnect(true);
+            setSocket(socket);
+            socket.onopen = () => {
+                setSocketOpened(true);
+                socket.registerHandler(
+                    BASE_ADDRESS + auth.username,
+                    (_, message) => {
+                        const body = JSON.parse(message.body);
+                        console.log(body);
+                        const notificationType = body.notificationType;
+                        const opponent = body.originPlayer;
+                        const snackbarOptions = {
+                            variant: "info",
+                            autoHideDuration: 3500,
+                        };
+                        switch (notificationType) {
+                            case NotificationTypes.NEW_MATCH:
+                                enqueueSnackbar(
+                                    "New match found",
+                                    snackbarOptions
+                                );
+                                break;
+                            case NotificationTypes.NEW_MOVE:
+                                enqueueSnackbar(
+                                    "New move made on match against " +
+                                        opponent,
+                                    snackbarOptions
+                                );
+                                break;
+                            case NotificationTypes.MATCH_OVER:
+                                enqueueSnackbar(
+                                    "Match against " + opponent + " is over!",
+                                    snackbarOptions
+                                );
+                                break;
+                        }
+                    }
+                );
+            };
+        } else setSocket({});
 
         return () => {
-            socket.disconnect();
+            closeSocket();
+        };
+    }, [auth]);
+
+    // useEffect(() => {
+    //     if (socketOpened) {
+    //         socket.registerHandler(
+    //             BASE_ADDRESS + auth.username,
+    //             (_, message) => {
+    //                 const body = JSON.parse(message.body);
+    //                 console.log(body);
+    //                 const notificationType = body.notificationType;
+    //                 const opponent = body.originPlayer;
+    //                 switch (notificationType) {
+    //                     case NotificationTypes.NEW_MATCH:
+    //                         enqueueSnackbar("New match found", {
+    //                             variant: "info",
+    //                             autoHideDuration: 2500,
+    //                         });
+    //                         break;
+    //                     case NotificationTypes.NEW_MOVE:
+    //                         enqueueSnackbar(
+    //                             "New move made on match against " + opponent,
+    //                             {
+    //                                 variant: "info",
+    //                                 autoHideDuration: 2500,
+    //                             }
+    //                         );
+    //                         break;
+    //                     case NotificationTypes.MATCH_OVER:
+    //                         enqueueSnackbar(
+    //                             "Match against " + opponent + " is over!",
+    //                             {
+    //                                 variant: "info",
+    //                                 autoHideDuration: 2500,
+    //                             }
+    //                         );
+    //                         break;
+    //                 }
+    //             }
+    //         );
+    //     }
+    // }, [socket]);
+
+    const registerHandler = (username, callback) => {
+        if (socketOpened) {
+            console.log("reg1");
+            socket.registerHandler(BASE_ADDRESS + username, (_, msg) =>
+                callback(msg)
+            );
         }
-    }, [auth.username]);
+    };
 
-    useEffect(() => {
-        socket.on(MessageTypes.NEW_MATCH, () => {
-            enqueueSnackbar("New match found!", {
-                variant: "info",
-                autoHideDuration: 2500,
-            });
-        });
+    const closeSocket = () => {
+        if (socketOpened) {
+            socket.close();
+            setSocketOpened(false);
+            setSocket({});
+        }
+    };
 
-        socket.on(MessageTypes.NEW_MOVE, (data) => {
-            enqueueSnackbar("New move made on match against " + data.opponent, {
-                variant: "info",
-                autoHideDuration: 2500,
-            });
-        });
-
-        socket.on(MessageTypes.MATCH_OVER, (data) => {
-            const players = JSON.parse(data)
-            enqueueSnackbar("The match against " + players.find(p => p != auth.username) + " is over!", {
-                variant: "info",
-                autoHideDuration: 2500,
-            });
-        });
-
-    }, [socket])
-
-    const MessageTypes = {
-        CONNECTION: "connection",
-        SESSION: "session",
-        NEW_MATCH: "new_match",
-        NEW_MOVE: "new_move",
-        MATCH_OVER: "match_over"
-    }
+    const NotificationTypes = {
+        NEW_MATCH: "newMatch",
+        NEW_MOVE: "newMove",
+        MATCH_OVER: "matchOver",
+    };
 
     return (
         <SocketContext.Provider
             value={{
                 socket,
-                MessageTypes
+                registerHandler,
+                closeSocket,
+                socketOpened,
+                NotificationTypes,
             }}
         >
             {children}

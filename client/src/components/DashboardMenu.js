@@ -8,13 +8,8 @@ import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
 import useLogout from "../hooks/useLogout";
 import { useNavigate } from "react-router-dom";
-import UserPicture from "./UserPicture";
-import useAuth from "../hooks/useAuth";
-import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
-import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-
 import * as PropTypes from "prop-types";
-
+w
 function StyledBadge(props) {
     return null;
 }
@@ -22,12 +17,14 @@ function StyledBadge(props) {
 StyledBadge.propTypes = {
     overlap: PropTypes.string,
     variant: PropTypes.string,
-    anchorOrigin: PropTypes.shape({horizontal: PropTypes.string, vertical: PropTypes.string})
+    anchorOrigin: PropTypes.shape({
+        horizontal: PropTypes.string,
+        vertical: PropTypes.string,
+    }),
 };
-export default function DashboardMenu({ anchorEl, setAnchorEl, open}) {
+export default function DashboardMenu({ anchorEl, setAnchorEl, open }) {
     const logout = useLogout();
     const navigate = useNavigate();
-    const { auth } = useAuth();
 
     const handleMenuClose = () => {
         setAnchorEl(null);
@@ -52,7 +49,7 @@ export default function DashboardMenu({ anchorEl, setAnchorEl, open}) {
                         height: 64,
                         ml: -0.5,
                         mr: 1,
-                    }
+                    },
                 },
             }}
             anchorOrigin={{
@@ -70,14 +67,14 @@ export default function DashboardMenu({ anchorEl, setAnchorEl, open}) {
                 </ListItemIcon>
                 How To Play
             </MenuItem>
-            <Divider/>
+            <Divider />
             <MenuItem onClick={(e) => navigate("/settings")}>
                 <ListItemIcon>
                     <Settings fontSize="small" />
                 </ListItemIcon>
                 Settings
             </MenuItem>
-            <Divider/>
+            <Divider />
             <MenuItem onClick={logout}>
                 <ListItemIcon>
                     <Logout color="error" fontSize="small" />

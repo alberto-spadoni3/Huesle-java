@@ -3,6 +3,7 @@ import useAuth from "../hooks/useAuth";
 import { axiosPrivate } from "../api/axios";
 import { BACKEND_GET_MATCH_ENDPOINT } from "../api/backend_endpoints";
 import useSocket from "../hooks/useSocket";
+import { useSnackbar } from "notistack";
 
 const GameDataContext = createContext({});
 
@@ -26,7 +27,9 @@ export const GameDataProvider = ({ children }) => {
 
     const { auth } = useAuth();
 
-    const { socket, MessageTypes } = useSocket();
+    const { socket, registerHandler, NotificationTypes } = useSocket();
+
+    const { enqueueSnackbar } = useSnackbar();
 
     const NUMBER_OF_ATTEMPTS = 10;
     const PEGS_PER_ROW = 4;
@@ -40,7 +43,7 @@ export const GameDataProvider = ({ children }) => {
     const GameStates = {
         DRAW: "DRAW",
         PLAYING: "PLAYING",
-        WINNER: "WINNER",
+        WINNER: "VICTORY",
     };
 
     // each map entry contains the true color as key and the correzponding colorblind friendly color as value
@@ -53,25 +56,18 @@ export const GameDataProvider = ({ children }) => {
         ["rebeccapurple", "#FFB000"],
     ]);
 
-    // color palette accessible to colorblind people
-    /* const cbGuessableColors = [
-        "#648FFF",
-        "#785EF0",
-        "#4B0092",
-        "#DC267F",
-        "#FE6100",
-        "#FFB000",
-    ]; */
-
     function isItActivePlayer() {
         return (
-            status.state === GameStates.PLAYING &&
-            status.player === auth.username
+            status.matchState === GameStates.PLAYING &&
+            status.nextPlayer === auth.username
         );
     }
 
     function isMatchOver() {
-        return status.state == GameStates.WINNER || status.state == GameStates.DRAW;
+        return (
+            status.matchState === GameStates.WINNER ||
+            status.matchState === GameStates.DRAW
+        );
     }
 
     function updateMatch(newStatus, newAttempts) {
@@ -108,10 +104,10 @@ export const GameDataProvider = ({ children }) => {
                 params: { matchId: matchId },
             });
             response.then((response) => {
-                const { status, players, attempts } = response?.data?.match;
+                const { matchStatus, attempts } = response?.data?.matches[0];
                 setId(matchId);
-                setPlayers(players);
-                setStatus(status);
+                setPlayers(matchStatus.players);
+                setStatus(matchStatus);
                 setAttempts(attempts);
                 setProfilePics(response?.data?.profile_pics);
             });
@@ -120,14 +116,38 @@ export const GameDataProvider = ({ children }) => {
         }
     }
 
-    useEffect(() => {
-        socket.on(MessageTypes.NEW_MOVE, () => {
-            loadBoard();
-        });
-        socket.on(MessageTypes.MATCH_OVER, () => {
-            loadBoard();
-        });
-    }, [socket]);
+    // useEffect(() => {
+    //     console.log("snackbar");
+    //     registerHandler(auth.username, (message) => {
+    //         const body = JSON.parse(message.body);
+    //         console.log(body);
+    //         const notificationType = body.notificationType;
+    //         const opponent = body.originPlayer;
+    //         switch (notificationType) {
+    //             case NotificationTypes.NEW_MATCH:
+    //                 enqueueSnackbar("New match found", {
+    //                     variant: "info",
+    //                     autoHideDuration: 2500,
+    //                 });
+    //                 break;
+    //             case NotificationTypes.NEW_MOVE:
+    //                 enqueueSnackbar(
+    //                     "New move made on match against " + opponent,
+    //                     {
+    //                         variant: "info",
+    //                         autoHideDuration: 2500,
+    //                     }
+    //                 );
+    //                 break;
+    //             case NotificationTypes.MATCH_OVER:
+    //                 enqueueSnackbar("Match against " + opponent + " is over!", {
+    //                     variant: "info",
+    //                     autoHideDuration: 2500,
+    //                 });
+    //                 break;
+    //         }
+    //     });
+    // }, [socket]);
 
     return (
         <GameDataContext.Provider

@@ -45,90 +45,92 @@ const App = () => {
             >
                 <SocketProvider>
                     <ScrollToTop>
-                    <Routes>
-                        <Route
-                            path="/"
-                            element={<Layout setThemeMode={setThemeMode} />}
-                        >
-                            {/* Public routes */}
-                            <Route path="login" element={<Login />} />
-                            <Route path="register" element={<Register />} />
-                            <Route path="forgotPassword" element={<ForgotPassword />} />
-                            <Route path="resetPassword" element={<ResetPassword />} />
+                        <Routes>
+                            <Route
+                                path="/"
+                                element={<Layout setThemeMode={setThemeMode} />}
+                            >
+                                {/* Public routes */}
+                                <Route path="login" element={<Login />} />
+                                <Route path="register" element={<Register />} />
+                                <Route
+                                    path="forgotPassword"
+                                    element={<ForgotPassword />}
+                                />
+                                <Route
+                                    path="resetPassword"
+                                    element={<ResetPassword />}
+                                />
 
-                            <Route path="rules" element={<GameRules />} />
+                                <Route path="rules" element={<GameRules />} />
 
-                            {/* Routes that require authentication */}
-                            <Route element={<PersistLogin />}>
-                                <Route index element={<Home />} />
-                                <Route element={<RequireAuth />}>
-                                    <Route
-                                        path="user/profile"
-                                        element={<UserProfile />}
-                                    />
+                                {/* Routes that require authentication */}
+
+                                <Route element={<PersistLogin />}>
+                                    <Route index element={<Home />} />
+                                    <Route element={<RequireAuth />}>
+                                        <Route
+                                            path="user/profile"
+                                            element={<UserProfile />}
+                                        />
+                                    </Route>
+
+                                    <Route element={<RequireAuth />}>
+                                        <Route
+                                            path="user/editProfile"
+                                            element={<EditUserProfile />}
+                                        />
+                                    </Route>
+
+                                    <Route element={<GameContext />}>
+                                        <Route element={<RequireAuth />}>
+                                            <Route
+                                                path="settings"
+                                                element={
+                                                    <Settings
+                                                        themeMode={themeMode}
+                                                        setThemeMode={
+                                                            setThemeMode
+                                                        }
+                                                    />
+                                                }
+                                            />
+                                        </Route>
+
+                                        <Route element={<RequireAuth />}>
+                                            <Route
+                                                path="dashboard"
+                                                element={<Dashboard />}
+                                            />
+                                        </Route>
+
+                                        <Route element={<RequireAuth />}>
+                                            <Route
+                                                path="searchMatch"
+                                                element={<SearchMatch />}
+                                            />
+                                        </Route>
+
+                                        <Route element={<RequireAuth />}>
+                                            <Route
+                                                path="match-details"
+                                                element={<Match />}
+                                            />
+                                        </Route>
+
+                                        <Route element={<RequireAuth />}>
+                                            <Route
+                                                path="gameboard"
+                                                element={<GameBoard />}
+                                            />
+                                        </Route>
+                                    </Route>
                                 </Route>
 
-                                <Route element={<RequireAuth />}>
-                                    <Route
-                                        path="user/editProfile"
-                                        element={<EditUserProfile />}
-                                    />
-                                </Route>
-
-                                <Route element={<GameContext />}>
-                                    <Route element={<RequireAuth />}>
-                                        <Route
-                                            path="settings"
-                                            element={
-                                                <Settings
-                                                    themeMode={themeMode}
-                                                    setThemeMode={setThemeMode}
-                                                />
-                                            }
-                                        />
-                                    </Route>
-
-                                    <Route element={<RequireAuth />}>
-                                        <Route
-                                            path="dashboard"
-                                            element={<Dashboard />}
-                                        />
-                                    </Route>
-
-                                    <Route element={<RequireAuth />}>
-                                        <Route
-                                            path="notifications"
-                                            element={<NotificationsList />}
-                                        />
-                                    </Route>
-
-                                    <Route element={<RequireAuth />}>
-                                        <Route
-                                            path="searchMatch"
-                                            element={<SearchMatch />}
-                                        />
-                                    </Route>
-
-                                    <Route element={<RequireAuth />}>
-                                        <Route
-                                            path="match-details"
-                                            element={<Match />}
-                                        />
-                                    </Route>
-
-                                    <Route element={<RequireAuth />}>
-                                        <Route
-                                            path="gameboard"
-                                            element={<GameBoard />}
-                                        />
-                                    </Route>
-                                </Route>
+                                {/* No matching route */}
+                                <Route path="*" element={<Missing />} />
                             </Route>
-
-                            {/* No matching route */}
-                            <Route path="*" element={<Missing />} />
-                        </Route>
-                    </Routes>
+                        </Routes>
                     </ScrollToTop>
                 </SocketProvider>
             </SnackbarProvider>

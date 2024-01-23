@@ -1,6 +1,6 @@
 {
     "name": "client",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "private": true,
     "dependencies": {
         "@emotion/react": "^11.9.0",
@@ -19,7 +19,9 @@
         "react-router-dom": "^6.3.0",
         "react-scripts": "^5.0.1",
         "safe-buffer": "^5.2.1",
-        "socket.io-client": "^4.5.1"
+        "socket.io-client": "^4.5.1",
+        "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+        "@vertx/eventbus-bridge-client.js": "^1.0.0-3-SNAPSHOT"
     },
     "scripts": {
         "start": "react-scripts start",
