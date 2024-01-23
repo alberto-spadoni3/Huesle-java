@@ -1,5 +1,6 @@
 package it.unibo.sd.project.mastermind.presentation;
 
+import it.unibo.sd.project.mastermind.SettingsRequest;
 import it.unibo.sd.project.mastermind.model.*;
 import it.unibo.sd.project.mastermind.model.match.*;
 import it.unibo.sd.project.mastermind.model.user.LoginRequest;
@@ -56,6 +57,7 @@ public class Presentation {
         deserializers.put(MatchRequest.class, new MatchRequestDeserializer());
         deserializers.put(PendingMatchRequest.class, new PendingMatchRequestDeserializer());
         deserializers.put(GuessRequest.class, new GuessRequestDeserializer());
+        deserializers.put(SettingsRequest.class, new SettingsRequestDeserializer());
     }
 
     public static <T> Serializer<T> serializerOf(Class<T> klass) {

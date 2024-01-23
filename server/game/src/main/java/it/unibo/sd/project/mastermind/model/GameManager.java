@@ -1,6 +1,7 @@
 package it.unibo.sd.project.mastermind.model;
 
 import it.unibo.sd.project.mastermind.controllers.GameController;
+import it.unibo.sd.project.mastermind.controllers.SettingsController;
 import it.unibo.sd.project.mastermind.rabbit.MessageType;
 
 import java.util.HashMap;
@@ -16,6 +17,7 @@ public class GameManager extends AbstractManager {
     @Override
     protected Map<MessageType, Function<String, String>> getManagementCallbacks() {
         Map<MessageType, Function<String, String>> gameCallbacks = new HashMap<>();
+
         GameController gameController = new GameController(database);
         gameCallbacks.put(MessageType.SEARCH_MATCH, gameController.searchMatch());
         gameCallbacks.put(MessageType.JOIN_PRIVATE_MATCH, gameController.joinPrivateMatch());
@@ -24,6 +26,11 @@ public class GameManager extends AbstractManager {
         gameCallbacks.put(MessageType.GET_MATCH, gameController.getMatchByID());
         gameCallbacks.put(MessageType.LEAVE_MATCH, gameController.leaveMatchByID());
         gameCallbacks.put(MessageType.DO_GUESS, gameController.doGuess());
+
+        SettingsController settingsController = new SettingsController(database);
+        gameCallbacks.put(MessageType.GET_SETTINGS, settingsController.getSettings());
+        gameCallbacks.put(MessageType.UPDATE_SETTINGS, settingsController.updateAccessibilitySettings());
+        gameCallbacks.put(MessageType.UPDATE_PROFILE_PIC, settingsController.updateProfilePictureID());
         return gameCallbacks;
     }
 }

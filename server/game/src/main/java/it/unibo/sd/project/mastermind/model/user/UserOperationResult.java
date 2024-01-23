@@ -13,6 +13,12 @@ public class UserOperationResult extends OperationResult {
         this.accessToken = null;
     }
 
+    public UserOperationResult(short statusCode, String resultMessage, Player user) {
+        super(statusCode, resultMessage);
+        this.relatedUser = user;
+        this.accessToken = "null";
+    }
+
     public UserOperationResult(short statusCode, String resultMessage, Player user, String accessToken) {
         super(statusCode, resultMessage);
         this.relatedUser = user;

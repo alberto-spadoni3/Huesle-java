@@ -1,8 +1,10 @@
 package it.unibo.sd.project.mastermind.model;
 
+import java.util.Objects;
+
 public class AccessibilitySettings {
-    private boolean darkMode;
-    private boolean colorblindMode;
+    private final boolean darkMode;
+    private final boolean colorblindMode;
 
     public AccessibilitySettings() {
         this.darkMode = true;
@@ -14,19 +16,24 @@ public class AccessibilitySettings {
         this.colorblindMode = colorblindMode;
     }
 
-    public void toggleDarkMode() {
-        this.darkMode = !this.darkMode;
-    }
-
-    public void toggleColorblindMode() {
-        this.colorblindMode = !this.colorblindMode;
-    }
-
     public boolean isDarkMode() {
         return darkMode;
     }
 
     public boolean isColorblindMode() {
         return colorblindMode;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AccessibilitySettings that = (AccessibilitySettings) o;
+        return darkMode == that.darkMode && colorblindMode == that.colorblindMode;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(darkMode, colorblindMode);
     }
 }

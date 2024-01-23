@@ -14,7 +14,12 @@ public enum MessageType {
     GET_MATCHES_OF_USER("getMatches"),
     GET_MATCH("getMatch"),
     LEAVE_MATCH("leaveMatch"),
-    DO_GUESS("doGuess");
+    DO_GUESS("doGuess"),
+
+    // Settings-related types
+    GET_SETTINGS("getSettings"),
+    UPDATE_SETTINGS("updateSettings"),
+    UPDATE_PROFILE_PIC("updateProfilePicId");
 
     private final String type;
 
