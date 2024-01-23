@@ -31,16 +31,20 @@ public class OperationResultDeserializer extends AbstractJsonDeserializer<Operat
                 }
 
                 // in case jsonElement is a MatchOpResult
-                if (result.has("matchAccessCode") && result.get("matchAccessCode").isJsonPrimitive()) {
+                MatchOperationResult matchOperationResult = new MatchOperationResult(statusCode, message);
+                if (result.has("matchAccessCode")) {
                     String matchAccessCode = result.get("matchAccessCode").getAsString();
-                    return new MatchOperationResult(statusCode, message, matchAccessCode);
-                } else if (result.has("matches") && result.get("matches").isJsonArray()) {
+                    matchOperationResult.setMatchAccessCode(matchAccessCode);
+                    return matchOperationResult;
+                } else if (result.has("matches")) {
                     List<Match> matches = new ArrayList<>();
                     JsonArray jsonMatches = result.get("matches").getAsJsonArray();
                     for (JsonElement element : jsonMatches)
                         matches.add(Presentation.deserializeAs(element.toString(), Match.class));
-                    boolean pending = result.get("pending").getAsBoolean();
-                    return new MatchOperationResult(statusCode, message, matches, pending);
+                    matchOperationResult.setMatches(matches);
+                    if (result.has("pending"))
+                        matchOperationResult.setPendingMatchPresence(result.get("pending").getAsBoolean());
+                    return matchOperationResult;
                 }
 
                 // in case jsonElement is a GuessOpResult
@@ -51,7 +55,7 @@ public class OperationResultDeserializer extends AbstractJsonDeserializer<Operat
                     Hints hints = Presentation.deserializeAs(jsonAttemptHints.toString(), Hints.class);
                     return new GuessOperationResult(statusCode, message, updatedStatus, hints);
                 }
-            } catch (Exception e ) {
+            } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
 

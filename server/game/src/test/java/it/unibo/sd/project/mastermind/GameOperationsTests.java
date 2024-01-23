@@ -129,11 +129,12 @@ public class GameOperationsTests {
                 MessageType.SEARCH_MATCH,
                 getRequestForMatch(player2, false));
 
-        OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
+        MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the result should indicates that a public match between player1 and player2 has been created
         assertEquals(201, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
-        
+
+        assertNotNull(operationResult.getMatches().get(0));
         // check if there is a match in the database
         checkMatchOfPlayerInDB(player2);
     }
@@ -200,11 +201,12 @@ public class GameOperationsTests {
                 MessageType.JOIN_PRIVATE_MATCH,
                 getRequestForMatch(player3, matchAccessCode));
 
-        OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
+        MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the result should indicate that a public match between player2 and player3 has been created
         assertEquals(201, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
 
+        assertNotNull(operationResult.getMatches().get(0));
         // check if there is a match in the database
         checkMatchOfPlayerInDB(player3);
     }

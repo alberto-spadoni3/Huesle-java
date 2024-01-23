@@ -5,9 +5,9 @@ import it.unibo.sd.project.mastermind.model.OperationResult;
 import java.util.List;
 
 public class MatchOperationResult extends OperationResult {
-    private final String matchAccessCode;
-    private final List<Match> matches;
-    private final boolean pendingMatchPresence;
+    private String matchAccessCode;
+    private List<Match> matches;
+    private boolean pendingMatchPresence;
 
     public MatchOperationResult(short statusCode, String resultMessage) {
         super(statusCode, resultMessage);
@@ -36,6 +36,18 @@ public class MatchOperationResult extends OperationResult {
 
     public List<Match> getMatches() {
         return matches;
+    }
+
+    public void setMatches(List<Match> matches) {
+        this.matches = matches;
+    }
+
+    public void setMatchAccessCode(String matchAccessCode) {
+        this.matchAccessCode = matchAccessCode;
+    }
+
+    public void setPendingMatchPresence(boolean pendingMatchPresence) {
+        this.pendingMatchPresence = pendingMatchPresence;
     }
 
     public boolean isPendingMatchPresence() {

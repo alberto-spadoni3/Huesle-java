@@ -56,12 +56,13 @@ public class GameController {
                         Optional<PendingMatchRequest> possiblePublicMatch = pendingMatchDB.getDocumentByQuery(pendingReqOfAnotherPlayer);
                         if (possiblePublicMatch.isPresent()) {
                             // pending request found: we can now create a public match
-                            createMatch(requesterUsername, possiblePublicMatch.get().getRequesterUsername());
+                            Match newMatch = createMatch(requesterUsername, possiblePublicMatch.get().getRequesterUsername());
                             // delete the pending request just fulfilled
                             pendingMatchDB.deleteByQuery(pendingReqOfAnotherPlayer);
 
                             matchOperationResult =
                                     new MatchOperationResult((short) 201, "Public match created");
+                            matchOperationResult.setMatches(List.of(newMatch));
                             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
                         }
                     }
@@ -105,10 +106,11 @@ public class GameController {
                                 eq("matchAccessCode", request.getMatchAccessCode()));
                 Optional<PendingMatchRequest> possiblePrivateMatch = pendingMatchDB.getDocumentByQuery(pendingReqWithSpecificCode);
                 if (possiblePrivateMatch.isPresent()) {
-                    createMatch(requesterUsername, possiblePrivateMatch.get().getRequesterUsername());
+                    Match newMatch = createMatch(requesterUsername, possiblePrivateMatch.get().getRequesterUsername());
                     pendingMatchDB.deleteByQuery(pendingReqWithSpecificCode);
                     matchOperationResult =
                             new MatchOperationResult((short) 201, "Private match created");
+                    matchOperationResult.setMatches(List.of(newMatch));
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
@@ -247,13 +249,14 @@ public class GameController {
         };
     }
 
-    private void createMatch(String user1, String user2) throws Exception {
+    private Match createMatch(String user1, String user2) throws Exception {
         // get the Player object in the DB from the username
         Player player1 = getPlayer(user1);
         Player player2 = getPlayer(user2);
         List<Player> players = List.of(player1, player2);
         Match newMatch = new Match(players);
         matchDB.insert(newMatch);
+        return newMatch;
     }
 
     private List<Match> updateMatches(List<Match> matches) {
