@@ -178,12 +178,24 @@ public class WebServer extends AbstractVerticle {
                             (context, response) -> {
                                 JsonObject backendResponse = new JsonObject(response);
                                 JsonObject responseBody = new JsonObject();
-                                responseBody.put("matchAccessCode", backendResponse.getString("matchAccessCode"));
+                                responseBody
+                                        .put("resultMessage", backendResponse.getString("resultMessage"))
+                                        .put("matchAccessCode", backendResponse.getString("matchAccessCode"));
                                 context.response().end(responseBody.encode());
                                 notifyNewMatch(
                                         username,
                                         context.response().getStatusCode(),
                                         backendResponse.getJsonArray("matches"));
+                            }).handle(routingContext);
+                }
+        ));
+
+        router.delete("/searchMatch").blockingHandler(extractUsername(
+                (routingContext, username) -> {
+                    getHandler(MessageType.CANCEL_MATCH_SEARCH, username,
+                            (context, response) -> {
+                                JsonObject backendResponse = new JsonObject(response);
+                                context.response().end(backendResponse.getString("resultMessage"));
                             }).handle(routingContext);
                 }
         ));
@@ -423,7 +435,7 @@ public class WebServer extends AbstractVerticle {
     private Handler<RoutingContext> handleCORS() {
         List<String> allowedOrigins = List.of("http://localhost", "http://localhost:3000");
         Set<String> allowedHeaders = Set.of("Content-Type", "Authorization", "origin", "Accept");
-        Set<HttpMethod> allowedMethods = Set.of(HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT);
+        Set<HttpMethod> allowedMethods = Set.of(HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE);
 
         return CorsHandler.create()
                 .addOrigins(allowedOrigins)
@@ -434,8 +446,8 @@ public class WebServer extends AbstractVerticle {
 
     private Router getEventBusRouter() {
         SockJSBridgeOptions options = new SockJSBridgeOptions()
-                .addInboundPermitted(new PermittedOptions().setAddressRegex("huesle.*"))
-                .addOutboundPermitted(new PermittedOptions().setAddressRegex("huesle.*"))
+                .addInboundPermitted(new PermittedOptions().setAddressRegex(BASE_ADDRESS + "*"))
+                .addOutboundPermitted(new PermittedOptions().setAddressRegex(BASE_ADDRESS + "*"))
                 .setPingTimeout(6000);
 
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx);

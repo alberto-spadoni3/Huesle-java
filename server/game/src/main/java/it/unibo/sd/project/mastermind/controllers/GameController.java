@@ -123,6 +123,33 @@ public class GameController {
         };
     }
 
+    public Function<String, String> cancelMatchSearch() {
+        return username -> {
+            AtomicReference<MatchOperationResult> matchOperationResult = new AtomicReference<>();
+            try {
+                Bson pendingReqOfUserQuery = and(
+                        eq("requesterUsername", username),
+                        ne("matchAccessCode", null)
+                );
+                Optional<PendingMatchRequest> optionalPendingReq = pendingMatchDB.getDocumentByQuery(pendingReqOfUserQuery);
+                optionalPendingReq.ifPresent(pendingReq -> {
+                    pendingMatchDB.deleteByQuery(pendingReqOfUserQuery);
+                    matchOperationResult.set(new MatchOperationResult(
+                            (short) 200,
+                            "Private match request cancelled."));
+                });
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            } finally {
+                if (matchOperationResult.get() == null)
+                    matchOperationResult.set(new MatchOperationResult(
+                            (short) 400,
+                            "The cancellation request went wrong."));
+            }
+            return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult.get());
+        };
+    }
+
     public Function<String, String> getMatchesOfUser() {
         return username -> {
             try {
