@@ -8,6 +8,7 @@ public class Main {
         short listeningPort = 8080;
 
         var future = vertx.deployVerticle(new WebServer(listeningPort));
-        future.andThen(e -> System.out.println("Server listening on port " + listeningPort));
+        future.andThen(e ->
+                System.out.println(WebServer.class.getSimpleName() + " is running and listening on port " + listeningPort));
     }
 }

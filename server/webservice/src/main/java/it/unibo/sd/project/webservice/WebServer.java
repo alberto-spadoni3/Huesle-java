@@ -31,6 +31,8 @@ import java.util.function.BiConsumer;
 
 public class WebServer extends AbstractVerticle {
     private final short LISTENING_PORT;
+    public static final String BASE_ADDRESS = "huesle.";
+    public static final String WS_SERVICE_ADDRESS = BASE_ADDRESS + "notification.service";
     private RPCClient gameBackend;
 
     public WebServer(short listeningPort) {
@@ -38,7 +40,7 @@ public class WebServer extends AbstractVerticle {
     }
 
     @Override
-    public void start(Promise<Void> startPromise) {
+    public void start(Promise<Void> serverStart) {
         try {
             gameBackend = new RPCClient();
         } catch (IOException | TimeoutException e) {
@@ -55,9 +57,14 @@ public class WebServer extends AbstractVerticle {
             .createHttpServer()
             .requestHandler(router)
             .listen(LISTENING_PORT, res -> {
-                if (res.succeeded())
-                    startPromise.complete();
-                else startPromise.fail(res.cause());
+                if (res.succeeded()) {
+                    var serviceStart = vertx.deployVerticle(new NotificationService());
+                    serviceStart.onSuccess(e -> {
+                        System.out.println(NotificationService.class.getSimpleName() + " is running!");
+                        serverStart.complete();
+                    });
+                }
+                else serverStart.fail(res.cause());
             });
     }
 
@@ -124,7 +131,10 @@ public class WebServer extends AbstractVerticle {
 
         router.get("/logout").blockingHandler(checkRefreshTokenCookiePresence(
                 MessageType.LOGOUT_USER,
-                (context, response) -> context.response().end(new JsonObject(response).getString("resultMessage"))
+                (context, response) -> {
+                    context.response().removeCookies("jwtRefreshToken");
+                    context.response().end(new JsonObject(response).getString("resultMessage"));
+                }
         ));
 
         return router;
@@ -170,6 +180,10 @@ public class WebServer extends AbstractVerticle {
                                 JsonObject responseBody = new JsonObject();
                                 responseBody.put("matchAccessCode", backendResponse.getString("matchAccessCode"));
                                 context.response().end(responseBody.encode());
+                                notifyNewMatch(
+                                        username,
+                                        context.response().getStatusCode(),
+                                        backendResponse.getJsonArray("matches"));
                             }).handle(routingContext);
                 }
         ));
@@ -186,6 +200,10 @@ public class WebServer extends AbstractVerticle {
                             (context, response) -> {
                                 JsonObject backendResponse = new JsonObject(response);
                                 context.response().end(backendResponse.getString("resultMessage"));
+                                notifyNewMatch(
+                                        username,
+                                        context.response().getStatusCode(),
+                                        backendResponse.getJsonArray("matches"));
                             }).handle(routingContext);
                 }
         ));
@@ -197,10 +215,16 @@ public class WebServer extends AbstractVerticle {
                         (context, response) -> {
                             JsonObject backendResponse = new JsonObject(response);
                             JsonObject responseBody = new JsonObject();
+                            JsonArray matches = backendResponse.getJsonArray("matches");
                             responseBody
-                                    .put("matches", backendResponse.getJsonArray("matches"))
+                                    .put("matches", matches)
                                     .put("pending", backendResponse.getBoolean("pending"));
                             context.response().end(responseBody.encode());
+
+                            // since this method is always executed each time a client creates
+                            // a match, reloads the page, search for a match, here is a good place
+                            // to create a websocket room for every existing active matches
+                            createCommunicationRoom(matches);
                         }).handle(routingContext)
         ));
 
@@ -248,6 +272,8 @@ public class WebServer extends AbstractVerticle {
                             (context, response) -> {
                                 JsonObject backendResponse = new JsonObject(response);
                                 context.response().end(backendResponse.getString("resultMessage"));
+
+                                sendRoomNotification(MessageType.MATCH_OVER, matchID, username);
                             }).handle(routingContext);
                 }
         ));
@@ -272,14 +298,52 @@ public class WebServer extends AbstractVerticle {
                                 JsonObject jsonResponse = new JsonObject()
                                         .put("rightP", submittedAttemptHints.getInteger("rightPositions"))
                                         .put("rightC", submittedAttemptHints.getInteger("rightColours"))
-                                        .put("status", updatedStatus); // the client expects this but it may be useless
+                                        .put("status", updatedStatus);
                                 context.response().end(jsonResponse.encode());
+
+                                boolean isMatchOver = updatedStatus
+                                        .getString("matchState")
+                                        .equals(MessageType.MATCH_OVER.getType());
+                                sendRoomNotification(
+                                        isMatchOver ? MessageType.MATCH_OVER : MessageType.NEW_MOVE,
+                                        matchID, username);
                             }
                     ).handle(routingContext);
                 }
         ));
 
         return router;
+    }
+
+    private void notifyNewMatch(String originPlayer, int statusCode, JsonArray createdMatch) {
+        if (statusCode == 201) {
+            createCommunicationRoom(createdMatch);
+            String createdMatchID = createdMatch.stream()
+                    .map(JsonObject.class::cast)
+                    .map(match -> match.getString("_id"))
+                    .findFirst().orElse("invalid ID");
+            sendRoomNotification(MessageType.NEW_MATCH, createdMatchID, originPlayer);
+        }
+    }
+
+    private void createCommunicationRoom(JsonArray matches) {
+        JsonObject matchesArray = new JsonObject().put("matchesArray", matches);
+        JsonObject notification = getNotificationRequest(MessageType.CREATE_ROOM, matchesArray);
+        vertx.eventBus().send(WS_SERVICE_ADDRESS, notification);
+    }
+
+    private void sendRoomNotification(MessageType notificationType, String matchID, String originPlayer) {
+        JsonObject notificationData = new JsonObject()
+                .put("matchID", matchID)
+                .put("originPlayer", originPlayer);
+        JsonObject notification = getNotificationRequest(notificationType, notificationData);
+        vertx.eventBus().send(WS_SERVICE_ADDRESS, notification);
+    }
+
+    private static JsonObject getNotificationRequest(MessageType notificationType, JsonObject data) {
+        return new JsonObject()
+                .put("notificationType", notificationType)
+                .put("data", data);
     }
 
     /*private Router getSettingsRouter() {
@@ -315,8 +379,6 @@ public class WebServer extends AbstractVerticle {
             Cookie cookie = routingContext.request().getCookie(cookieName);
             if (cookie != null) {
                 String refreshToken = cookie.getValue();
-                if (messageType.getType().equals(MessageType.LOGOUT_USER.getType()))
-                    routingContext.response().removeCookies(cookieName);
                 getHandler(messageType, refreshToken, consumer).handle(routingContext);
             }
             else {
@@ -341,7 +403,6 @@ public class WebServer extends AbstractVerticle {
     private Handler<RoutingContext> getHandler(MessageType messageType, BiConsumer<RoutingContext, String> consumer) {
         return routingContext -> getHandler(messageType, routingContext.body().asString(), consumer).handle(routingContext);
     }
-
 
     private Handler<RoutingContext> getHandler(MessageType messageType, String message,
                                                BiConsumer<RoutingContext, String> consumer) {
@@ -372,14 +433,21 @@ public class WebServer extends AbstractVerticle {
     }
 
     private Router getEventBusRouter() {
-        SockJSBridgeOptions options = new SockJSBridgeOptions();
-        options.addInboundPermitted(new PermittedOptions().setAddressRegex("huesle.*"));
-        options.addOutboundPermitted(new PermittedOptions().setAddressRegex("huesle.*"));
+        SockJSBridgeOptions options = new SockJSBridgeOptions()
+                .addInboundPermitted(new PermittedOptions().setAddressRegex("huesle.*"))
+                .addOutboundPermitted(new PermittedOptions().setAddressRegex("huesle.*"))
+                .setPingTimeout(6000);
+
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
         return sockJSHandler.bridge(options, event -> {
             if (event.type() == BridgeEventType.SOCKET_CREATED) {
-                System.out.println("new socket created " + event);
+                System.out.println("New socket created with URI: " + event.socket().uri());
             }
+
+            if (event.type() == BridgeEventType.SOCKET_CLOSED) {
+                System.out.println("The socket with URI: " + event.socket().uri() + " is closed");
+            }
+
             event.complete(true);
         });
     }
