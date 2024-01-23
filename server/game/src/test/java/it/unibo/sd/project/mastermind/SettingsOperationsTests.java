@@ -9,7 +9,6 @@ import it.unibo.sd.project.mastermind.model.AccessibilitySettings;
 import it.unibo.sd.project.mastermind.model.GameManager;
 import it.unibo.sd.project.mastermind.model.OperationResult;
 import it.unibo.sd.project.mastermind.model.Player;
-import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
 import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
@@ -29,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SettingsOperationsTests {
     private ExecutorService executorService;
     private RPCClient client;
-    private DBManager<Match> matchDB;
     private DBManager<Player> userDB;
     private Player player1;
 
