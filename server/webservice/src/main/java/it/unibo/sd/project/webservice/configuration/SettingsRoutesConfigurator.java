@@ -24,7 +24,7 @@ public class SettingsRoutesConfigurator extends RoutesConfigurator {
                                     settings.getBoolean("darkMode"),
                                     settings.getBoolean("colorblindMode")).encode());
                         }
-                )
+                ).handle(routingContext)
         ));
         router.put("/profileSettings").blockingHandler(getRequestObject(
                 (routingContext, request) -> {
@@ -39,7 +39,7 @@ public class SettingsRoutesConfigurator extends RoutesConfigurator {
                                 JsonObject result = new JsonObject()
                                         .put("resultMessage", backendResponse.getString("resultMessage"));
                                 context.response().end(result.encode());
-                            });
+                            }).handle(routingContext);
                 }
         ));
 
@@ -56,7 +56,7 @@ public class SettingsRoutesConfigurator extends RoutesConfigurator {
                                         .put("resultMessage", backendResponse.getString("resultMessage"));
                                 context.response().end(result.encode());
                             }
-                    );
+                    ).handle(routingContext);
                 }
         ));
 
