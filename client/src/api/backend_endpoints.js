@@ -1,6 +1,6 @@
 //User Management
 export const BACKEND_LOGIN_ENDPOINT = "/user/login";
-export const BACKEND_SETTINGS_ENDPOINT = "/protected/settings/profileSetting";
+export const BACKEND_SETTINGS_ENDPOINT = "/protected/settings/profileSettings";
 export const BACKEND_REGISTRATION_ENDPOINT = "/user/register";
 export const BACKEND_UPDATE_USERNAME = "/protected/settings/updateUsername";
 export const BACKEND_UPDATE_EMAIL = "/protected/settings/updateEmail";
@@ -27,7 +27,7 @@ export const BASE_NOTIFICATION_ADDRESS = "huesle.";
 //Stats Management
 export const BACKEND_GET_MATCHES_ENDPOINT = "/protected/game/getMatches";
 export const BACKEND_UPDATE_USER_PIC_ENDPOINT =
-    "/protected/settings/profilePics";
+    "/protected/settings/profilePicture";
 export const BACKEND_GET_USER_STATS_ENDPOINT = "/protected/stats/userStats";
 
 //Password Reset
