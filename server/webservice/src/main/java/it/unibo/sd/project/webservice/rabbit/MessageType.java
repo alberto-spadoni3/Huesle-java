@@ -16,6 +16,11 @@ public enum MessageType {
     LEAVE_MATCH("leaveMatch"),
     DO_GUESS("doGuess"),
 
+    // Settings-related types
+    GET_SETTINGS("getSettings"),
+    UPDATE_SETTINGS("updateSettings"),
+    UPDATE_PROFILE_PIC("updateProfilePicId"),
+
     // Websocket-related types
     CREATE_ROOM("createRoom"),
     NEW_MATCH("newMatch"),

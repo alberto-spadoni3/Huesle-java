@@ -3,11 +3,8 @@ package it.unibo.sd.project.webservice;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
@@ -20,20 +17,17 @@ import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
-import it.unibo.sd.project.webservice.rabbit.MessageType;
-import it.unibo.sd.project.webservice.rabbit.RPCClient;
+import it.unibo.sd.project.webservice.configuration.GameRoutesConfigurator;
+import it.unibo.sd.project.webservice.configuration.SettingsRoutesConfigurator;
+import it.unibo.sd.project.webservice.configuration.UserRoutesConfigurator;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeoutException;
-import java.util.function.BiConsumer;
 
 public class WebServer extends AbstractVerticle {
     private final short LISTENING_PORT;
     public static final String BASE_ADDRESS = "huesle.";
     public static final String WS_SERVICE_ADDRESS = BASE_ADDRESS + "notification.service";
-    private RPCClient gameBackend;
 
     public WebServer(short listeningPort) {
         LISTENING_PORT = listeningPort;
@@ -41,12 +35,6 @@ public class WebServer extends AbstractVerticle {
 
     @Override
     public void start(Promise<Void> serverStart) {
-        try {
-            gameBackend = new RPCClient();
-        } catch (IOException | TimeoutException e) {
-            System.out.println(e.getMessage());
-        }
-
         Router router = Router.router(vertx);
 
         router.route().handler(handleCORS());
@@ -73,18 +61,74 @@ public class WebServer extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
         router.route().consumes("application/json");
 
-        JWTAuth jwtAccessProvider = getJwtAuthProvider();
 
         // Non-protected routes
-        router.route("/user/*").subRouter(getUserRouter());
+        UserRoutesConfigurator userRoutesConfigurator = new UserRoutesConfigurator(vertx);
+        router.route("/user/*").subRouter(userRoutesConfigurator.configure());
 
         // Protected routes
+        JWTAuth jwtAccessProvider = getJwtAuthProvider();
         router.route("/protected/*")
                 .handler(JWTAuthHandler.create(jwtAccessProvider))
                 .failureHandler(this::manageAuthFailures)
                 .subRouter(getProtectedRouter());
 
         return router;
+    }
+
+    private void manageAuthFailures(RoutingContext routingContext) {
+        HttpServerResponse response = routingContext.response();
+        Throwable cause = routingContext.failure().getCause();
+        if (cause != null)
+            if (cause.getMessage().contains("token expired"))
+                response.setStatusCode(403).end("JWT token expired");
+            else
+                response.setStatusCode(400).end(cause.getMessage());
+        else
+            response.setStatusCode(500).end("Internal Server Error");
+    }
+
+    private Router getProtectedRouter() {
+        Router router = Router.router(vertx);
+
+        GameRoutesConfigurator gameRoutesConfigurator = new GameRoutesConfigurator(vertx);
+        router.route("/game/*").subRouter(gameRoutesConfigurator.configure());
+
+        SettingsRoutesConfigurator settingsRoutesConfigurator = new SettingsRoutesConfigurator(vertx);
+        router.route("/settings/*").subRouter(settingsRoutesConfigurator.configure());
+
+        // router.route("/stats/*").subRouter(getStatsRouter());
+
+        return router;
+    }
+
+    private JWTAuth getJwtAuthProvider() {
+        String symmetricKey = System.getenv("ACCESS_TOKEN_SECRET");
+        JWTAuthOptions jwtAuthOptions = new JWTAuthOptions()
+                .addPubSecKey(new PubSecKeyOptions()
+                        .setAlgorithm("HS256")
+                        .setBuffer(symmetricKey));
+        return JWTAuth.create(vertx, jwtAuthOptions);
+    }
+
+    /*
+    private Handler<RoutingContext> checkRefreshTokenCookiePresence(MessageType messageType,
+                                                                    BiConsumer<RoutingContext, String> consumer) {
+        return routingContext -> {
+            String cookieName = "jwtRefreshToken";
+            Cookie cookie = routingContext.request().getCookie(cookieName);
+            if (cookie != null) {
+                String refreshToken = cookie.getValue();
+                getHandler(messageType, refreshToken, consumer).handle(routingContext);
+            }
+            else {
+                int statusCode = messageType.getType().equals(MessageType.LOGOUT_USER.getType()) ? 204 : 401;
+                routingContext
+                        .response()
+                        .setStatusCode(statusCode)
+                        .end();
+            }
+        };
     }
 
     private Router getUserRouter() {
@@ -115,19 +159,19 @@ public class WebServer extends AbstractVerticle {
                 }));
 
         router.get("/refreshToken").blockingHandler(checkRefreshTokenCookiePresence(
-                        MessageType.REFRESH_ACCESS_TOKEN,
-                        (context, response) -> {
-                            JsonObject backendResponse = new JsonObject(response);
-                            JsonObject user = backendResponse.getJsonObject("relatedUser");
-                            String accessToken = backendResponse.getString("accessToken");
-                            JsonObject responseBody = new JsonObject();
-                            responseBody
-                                    .put("username", user.getString("username"))
-                                    .put("newAccessToken", accessToken)
-                                    .put("profilePicID", user.getInteger("profilePictureID"))
-                                    .put("email", user.getString("email"));
-                            context.response().end(responseBody.encode());
-                        }));
+                MessageType.REFRESH_ACCESS_TOKEN,
+                (context, response) -> {
+                    JsonObject backendResponse = new JsonObject(response);
+                    JsonObject user = backendResponse.getJsonObject("relatedUser");
+                    String accessToken = backendResponse.getString("accessToken");
+                    JsonObject responseBody = new JsonObject();
+                    responseBody
+                            .put("username", user.getString("username"))
+                            .put("newAccessToken", accessToken)
+                            .put("profilePicID", user.getInteger("profilePictureID"))
+                            .put("email", user.getString("email"));
+                    context.response().end(responseBody.encode());
+                }));
 
         router.get("/logout").blockingHandler(checkRefreshTokenCookiePresence(
                 MessageType.LOGOUT_USER,
@@ -136,28 +180,6 @@ public class WebServer extends AbstractVerticle {
                     context.response().end(new JsonObject(response).getString("resultMessage"));
                 }
         ));
-
-        return router;
-    }
-
-    private void manageAuthFailures(RoutingContext routingContext) {
-        HttpServerResponse response = routingContext.response();
-        Throwable cause = routingContext.failure().getCause();
-        if (cause != null)
-            if (cause.getMessage().contains("token expired"))
-                response.setStatusCode(403).end("JWT token expired");
-            else
-                response.setStatusCode(400).end(cause.getMessage());
-        else
-            response.setStatusCode(500).end("Internal Server Error");
-    }
-
-    private Router getProtectedRouter() {
-        Router router = Router.router(vertx);
-
-        router.route("/game/*").subRouter(getGameRouter());
-        // router.route("/settings/*").subRouter(getSettingsRouter());
-        // router.route("/stats/*").subRouter(getStatsRouter());
 
         return router;
     }
@@ -370,7 +392,7 @@ public class WebServer extends AbstractVerticle {
 
 
         return router;
-    }*/
+    }
 
     private Handler<RoutingContext> extractUsername(BiConsumer<RoutingContext, String> consumer) {
         return routingContext -> {
@@ -380,34 +402,6 @@ public class WebServer extends AbstractVerticle {
             else
                 consumer.accept(routingContext, username);
         };
-    }
-
-    private Handler<RoutingContext> checkRefreshTokenCookiePresence(MessageType messageType,
-                                                                    BiConsumer<RoutingContext, String> consumer) {
-        return routingContext -> {
-            String cookieName = "jwtRefreshToken";
-            Cookie cookie = routingContext.request().getCookie(cookieName);
-            if (cookie != null) {
-                String refreshToken = cookie.getValue();
-                getHandler(messageType, refreshToken, consumer).handle(routingContext);
-            }
-            else {
-                int statusCode = messageType.getType().equals(MessageType.LOGOUT_USER.getType()) ? 204 : 401;
-                routingContext
-                        .response()
-                        .setStatusCode(statusCode)
-                        .end();
-            }
-        };
-    }
-
-    private JWTAuth getJwtAuthProvider() {
-        String symmetricKey = System.getenv("ACCESS_TOKEN_SECRET");
-        JWTAuthOptions jwtAuthOptions = new JWTAuthOptions()
-                .addPubSecKey(new PubSecKeyOptions()
-                        .setAlgorithm("HS256")
-                        .setBuffer(symmetricKey));
-        return JWTAuth.create(vertx, jwtAuthOptions);
     }
 
     private Handler<RoutingContext> getHandler(MessageType messageType, BiConsumer<RoutingContext, String> consumer) {
@@ -428,7 +422,7 @@ public class WebServer extends AbstractVerticle {
             else
                 routingContext.response().end(backendResponse.getString("resultMessage"));
         });
-    }
+    } */
 
     private Handler<RoutingContext> handleCORS() {
         List<String> allowedOrigins = List.of("http://localhost", "http://localhost:3000");
