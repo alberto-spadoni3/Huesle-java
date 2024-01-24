@@ -1,7 +1,7 @@
 import ArrowLeftRoundedIcon from "@mui/icons-material/ArrowLeftRounded";
 import ArrowRightRoundedIcon from "@mui/icons-material/ArrowRightRounded";
 import { Stack, IconButton, Skeleton, Button } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import { BACKEND_UPDATE_USER_PIC_ENDPOINT } from "../api/backend_endpoints";
 import { useSnackbar } from "notistack";
@@ -28,6 +28,7 @@ const UserPictureSelector = ({ size }) => {
     };
 
     const updateUserPicture = async () => {
+        console.log("updating...");
         try {
             const response = await axiosPrivate.put(
                 BACKEND_UPDATE_USER_PIC_ENDPOINT,
@@ -36,30 +37,16 @@ const UserPictureSelector = ({ size }) => {
 
             if (response.status === 200) {
                 setCurrentUserPic(picSelector);
-                enqueueSnackbar(response.data.message, { variant: "success" });
+                enqueueSnackbar(response.data?.resultMessage, {
+                    variant: "success",
+                    autoHideDuration: 2500,
+                });
                 setAuth({ ...auth, profilePicID: picSelector });
             }
         } catch (error) {
             console.log(error);
         }
     };
-
-    useEffect(() => {
-        /*const loadUserPic = async () => {
-            try {
-                const response = await axiosPrivate.get(
-                    BACKEND_UPDATE_USERPIC_ENDPOIND
-                );
-                const { userPicID } = response.data;
-                setPicSelector(userPicID? userPicID: -1);
-                setCurrentUserPic(userPicID);
-            } catch (error) {
-                console.log(error);
-            }
-        };
-        loadUserPic();
-        */
-    }, []);
 
     return (
         <>
@@ -107,7 +94,12 @@ const UserPictureSelector = ({ size }) => {
             <Button
                 variant="outlined"
                 disabled={currentUserPic === picSelector}
-                sx={{ mt: 1.5, mb: 1.5, borderColor: "button.main", color: "text.secondary"  }}
+                sx={{
+                    mt: 1.5,
+                    mb: 1.5,
+                    borderColor: "button.main",
+                    color: "text.secondary",
+                }}
                 onClick={updateUserPicture}
             >
                 Update picture

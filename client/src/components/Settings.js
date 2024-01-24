@@ -5,10 +5,12 @@ import BackButton from "./BackButton";
 import { BACKEND_SETTINGS_ENDPOINT } from "../api/backend_endpoints";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import useGameData from "../hooks/useGameData";
+import { useSnackbar } from "notistack";
 
 const Settings = ({ themeMode, setThemeMode }) => {
     const axiosPrivate = useAxiosPrivate();
     const { colorblindMode, setColorblindMode } = useGameData();
+    const { enqueueSnackbar } = useSnackbar();
     const dmSwitch = { "aria-label": "Switch for dark mode" };
     const cbSwitch = { "aria-label": "Switch for colorblind mode" };
 
@@ -49,7 +51,10 @@ const Settings = ({ themeMode, setThemeMode }) => {
             );
 
             if (response.status === 200) {
-                console.log(`Settings updated succesfully`);
+                enqueueSnackbar(response.data?.resultMessage, {
+                    variant: "success",
+                    autoHideDuration: 2500,
+                });
             }
         } catch (error) {
             if (!error?.response) {
@@ -57,7 +62,10 @@ const Settings = ({ themeMode, setThemeMode }) => {
             } else if (error.response?.status === 401) {
                 console.log("Unauthorized");
             } else {
-                console.log("Save settings failed");
+                enqueueSnackbar(error?.response.data?.resultMessage, {
+                    variant: "error",
+                    autoHideDuration: 2500,
+                });
             }
         }
     };
@@ -117,7 +125,7 @@ const Settings = ({ themeMode, setThemeMode }) => {
                                 <Switch
                                     color="switch"
                                     checked={themeMode === "dark"}
-                                    onChange={(e) => {
+                                    onChange={(_e) => {
                                         const darkMode =
                                             themeMode === "dark"
                                                 ? "light"
@@ -142,7 +150,7 @@ const Settings = ({ themeMode, setThemeMode }) => {
                                 <Switch
                                     color="switch"
                                     checked={colorblindMode}
-                                    onClick={(e) => {
+                                    onClick={(_e) => {
                                         const cbMode = !colorblindMode;
                                         setColorblindMode(cbMode);
                                         saveSettings(
