@@ -5,9 +5,7 @@ import it.unibo.sd.project.mastermind.model.AccessibilitySettings;
 import it.unibo.sd.project.mastermind.model.Player;
 import org.junit.jupiter.api.Test;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 

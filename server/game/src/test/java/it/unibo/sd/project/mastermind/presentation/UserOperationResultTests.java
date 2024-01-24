@@ -1,6 +1,5 @@
 package it.unibo.sd.project.mastermind.presentation;
 
-import io.vertx.ext.auth.User;
 import it.unibo.sd.project.mastermind.model.AccessibilitySettings;
 import it.unibo.sd.project.mastermind.model.OperationResult;
 import it.unibo.sd.project.mastermind.model.Player;
@@ -49,7 +48,7 @@ public class UserOperationResultTests {
         short statusCode = 400;
         String resultMessage = "error";
 
-        it.unibo.sd.project.mastermind.model.OperationResult deserialized = Presentation.deserializeAs(
+        OperationResult deserialized = Presentation.deserializeAs(
                 getFailedOperationResultAsJson(statusCode, resultMessage),
                 UserOperationResult.class
         );
