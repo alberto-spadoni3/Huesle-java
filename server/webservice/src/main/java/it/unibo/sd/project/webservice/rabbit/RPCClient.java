@@ -1,4 +1,5 @@
 package it.unibo.sd.project.webservice.rabbit;
+
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -7,20 +8,30 @@ import com.rabbitmq.client.ConnectionFactory;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 public class RPCClient implements AutoCloseable {
-
-    private final Connection connection;
-    private Channel channel;
+    private static Connection connection;
+    private static Channel channel;
     private static final String EXCHANGE_NAME = "Web";
 
-    public RPCClient() throws IOException, TimeoutException {
+    private static final class InstanceHolder {
+        private static final RPCClient INSTANCE = new RPCClient();
+    }
+
+    private RPCClient() {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(System.getenv("RABBIT_HOST"));
-        connection = factory.newConnection();
-        channel = connection.createChannel();
+        try {
+            connection = factory.newConnection();
+            channel = connection.createChannel();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static RPCClient getInstance() {
+        return InstanceHolder.INSTANCE;
     }
 
     public void call(MessageType messageType, String message, Consumer<String> responseConsumer) {
