@@ -1,6 +1,6 @@
 package it.unibo.sd.project.mastermind.model.match;
 
-import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.user.Player;
 
 import java.util.List;
 import java.util.Optional;

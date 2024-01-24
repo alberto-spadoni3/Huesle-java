@@ -1,6 +1,6 @@
-package it.unibo.sd.project.mastermind.model;
+package it.unibo.sd.project.mastermind.model.match;
 
-import it.unibo.sd.project.mastermind.model.match.MatchStatus;
+import it.unibo.sd.project.mastermind.model.OperationResult;
 
 public class GuessOperationResult extends OperationResult {
     private final MatchStatus updatedState;

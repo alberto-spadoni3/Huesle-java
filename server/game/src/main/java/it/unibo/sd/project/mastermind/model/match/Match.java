@@ -1,8 +1,6 @@
 package it.unibo.sd.project.mastermind.model.match;
 
-import it.unibo.sd.project.mastermind.model.Attempt;
-import it.unibo.sd.project.mastermind.model.Player;
-import it.unibo.sd.project.mastermind.model.SecretCode;
+import it.unibo.sd.project.mastermind.model.user.Player;
 
 import java.util.ArrayList;
 import java.util.List;

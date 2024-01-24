@@ -2,7 +2,7 @@ package it.unibo.sd.project.mastermind.presentation.deserializers;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import it.unibo.sd.project.mastermind.model.SecretCode;
+import it.unibo.sd.project.mastermind.model.match.SecretCode;
 
 import java.util.ArrayList;
 

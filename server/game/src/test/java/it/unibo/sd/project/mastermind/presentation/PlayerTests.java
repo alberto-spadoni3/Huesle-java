@@ -1,8 +1,8 @@
 package it.unibo.sd.project.mastermind.presentation;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
-import it.unibo.sd.project.mastermind.model.AccessibilitySettings;
-import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.user.AccessibilitySettings;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.Function;

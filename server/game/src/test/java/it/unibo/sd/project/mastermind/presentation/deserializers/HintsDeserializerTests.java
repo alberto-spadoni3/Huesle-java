@@ -1,6 +1,6 @@
 package it.unibo.sd.project.mastermind.presentation.deserializers;
 
-import it.unibo.sd.project.mastermind.model.Hints;
+import it.unibo.sd.project.mastermind.model.match.Hints;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import org.junit.jupiter.api.Test;
 

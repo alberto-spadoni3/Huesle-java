@@ -3,8 +3,8 @@ package it.unibo.sd.project.mastermind.presentation.deserializers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import it.unibo.sd.project.mastermind.model.Attempt;
-import it.unibo.sd.project.mastermind.model.Hints;
+import it.unibo.sd.project.mastermind.model.match.Attempt;
+import it.unibo.sd.project.mastermind.model.match.Hints;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 
 import java.util.ArrayList;

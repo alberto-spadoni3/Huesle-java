@@ -1,6 +1,5 @@
-package it.unibo.sd.project.mastermind;
+package it.unibo.sd.project.mastermind.model.user;
 
-import it.unibo.sd.project.mastermind.model.AccessibilitySettings;
 import it.unibo.sd.project.mastermind.model.OperationRequest;
 
 public class SettingsRequest extends OperationRequest {

@@ -2,8 +2,8 @@ package it.unibo.sd.project.mastermind.presentation.deserializers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import it.unibo.sd.project.mastermind.model.AccessibilitySettings;
-import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.user.AccessibilitySettings;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 
 public class PlayerDeserializer extends AbstractJsonDeserializer<Player> {

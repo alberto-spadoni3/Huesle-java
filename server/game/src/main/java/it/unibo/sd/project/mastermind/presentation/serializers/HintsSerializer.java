@@ -2,7 +2,7 @@ package it.unibo.sd.project.mastermind.presentation.serializers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import it.unibo.sd.project.mastermind.model.Hints;
+import it.unibo.sd.project.mastermind.model.match.Hints;
 
 public class HintsSerializer extends AbstractJsonSerializer<Hints> {
     @Override

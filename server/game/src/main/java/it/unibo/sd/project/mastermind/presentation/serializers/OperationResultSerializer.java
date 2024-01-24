@@ -4,9 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.*;
-import it.unibo.sd.project.mastermind.model.match.Match;
-import it.unibo.sd.project.mastermind.model.match.MatchOperationResult;
-import it.unibo.sd.project.mastermind.model.match.MatchStatus;
+import it.unibo.sd.project.mastermind.model.match.*;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 

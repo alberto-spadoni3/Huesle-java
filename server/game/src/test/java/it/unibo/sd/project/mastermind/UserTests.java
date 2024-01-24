@@ -2,7 +2,7 @@ package it.unibo.sd.project.mastermind;
 
 import com.mongodb.client.model.Filters;
 import it.unibo.sd.project.mastermind.model.OperationResult;
-import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
 import it.unibo.sd.project.mastermind.model.user.UserManager;

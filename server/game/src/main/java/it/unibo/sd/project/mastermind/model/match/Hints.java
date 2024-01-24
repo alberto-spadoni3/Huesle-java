@@ -1,4 +1,4 @@
-package it.unibo.sd.project.mastermind.model;
+package it.unibo.sd.project.mastermind.model.match;
 
 public class Hints {
     private final byte rightPositions;

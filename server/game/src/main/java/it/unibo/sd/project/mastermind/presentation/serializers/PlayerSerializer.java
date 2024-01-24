@@ -2,7 +2,7 @@ package it.unibo.sd.project.mastermind.presentation.serializers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.user.Player;
 
 public class PlayerSerializer extends AbstractJsonSerializer<Player> {
     @Override

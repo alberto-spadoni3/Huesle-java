@@ -1,8 +1,8 @@
 package it.unibo.sd.project.mastermind;
 
-import it.unibo.sd.project.mastermind.model.Attempt;
-import it.unibo.sd.project.mastermind.model.Player;
-import it.unibo.sd.project.mastermind.model.SecretCode;
+import it.unibo.sd.project.mastermind.model.match.Attempt;
+import it.unibo.sd.project.mastermind.model.user.Player;
+import it.unibo.sd.project.mastermind.model.match.SecretCode;
 import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchState;
 import it.unibo.sd.project.mastermind.model.match.MatchStatus;

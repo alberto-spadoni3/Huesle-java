@@ -1,4 +1,4 @@
-package it.unibo.sd.project.mastermind.model;
+package it.unibo.sd.project.mastermind.model.user;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import java.util.Objects;

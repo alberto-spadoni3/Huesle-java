@@ -1,10 +1,10 @@
 package it.unibo.sd.project.mastermind.controllers;
 
 import com.mongodb.client.MongoDatabase;
-import it.unibo.sd.project.mastermind.model.Attempt;
-import it.unibo.sd.project.mastermind.model.GuessOperationResult;
-import it.unibo.sd.project.mastermind.model.GuessRequest;
-import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.match.Attempt;
+import it.unibo.sd.project.mastermind.model.match.GuessOperationResult;
+import it.unibo.sd.project.mastermind.model.match.GuessRequest;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.match.*;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.presentation.Presentation;

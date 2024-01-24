@@ -1,8 +1,8 @@
 package it.unibo.sd.project.mastermind.presentation;
 
-import it.unibo.sd.project.mastermind.model.AccessibilitySettings;
+import it.unibo.sd.project.mastermind.model.user.AccessibilitySettings;
 import it.unibo.sd.project.mastermind.model.OperationResult;
-import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import org.junit.jupiter.api.Test;
 

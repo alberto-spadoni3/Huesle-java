@@ -9,6 +9,7 @@ import it.unibo.sd.project.mastermind.model.*;
 import it.unibo.sd.project.mastermind.model.match.*;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import it.unibo.sd.project.mastermind.rabbit.MessageType;

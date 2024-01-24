@@ -1,4 +1,6 @@
-package it.unibo.sd.project.mastermind.model;
+package it.unibo.sd.project.mastermind.model.match;
+
+import it.unibo.sd.project.mastermind.model.OperationRequest;
 
 public class GuessRequest extends OperationRequest {
     private final String matchID;

@@ -1,7 +1,6 @@
 package it.unibo.sd.project.mastermind.model.user;
 
 import it.unibo.sd.project.mastermind.model.OperationResult;
-import it.unibo.sd.project.mastermind.model.Player;
 
 public class UserOperationResult extends OperationResult {
     private final Player relatedUser;

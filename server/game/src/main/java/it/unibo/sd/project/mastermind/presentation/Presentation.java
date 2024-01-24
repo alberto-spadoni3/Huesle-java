@@ -1,9 +1,11 @@
 package it.unibo.sd.project.mastermind.presentation;
 
-import it.unibo.sd.project.mastermind.SettingsRequest;
+import it.unibo.sd.project.mastermind.model.user.SettingsRequest;
 import it.unibo.sd.project.mastermind.model.*;
 import it.unibo.sd.project.mastermind.model.match.*;
+import it.unibo.sd.project.mastermind.model.user.AccessibilitySettings;
 import it.unibo.sd.project.mastermind.model.user.LoginRequest;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import it.unibo.sd.project.mastermind.presentation.deserializers.*;
 import it.unibo.sd.project.mastermind.presentation.serializers.*;

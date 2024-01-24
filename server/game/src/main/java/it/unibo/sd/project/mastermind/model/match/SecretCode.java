@@ -1,4 +1,4 @@
-package it.unibo.sd.project.mastermind.model;
+package it.unibo.sd.project.mastermind.model.match;
 
 import java.util.ArrayList;
 import java.util.List;

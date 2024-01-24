@@ -1,7 +1,7 @@
 package it.unibo.sd.project.mastermind.presentation.serializers;
 
 import it.unibo.sd.project.mastermind.model.Game;
-import it.unibo.sd.project.mastermind.model.Player;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import org.junit.jupiter.api.Test;
 
