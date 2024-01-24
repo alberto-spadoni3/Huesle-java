@@ -63,7 +63,7 @@ public class Player {
     }
 
     private String getHashedPassword(String clearPassword) {
-        return BCrypt.withDefaults().hashToString(14, clearPassword.toCharArray());
+        return BCrypt.withDefaults().hashToString(12, clearPassword.toCharArray());
     }
 
     public void setProfilePictureID(byte profilePictureID) {

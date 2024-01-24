@@ -4,6 +4,11 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 import it.unibo.sd.project.mastermind.model.AccessibilitySettings;
 import it.unibo.sd.project.mastermind.model.Player;
 import org.junit.jupiter.api.Test;
+
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PlayerTests {
@@ -110,6 +115,27 @@ public class PlayerTests {
         assertFalse(deserializedPlayer.isDisabled());
         assertNull(deserializedPlayer.getRefreshToken());
         assertEquals(refreshToken, deserializedPlayerWithToken.getRefreshToken());
+    }
+
+    @Test
+    void hashPasswordSpeed() {
+        int hashCost = 18;
+        for (int i = hashCost; i > 3; i--) {
+            long executionTime = getExecutionTime(i, this::getHashedPasswordWithCost);
+            System.out.println("Execution time for cost " + i + ": " + executionTime + " ms");
+        }
+    }
+
+    private long getExecutionTime(int cost, Function<Integer, Void> f) {
+        long startTime = System.currentTimeMillis();
+        f.apply(cost);
+        long endTime = System.currentTimeMillis();
+        return (endTime - startTime);
+    }
+
+    private Void getHashedPasswordWithCost(int cost) {
+        System.out.println(BCrypt.withDefaults().hashToString(cost, clearPassword.toCharArray()));
+        return null;
     }
 
     private String getHashedPassword() {
