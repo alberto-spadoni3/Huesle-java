@@ -23,12 +23,12 @@ public abstract class RoutesConfigurator {
 
     protected abstract Router configure();
 
-    protected Handler<RoutingContext> getHandler(MessageType messageType, BiConsumer<RoutingContext, String> consumer) {
+    protected Handler<RoutingContext> getHandler(MessageType messageType, BiConsumer<RoutingContext, JsonObject> consumer) {
         return routingContext -> getHandler(messageType, routingContext.body().asString(), consumer).handle(routingContext);
     }
 
     protected Handler<RoutingContext> getHandler(MessageType messageType, String message,
-                                               BiConsumer<RoutingContext, String> consumer) {
+                                               BiConsumer<RoutingContext, JsonObject> consumer) {
         return routingContext -> gameBackend.call(messageType, message, res -> {
             JsonObject backendResponse = new JsonObject(res);
             int statusCode = backendResponse.getInteger("statusCode");
@@ -37,7 +37,7 @@ public abstract class RoutesConfigurator {
                     .putHeader("Content-Type", "application/json")
                     .setStatusCode(statusCode);
             if (statusCode >= 200 && statusCode <= 204)
-                consumer.accept(routingContext, backendResponse.encode());
+                consumer.accept(routingContext, backendResponse);
             else
                 routingContext.response().end(backendResponse.getString("resultMessage"));
         });
@@ -51,5 +51,14 @@ public abstract class RoutesConfigurator {
             else
                 consumer.accept(routingContext, username);
         };
+    }
+
+    protected Handler<RoutingContext> getRequestObject(BiConsumer<RoutingContext, JsonObject> consumer) {
+        return routingContext -> extractUsername(
+                (context, username) ->
+                    consumer.accept(
+                        routingContext,
+                        new JsonObject().put("requesterUsername", username))
+        ).handle(routingContext);
     }
 }

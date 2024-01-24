@@ -1,15 +1,11 @@
 package it.unibo.sd.project.webservice.configuration;
 
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import it.unibo.sd.project.webservice.WebServer;
 import it.unibo.sd.project.webservice.rabbit.MessageType;
-
-import java.util.function.BiConsumer;
 
 public class GameRoutesConfigurator extends RoutesConfigurator {
     public GameRoutesConfigurator(Vertx vertx) {
@@ -18,25 +14,22 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
 
     @Override
     public Router configure() {
-        router.post("/searchMatch").blockingHandler(extractUsername(
-                (routingContext, username) -> {
+        router.post("/searchMatch").blockingHandler(getRequestObject(
+                (routingContext, matchRequest) -> {
                     JsonObject body = routingContext.body().asJsonObject();
                     boolean isMatchPrivate = body.getBoolean("secret");
-                    JsonObject matchRequest = new JsonObject();
                     matchRequest
-                            .put("requesterUsername", username)
                             .put("isPrivateMatch", isMatchPrivate);
 
                     getHandler(MessageType.SEARCH_MATCH, matchRequest.encode(),
-                            (context, response) -> {
-                                JsonObject backendResponse = new JsonObject(response);
+                            (context, backendResponse) -> {
                                 JsonObject responseBody = new JsonObject();
                                 responseBody
                                         .put("resultMessage", backendResponse.getString("resultMessage"))
                                         .put("matchAccessCode", backendResponse.getString("matchAccessCode"));
                                 context.response().end(responseBody.encode());
                                 notifyNewMatch(
-                                        username,
+                                        matchRequest.getString("requesterUsername"),
                                         context.response().getStatusCode(),
                                         backendResponse.getJsonArray("matches"));
                             }).handle(routingContext);
@@ -45,26 +38,21 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
 
         router.delete("/searchMatch").blockingHandler(extractUsername(
                 (routingContext, username) -> getHandler(MessageType.CANCEL_MATCH_SEARCH, username,
-                        (context, response) -> {
-                            JsonObject backendResponse = new JsonObject(response);
-                            context.response().end(backendResponse.getString("resultMessage"));
-                        }).handle(routingContext)
+                        (context, backendResponse) ->
+                                context.response().end(backendResponse.getString("resultMessage"))).handle(routingContext)
         ));
 
-        router.post("/joinPrivateMatch").blockingHandler(extractUsername(
-                (routingContext, username) -> {
+        router.post("/joinPrivateMatch").blockingHandler(getRequestObject(
+                (routingContext, matchRequest) -> {
                     String matchAccessCode = routingContext.body().asJsonObject().getString("matchAccessCode");
-                    JsonObject matchRequest = new JsonObject();
                     matchRequest
-                            .put("requesterUsername", username)
                             .put("matchAccessCode", matchAccessCode);
 
                     getHandler(MessageType.JOIN_PRIVATE_MATCH, matchRequest.encode(),
-                            (context, response) -> {
-                                JsonObject backendResponse = new JsonObject(response);
+                            (context, backendResponse) -> {
                                 context.response().end(backendResponse.getString("resultMessage"));
                                 notifyNewMatch(
-                                        username,
+                                        matchRequest.getString("requesterUsername"),
                                         context.response().getStatusCode(),
                                         backendResponse.getJsonArray("matches"));
                             }).handle(routingContext);
@@ -75,8 +63,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
                 (routingContext, username) -> getHandler(
                         MessageType.GET_MATCHES_OF_USER,
                         username,
-                        (context, response) -> {
-                            JsonObject backendResponse = new JsonObject(response);
+                        (context, backendResponse) -> {
                             JsonObject responseBody = new JsonObject();
                             JsonArray matches = backendResponse.getJsonArray("matches");
                             responseBody
@@ -97,8 +84,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
                     getHandler(
                             MessageType.GET_MATCH,
                             matchID,
-                            (context, response) -> {
-                                JsonObject backendResponse = new JsonObject(response);
+                            (context, backendResponse) -> {
                                 JsonArray matches = backendResponse.getJsonArray("matches");
                                 // create an object containing the profilePicture of each player
                                 // in order to satisfy client's needs
@@ -132,8 +118,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
                     getHandler(
                             MessageType.LEAVE_MATCH,
                             request.encode(),
-                            (context, response) -> {
-                                JsonObject backendResponse = new JsonObject(response);
+                            (context, backendResponse) -> {
                                 context.response().end(backendResponse.getString("resultMessage"));
 
                                 sendRoomNotification(MessageType.MATCH_OVER, matchID, username);
@@ -154,8 +139,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
                     getHandler(
                             MessageType.DO_GUESS,
                             request.encode(),
-                            (context, response) -> {
-                                JsonObject backendResponse = new JsonObject(response);
+                            (context, backendResponse) -> {
                                 JsonObject updatedStatus = backendResponse.getJsonObject("updatedStatus");
                                 JsonObject submittedAttemptHints = backendResponse.getJsonObject("submittedAttemptHints");
                                 JsonObject jsonResponse = new JsonObject()

@@ -22,8 +22,7 @@ public class UserRoutesConfigurator extends RoutesConfigurator {
 
         router.post("/login").blockingHandler(getHandler(
                 MessageType.LOGIN_USER,
-                (routingContext, response) -> {
-                    JsonObject backendResponse = new JsonObject(response);
+                (routingContext, backendResponse) -> {
                     JsonObject user = backendResponse.getJsonObject("relatedUser");
                     String accessToken = backendResponse.getString("accessToken");
                     String refreshToken = user.getString("refreshToken");
@@ -43,8 +42,7 @@ public class UserRoutesConfigurator extends RoutesConfigurator {
 
         router.get("/refreshToken").blockingHandler(checkRefreshTokenCookiePresence(
                 MessageType.REFRESH_ACCESS_TOKEN,
-                (context, response) -> {
-                    JsonObject backendResponse = new JsonObject(response);
+                (context, backendResponse) -> {
                     JsonObject user = backendResponse.getJsonObject("relatedUser");
                     String accessToken = backendResponse.getString("accessToken");
                     JsonObject responseBody = new JsonObject();
@@ -58,9 +56,9 @@ public class UserRoutesConfigurator extends RoutesConfigurator {
 
         router.get("/logout").blockingHandler(checkRefreshTokenCookiePresence(
                 MessageType.LOGOUT_USER,
-                (context, response) -> {
+                (context, backendResponse) -> {
                     context.response().removeCookies("jwtRefreshToken");
-                    context.response().end(new JsonObject(response).getString("resultMessage"));
+                    context.response().end(backendResponse.getString("resultMessage"));
                 }
         ));
 
@@ -68,7 +66,7 @@ public class UserRoutesConfigurator extends RoutesConfigurator {
     }
 
     private Handler<RoutingContext> checkRefreshTokenCookiePresence(MessageType messageType,
-                                                                    BiConsumer<RoutingContext, String> consumer) {
+                                                                    BiConsumer<RoutingContext, JsonObject> consumer) {
         return routingContext -> {
             String cookieName = "jwtRefreshToken";
             Cookie cookie = routingContext.request().getCookie(cookieName);
