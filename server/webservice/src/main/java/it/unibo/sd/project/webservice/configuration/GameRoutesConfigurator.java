@@ -38,8 +38,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
 
         router.delete("/searchMatch").blockingHandler(extractUsername(
                 (routingContext, username) -> getHandler(MessageType.CANCEL_MATCH_SEARCH, username,
-                        (context, backendResponse) ->
-                                context.response().end(backendResponse.getString("resultMessage"))).handle(routingContext)
+                        respondWithMessage()).handle(routingContext)
         ));
 
         router.post("/joinPrivateMatch").blockingHandler(getRequestObject(

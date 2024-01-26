@@ -21,7 +21,7 @@ public abstract class RoutesConfigurator {
         gameBackend = RPCClient.getInstance();
     }
 
-    protected abstract Router configure();
+    public abstract Router configure();
 
     protected Handler<RoutingContext> getHandler(MessageType messageType, BiConsumer<RoutingContext, JsonObject> consumer) {
         return routingContext -> getHandler(messageType, routingContext.body().asString(), consumer).handle(routingContext);
@@ -39,7 +39,7 @@ public abstract class RoutesConfigurator {
             if (statusCode >= 200 && statusCode <= 204)
                 consumer.accept(routingContext, backendResponse);
             else
-                routingContext.response().end(backendResponse.getString("resultMessage"));
+                respondWithMessage().accept(routingContext, backendResponse);
         });
     }
 
@@ -60,5 +60,13 @@ public abstract class RoutesConfigurator {
                         routingContext,
                         new JsonObject().put("requesterUsername", username))
         ).handle(routingContext);
+    }
+
+    protected BiConsumer<RoutingContext, JsonObject> respondWithMessage() {
+        return (routingContext, backendResponse) ->
+                routingContext.response().end(
+                new JsonObject()
+                        .put("resultMessage", backendResponse.getString("resultMessage"))
+                        .encode());
     }
 }

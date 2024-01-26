@@ -18,7 +18,7 @@ public class UserRoutesConfigurator extends RoutesConfigurator {
     @Override
     public Router configure() {
         router.post("/register").blockingHandler(getHandler(
-                MessageType.REGISTER_USER, (routingContext, username) -> routingContext.response().end()));
+                MessageType.REGISTER_USER, respondWithMessage()));
 
         router.post("/login").blockingHandler(getHandler(
                 MessageType.LOGIN_USER,
