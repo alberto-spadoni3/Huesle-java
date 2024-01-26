@@ -28,7 +28,6 @@ const UserPictureSelector = ({ size }) => {
     };
 
     const updateUserPicture = async () => {
-        console.log("updating...");
         try {
             const response = await axiosPrivate.put(
                 BACKEND_UPDATE_USER_PIC_ENDPOINT,

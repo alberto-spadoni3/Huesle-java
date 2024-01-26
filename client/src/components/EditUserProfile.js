@@ -2,12 +2,10 @@ import SaveIcon from "@mui/icons-material/Save";
 import { TextField, Typography, Box, Button, Divider } from "@mui/material";
 import BackButton from "./BackButton";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
-import useAuth from "../hooks/useAuth";
 import { useState, useEffect } from "react";
 import { useSnackbar } from "notistack";
 import {
     BACKEND_UPDATE_EMAIL,
-    BACKEND_UPDATE_USERNAME,
     BACKEND_UPDATE_PASSWORD_ENDPOINT,
 } from "../api/backend_endpoints";
 import UserPictureSelector from "./UserPictureSelector";
@@ -19,13 +17,13 @@ const PASSWORD_REGEX =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
 const EditUserProfile = () => {
-    const { auth, setAuth } = useAuth();
     const refresh = useRefreshToken();
     const axiosPrivate = useAxiosPrivate();
     const { enqueueSnackbar } = useSnackbar();
 
     const [email, setEmail] = useState("");
     const [validEmail, setValidEmail] = useState(false);
+    const [emailUpdated, setEmailUpdated] = useState(false);
 
     const [username, setUsername] = useState("");
     const [validUsername, setValidUsername] = useState(false);
@@ -52,9 +50,7 @@ const EditUserProfile = () => {
     }, [password, matchPassword]);
 
     const handleEditProfile = async (e) => {
-        const newUsername = username.trim() !== "" ? username : auth.username;
         const emailPresentAndValid = email.trim() !== "" && validEmail;
-        const usernamePresentAndValid = username.trim() !== "" && validUsername;
         const passwordPresentAndValid =
             password.trim() !== "" && validPassword && validMatchPassword;
 
@@ -68,8 +64,10 @@ const EditUserProfile = () => {
                 if (response.status === 200) {
                     console.log("Email updated");
                     setEmail("");
-                    enqueueSnackbar(response.data.message, {
+                    setEmailUpdated(true);
+                    enqueueSnackbar(response.data.resultMessage, {
                         variant: "success",
+                        autoHideDuration: 2500,
                     });
                 }
             } catch (error) {
@@ -77,47 +75,15 @@ const EditUserProfile = () => {
                     console.log("No Server Response");
                     enqueueSnackbar("No Server Response", { variant: "info" });
                 } else if (error.response?.status === 409) {
-                    console.log(error.response?.data?.message);
-                    enqueueSnackbar(error.response?.data?.message, {
+                    enqueueSnackbar(error.response?.data?.resultMessage, {
                         variant: "warning",
+                        autoHideDuration: 2500,
                     });
                 } else {
-                    console.log("Username update failed");
-                    enqueueSnackbar("Username update failed", {
+                    console.log("Email update failed");
+                    enqueueSnackbar(error.response?.data?.resultMessage, {
                         variant: "error",
-                    });
-                }
-            }
-        }
-
-        // update username if present
-        if (usernamePresentAndValid) {
-            try {
-                const response = await axiosPrivate.post(
-                    BACKEND_UPDATE_USERNAME,
-                    JSON.stringify({ newUsername })
-                );
-
-                if (response.status === 200) {
-                    console.log("username updated");
-                    setUsername("");
-                    enqueueSnackbar(response.data.message, {
-                        variant: "success",
-                    });
-                }
-            } catch (error) {
-                if (!error?.response) {
-                    console.log("No Server Response");
-                    enqueueSnackbar("Username updated", { variant: "info" });
-                } else if (error.response?.status === 409) {
-                    console.log(error.response?.data?.message);
-                    enqueueSnackbar(error.response?.data?.message, {
-                        variant: "warning",
-                    });
-                } else {
-                    console.log("Username update failed");
-                    enqueueSnackbar("Username update failed", {
-                        variant: "error",
+                        autoHideDuration: 2500,
                     });
                 }
             }
@@ -128,20 +94,17 @@ const EditUserProfile = () => {
                 const response = await axiosPrivate.post(
                     BACKEND_UPDATE_PASSWORD_ENDPOINT,
                     JSON.stringify({
-                        username: newUsername,
-                        prevPassword: oldPassword,
+                        oldPassword,
                         newPassword: password,
                     }),
-                    {
-                        headers: { "Content-Type": "application/json" },
-                        withCredentials: true,
-                    }
+                    { withCredentials: true }
                 );
 
                 if (response.status === 200) {
                     console.log("password updated");
-                    enqueueSnackbar("Password updated successfully", {
+                    enqueueSnackbar(response?.data?.resultMessage, {
                         variant: "success",
+                        autoHideDuration: 2500,
                     });
                     setOldPassword("");
                     setPassword("");
@@ -150,31 +113,30 @@ const EditUserProfile = () => {
             } catch (error) {
                 if (!error?.response) {
                     console.log("No Server Response");
-                    enqueueSnackbar("No Server Response", { variant: "info" });
-                } else if (error.response?.status === 400) {
-                    console.log(error.response?.data?.message);
-                    enqueueSnackbar(error.response?.data?.message, {
-                        variant: "error",
+                    enqueueSnackbar("No Server Response", {
+                        variant: "info",
+                        autoHideDuration: 2500,
                     });
-                } else if (error.response?.status === 401) {
-                    console.log("Username not found in the database");
-                    enqueueSnackbar(
-                        "Your current username not found in the database",
-                        {
-                            variant: "warning",
-                        }
-                    );
-                } else {
-                    console.log("Password update Failed");
-                    enqueueSnackbar("Password update Failed", {
+                } else if (error.response?.status >= 400) {
+                    enqueueSnackbar(error.response?.data?.resultMessage, {
                         variant: "error",
+                        autoHideDuration: 2500,
                     });
                 }
             }
         }
-
-        if (emailPresentAndValid || usernamePresentAndValid) await refresh();
     };
+
+    useEffect(() => {
+        const refreshToken = async () => {
+            if (emailUpdated) {
+                await refresh();
+                setEmailUpdated(false);
+            }
+        };
+        refreshToken();
+        // eslint-disable-next-line
+    }, [emailUpdated]);
 
     return (
         <>

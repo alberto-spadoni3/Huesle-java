@@ -96,7 +96,6 @@ const Dashboard = () => {
     useEffect(() => {
         setLoading(true);
         updateMatches().then(() => setLoading(false));
-        //registerHandler(auth.username, (_) => updateMatches());
         if (socketOpened) {
             try {
                 socket.registerHandler(
@@ -181,7 +180,8 @@ const Dashboard = () => {
         }
 
         try {
-            loadBoard(matchId).then(() => navigate("/match-details"));
+            localStorage.setItem("matchId", matchId);
+            navigate("/match-details");
         } catch (error) {
             console.log(error);
         }

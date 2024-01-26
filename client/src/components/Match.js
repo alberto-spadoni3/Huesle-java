@@ -49,7 +49,6 @@ const Match = () => {
     }, []);
 
     useEffect(() => {
-        console.log("match");
         if (socketOpened) {
             try {
                 socket.registerHandler(
@@ -273,7 +272,7 @@ const Match = () => {
                                 ?.username +
                             "?"
                         }
-                        callbackOnYes={leaveMatch()}
+                        callbackOnYes={leaveMatch}
                     />
                     {/* FOOTER */}
                     <BottomBar></BottomBar>

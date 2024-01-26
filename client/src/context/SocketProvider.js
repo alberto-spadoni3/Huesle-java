@@ -32,7 +32,6 @@ export const SocketProvider = ({ children }) => {
                     BASE_NOTIFICATION_ADDRESS + auth.username,
                     (_, message) => {
                         const body = JSON.parse(message.body);
-                        console.log(body);
                         const notificationType = body.notificationType;
                         const opponent = body.originPlayer;
                         const snackbarOptions = {
