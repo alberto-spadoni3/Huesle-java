@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -61,7 +62,7 @@ public class SettingsOperationsTests {
         OperationResult error = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         // since we provided a username that doesn't exists in the database,
         // the request should have returned with an error
-        assertEquals(400, error.getStatusCode());
+        assertEquals(401, error.getStatusCode());
         System.out.println(error.getResultMessage());
 
         response = callAsync(MessageType.GET_SETTINGS, player1.getUsername());
@@ -83,7 +84,7 @@ public class SettingsOperationsTests {
         OperationResult error = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         // since we provided a username that doesn't exists in the database,
         // the request should have returned with an error
-        assertEquals(400, error.getStatusCode());
+        assertEquals(401, error.getStatusCode());
         System.out.println(error.getResultMessage());
 
         requestBody = getRequest(player1.getUsername(), "profilePictureID", profilePicPrimitive);
@@ -107,7 +108,7 @@ public class SettingsOperationsTests {
         OperationResult error = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         // since we provided a username that doesn't exists in the database, the request should
         // have returned with an error
-        assertEquals(400, error.getStatusCode());
+        assertEquals(401, error.getStatusCode());
         System.out.println(error.getResultMessage());
 
         request = getRequest(player1.getUsername(), "accessibilitySettings", jsonSettings);
@@ -119,6 +120,59 @@ public class SettingsOperationsTests {
                 .getDocumentByField("username", player1.getUsername())
                 .orElseThrow();
         assertEquals(newSettings, updatedPlayer.getSettings());
+        System.out.println(result.getResultMessage());
+    }
+
+    @Test
+    void updateUserEmailTest() throws Exception {
+        JsonPrimitive sameEmail = new JsonPrimitive(player1.getEmail());
+        String request = getRequest(player1.getUsername(), "newEmail", sameEmail);
+        CompletableFuture<String> response = callAsync(MessageType.UPDATE_EMAIL, request);
+        OperationResult error = Presentation.deserializeAs(response.get(), UserOperationResult.class);
+        // since we provided a email address that already exists in the database,
+        // the request should have returned with an error
+        assertEquals(409, error.getStatusCode());
+        System.out.println(error.getResultMessage());
+
+        JsonPrimitive newEmail = new JsonPrimitive("bob97@huesle.com");
+        request = getRequest(player1.getUsername(), "newEmail", newEmail);
+        response = callAsync(MessageType.UPDATE_EMAIL, request);
+        OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
+        assertEquals(200, result.getStatusCode());
+        // now we should see some changes in the DB
+        Player updatedPlayer = userDB
+                .getDocumentByField("username", player1.getUsername())
+                .orElseThrow();
+        assertEquals(newEmail.getAsString(), updatedPlayer.getEmail());
+        System.out.println(result.getResultMessage());
+    }
+
+    @Test
+    void updateUserPasswordTest() throws Exception {
+        String wrongOldPassword = "Password";
+        String rightOldPassword = "password";
+        String newPassword = wrongOldPassword + "123!";
+        JsonObject request = new JsonObject();
+        request.addProperty("requesterUsername", player1.getUsername());
+        request.addProperty("oldPassword", wrongOldPassword);
+        request.addProperty("newPassword", newPassword);
+        CompletableFuture<String> response = callAsync(MessageType.UPDATE_PASSWORD, request.toString());
+        OperationResult error = Presentation.deserializeAs(response.get(), UserOperationResult.class);
+        // since we provided a wrong old password,
+        // the request should have returned with an error
+        assertEquals(400, error.getStatusCode());
+        System.out.println(error.getResultMessage());
+
+        request.remove("oldPassword");
+        request.addProperty("oldPassword", rightOldPassword);
+        response = callAsync(MessageType.UPDATE_PASSWORD, request.toString());
+        OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
+        assertEquals(200, result.getStatusCode());
+        // now we should see some changes in the DB
+        Player updatedPlayer = userDB
+                .getDocumentByField("username", player1.getUsername())
+                .orElseThrow();
+        assertNotEquals(player1.getPassword(), updatedPlayer.getPassword());
         System.out.println(result.getResultMessage());
     }
 

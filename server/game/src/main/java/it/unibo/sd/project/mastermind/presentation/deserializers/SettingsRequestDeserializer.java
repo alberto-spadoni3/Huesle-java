@@ -14,11 +14,18 @@ public class SettingsRequestDeserializer extends AbstractJsonDeserializer<Settin
             String requesterUsername = jsonObject.get("requesterUsername").getAsString();
             SettingsRequest settingsRequest = new SettingsRequest(requesterUsername);
             try {
-                if (((JsonObject) jsonElement).has("accessibilitySettings")) {
+                if (jsonObject.has("accessibilitySettings")) {
                     JsonObject jsonSettings = jsonObject.get("accessibilitySettings").getAsJsonObject();
                     AccessibilitySettings settings = Presentation.deserializeAs(jsonSettings.toString(), AccessibilitySettings.class);
                     settingsRequest.setAccessibilitySettings(settings);
-                } else settingsRequest.setProfilePictureID(jsonObject.get("profilePictureID").getAsByte());
+                } else if (jsonObject.has("profilePictureID"))
+                    settingsRequest.setProfilePictureID(jsonObject.get("profilePictureID").getAsByte());
+                else if (jsonObject.has("newEmail"))
+                    settingsRequest.setNewEmail(jsonObject.get("newEmail").getAsString());
+                else if (jsonObject.has("oldPassword") && jsonObject.has("newPassword"))
+                    settingsRequest.setPasswords(
+                            jsonObject.get("oldPassword").getAsString(),
+                            jsonObject.get("newPassword").getAsString());
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }

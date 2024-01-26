@@ -60,6 +60,31 @@ public class SettingsRoutesConfigurator extends RoutesConfigurator {
                 }
         ));
 
+        router.post("/updateEmail").blockingHandler(getRequestObject(
+                (routingContext, request) -> {
+                    JsonObject body = routingContext.body().asJsonObject();
+                    request.put("newEmail", body.getString("newEmail"));
+                    getHandler(
+                            MessageType.UPDATE_EMAIL,
+                            request.encode(),
+                            respondWithMessage()
+                    ).handle(routingContext);
+                }
+        ));
+
+        router.post("/updatePassword").blockingHandler(getRequestObject(
+                (routingContext, request) -> {
+                    JsonObject body = routingContext.body().asJsonObject();
+                    request.put("oldPassword", body.getString("oldPassword"))
+                           .put("newPassword", body.getString("newPassword"));
+                    getHandler(
+                            MessageType.UPDATE_PASSWORD,
+                            request.encode(),
+                            respondWithMessage()
+                    ).handle(routingContext);
+                }
+        ));
+
         return router;
     }
 
