@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.*;
 import it.unibo.sd.project.mastermind.model.match.*;
 import it.unibo.sd.project.mastermind.model.user.Player;
+import it.unibo.sd.project.mastermind.model.user.StatsOperationResult;
 import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 
@@ -48,6 +49,12 @@ public class OperationResultSerializer extends AbstractJsonSerializer<OperationR
                 JsonElement jsonSubmittedAttemptHints = Presentation.serializerOf(Hints.class).getJsonElement(submittedAttemptHints);
                 jsonOpResult.add("submittedAttemptHints", jsonSubmittedAttemptHints);
             }
+        } else if (object instanceof StatsOperationResult statsOperationResult) {
+            JsonObject userStats = new JsonObject();
+            userStats.addProperty("matches_won", statsOperationResult.getMatchesWon());
+            userStats.addProperty("matches_lost", statsOperationResult.getMatchesLost());
+            userStats.addProperty("matches_drawn", statsOperationResult.getMatchesDrawn());
+            jsonOpResult.add("userStats", userStats);
         }
         return jsonOpResult;
     }
