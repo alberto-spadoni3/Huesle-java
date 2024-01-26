@@ -5,8 +5,8 @@ import java.util.Objects;
 
 public class Player {
     private final String username;
-    private final String email;
-    private final String password;
+    private String email;
+    private String password;
     private byte profilePictureID;
     private AccessibilitySettings settings;
     private boolean disabled;
@@ -50,8 +50,19 @@ public class Player {
         return this.email;
     }
 
+    public void updateEmail(String newEmail) {
+        this.email = newEmail;
+    }
+
     public String getPassword() {
         return password;
+    }
+
+    public boolean updatePassword(String oldPassword, String newPassword) {
+        if (verifyPassword(oldPassword))
+            this.password = getHashedPassword(newPassword);
+        else return false;
+        return true;
     }
 
     public byte getProfilePictureID() {
@@ -63,7 +74,7 @@ public class Player {
     }
 
     private String getHashedPassword(String clearPassword) {
-        return BCrypt.withDefaults().hashToString(12, clearPassword.toCharArray());
+        return BCrypt.withDefaults().hashToString(11, clearPassword.toCharArray());
     }
 
     public void setProfilePictureID(byte profilePictureID) {
