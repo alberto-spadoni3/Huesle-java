@@ -224,7 +224,6 @@ public class GameController {
                                 .filter(player -> !Objects.equals(player.getUsername(), requesterUsername));
                         otherPlayer.findFirst().ifPresent(p -> matchStatus.changeNextPlayer(p.getUsername()));
                         matchStatus.setAbandoned();
-                        // TODO: emit match over
                         matchDB.update(matchRequest.getMatchID(), matchToLeave);
                         matchOperationResult = new MatchOperationResult(
                                 (short) 200,
@@ -258,9 +257,6 @@ public class GameController {
                     Match match = optionalMatch.get();
                     match.tryToGuess(attempt);
                     matchDB.update(match.getMatchID().toString(), match);
-
-                    // TODO if the match is over, emit matchOver. Otherwise, emit newMove
-
                     guessOperationResult = new GuessOperationResult(
                             (short) 200, "Guess made succesfully",
                             match.getMatchStatus(),

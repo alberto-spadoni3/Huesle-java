@@ -1,11 +1,13 @@
 package it.unibo.sd.project.mastermind.model;
 
 import it.unibo.sd.project.mastermind.model.match.Match;
+import it.unibo.sd.project.mastermind.model.user.Player;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Game {
+    // TODO: to delete
     private final Player player; // the player associated to this game session
     private List<Match> activeMatches;
     private List<Match> endedMatches;

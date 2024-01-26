@@ -1,12 +1,8 @@
 package it.unibo.sd.project.mastermind.presentation;
 
-import it.unibo.sd.project.mastermind.model.user.SettingsRequest;
+import it.unibo.sd.project.mastermind.model.user.*;
 import it.unibo.sd.project.mastermind.model.*;
 import it.unibo.sd.project.mastermind.model.match.*;
-import it.unibo.sd.project.mastermind.model.user.AccessibilitySettings;
-import it.unibo.sd.project.mastermind.model.user.LoginRequest;
-import it.unibo.sd.project.mastermind.model.user.Player;
-import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import it.unibo.sd.project.mastermind.presentation.deserializers.*;
 import it.unibo.sd.project.mastermind.presentation.serializers.*;
 
@@ -36,6 +32,7 @@ public class Presentation {
         serializers.put(UserOperationResult.class, new OperationResultSerializer());
         serializers.put(MatchOperationResult.class, new OperationResultSerializer());
         serializers.put(GuessOperationResult.class, new OperationResultSerializer());
+        serializers.put(StatsOperationResult.class, new OperationResultSerializer());
 
         serializers.put(PendingMatchRequest.class, new PendingMatchRequestSerializer());
     }
