@@ -20,6 +20,11 @@ public enum MessageType {
     GET_SETTINGS("getSettings"),
     UPDATE_SETTINGS("updateSettings"),
     UPDATE_PROFILE_PIC("updateProfilePicId"),
+    UPDATE_EMAIL("updateEmail"),
+    UPDATE_PASSWORD("updatePassword"),
+
+    // Stats-related types
+    GET_USER_STATS("getUserStats"),
 
     // Websocket-related types
     CREATE_ROOM("createRoom"),

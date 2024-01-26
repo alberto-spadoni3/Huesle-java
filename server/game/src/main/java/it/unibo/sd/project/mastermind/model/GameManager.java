@@ -2,6 +2,7 @@ package it.unibo.sd.project.mastermind.model;
 
 import it.unibo.sd.project.mastermind.controllers.GameController;
 import it.unibo.sd.project.mastermind.controllers.SettingsController;
+import it.unibo.sd.project.mastermind.controllers.StatsController;
 import it.unibo.sd.project.mastermind.rabbit.MessageType;
 
 import java.util.HashMap;
@@ -31,6 +32,11 @@ public class GameManager extends AbstractManager {
         gameCallbacks.put(MessageType.GET_SETTINGS, settingsController.getSettings());
         gameCallbacks.put(MessageType.UPDATE_SETTINGS, settingsController.updateAccessibilitySettings());
         gameCallbacks.put(MessageType.UPDATE_PROFILE_PIC, settingsController.updateProfilePictureID());
+        gameCallbacks.put(MessageType.UPDATE_EMAIL, settingsController.updateUserEmail());
+        gameCallbacks.put(MessageType.UPDATE_PASSWORD, settingsController.updateUserPassword());
+
+        StatsController statsController = new StatsController(database);
+        gameCallbacks.put(MessageType.GET_USER_STATS, statsController.getUserStats());
         return gameCallbacks;
     }
 }
