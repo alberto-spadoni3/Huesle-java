@@ -4,7 +4,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import it.unibo.sd.project.webservice.WebServer;
+import it.unibo.sd.project.webservice.NotificationService;
 import it.unibo.sd.project.webservice.rabbit.MessageType;
 
 public class GameRoutesConfigurator extends RoutesConfigurator {
@@ -147,9 +147,9 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
                                         .put("status", updatedStatus);
                                 context.response().end(jsonResponse.encode());
 
-                                boolean isMatchOver = updatedStatus
+                                boolean isMatchOver = !updatedStatus
                                         .getString("matchState")
-                                        .equals(MessageType.MATCH_OVER.getType());
+                                        .equals("PLAYING");
                                 sendRoomNotification(
                                         isMatchOver ? MessageType.MATCH_OVER : MessageType.NEW_MOVE,
                                         matchID, username);
@@ -157,6 +157,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
                     ).handle(routingContext);
                 }
         ));
+
         return router;
     }
 
@@ -174,7 +175,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
     private void createCommunicationRoom(JsonArray matches) {
         JsonObject matchesArray = new JsonObject().put("matchesArray", matches);
         JsonObject notification = getNotificationRequest(MessageType.CREATE_ROOM, matchesArray);
-        vertx.eventBus().send(WebServer.WS_SERVICE_ADDRESS, notification);
+        vertx.eventBus().send(NotificationService.WS_EVENTS_ADDRESS, notification);
     }
 
     private void sendRoomNotification(MessageType notificationType, String matchID, String originPlayer) {
@@ -182,7 +183,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
                 .put("matchID", matchID)
                 .put("originPlayer", originPlayer);
         JsonObject notification = getNotificationRequest(notificationType, notificationData);
-        vertx.eventBus().send(WebServer.WS_SERVICE_ADDRESS, notification);
+        vertx.eventBus().send(NotificationService.WS_EVENTS_ADDRESS, notification);
     }
 
     private static JsonObject getNotificationRequest(MessageType notificationType, JsonObject data) {
