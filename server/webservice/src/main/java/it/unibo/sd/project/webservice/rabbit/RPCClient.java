@@ -47,7 +47,7 @@ public class RPCClient implements AutoCloseable {
                 channel.exchangeDeclare(EXCHANGE_NAME, "direct");
                 channel.basicPublish(EXCHANGE_NAME, messageType.getType(),
                         props, message.getBytes(StandardCharsets.UTF_8));
-                System.out.println("[x] Sent '" + messageType.getType() + "':'" + message + "'");
+                log("[x] Sent '" + messageType.getType() + "':'" + message + "'");
                 //channel.queuePurge(replyQueueName);
                 channel.basicQos(1); // accept only one unack-ed message at a time
                 channel.basicConsume(replyQueueName, false, (consumerTag, delivery) -> {
@@ -68,5 +68,10 @@ public class RPCClient implements AutoCloseable {
 
     public void close() throws IOException {
         connection.close();
+    }
+
+    private void log(String message) {
+        boolean debugMode = false;
+        if (debugMode) System.out.println(message);
     }
 }
