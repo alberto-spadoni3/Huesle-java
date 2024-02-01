@@ -27,8 +27,10 @@ java {
 val env = mapOf (
         "RABBIT_HOST" to "localhost",
         "MONGO_HOST" to "mongodb://localhost:27017",
-        "ACCESS_TOKEN_SECRET" to "secret",
-        "REFRESH_TOKEN_SECRET" to "secret2"
+        "ACCESS_TOKEN_SECRET" to "replace with a real passworD",
+        "REFRESH_TOKEN_SECRET" to "Replace with a real password",
+        "ACCESS_TOKEN_EXPIRATION" to 20, // 2 minutes
+        "REFRESH_TOKEN_EXPIRATION" to 1440 // 24 hours
 )
 
 // Task used to run the microservice related to the game
