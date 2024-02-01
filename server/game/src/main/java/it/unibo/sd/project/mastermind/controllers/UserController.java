@@ -165,7 +165,10 @@ public class UserController {
     }
 
     private String generateToken(TokenType tokenType, String username) {
-        final byte TOKEN_EXPIRATION_IN_MINUTES = 20;
+        int TOKEN_EXPIRATION_IN_MINUTES =
+                tokenType.equals(TokenType.REFRESH) ?
+                        Integer.parseInt(System.getenv("REFRESH_TOKEN_EXPIRATION")) :
+                        Integer.parseInt(System.getenv("ACCESS_TOKEN_EXPIRATION"));
         JWTOptions jwtOptions = new JWTOptions().setExpiresInMinutes(TOKEN_EXPIRATION_IN_MINUTES);
         JsonObject tokenData = new JsonObject().put("sub", username);
         JWTAuth jwtAuth = getJwtAuthProvider(tokenType);
