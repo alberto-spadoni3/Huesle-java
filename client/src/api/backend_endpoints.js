@@ -23,6 +23,12 @@ export const BACKEND_LEAVE_MATCH_ENDPOINT = "/protected/game/leaveMatch";
 //Socket
 export const BACKEND_SOCKET_ENDPOINT = "http://localhost:8080/eventbus";
 export const BASE_NOTIFICATION_ADDRESS = "huesle.";
+export const EVENTS_NOTIFICATION_ADDRESS =
+    BASE_NOTIFICATION_ADDRESS + "notification.events.";
+export const PLAYER_REGISTRATION_ADDRESS =
+    BASE_NOTIFICATION_ADDRESS + "notification.player-registration.";
+export const PLAYER_STATUS_ADDRESS =
+    BASE_NOTIFICATION_ADDRESS + "notification.player-status.";
 
 //Stats Management
 export const BACKEND_GET_MATCHES_ENDPOINT = "/protected/game/getMatches";
