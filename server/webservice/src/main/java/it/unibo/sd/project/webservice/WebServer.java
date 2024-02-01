@@ -5,6 +5,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
@@ -15,6 +16,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.JWTAuthHandler;
+import io.vertx.ext.web.handler.sockjs.BridgeEvent;
 import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import it.unibo.sd.project.webservice.configuration.GameRoutesConfigurator;
@@ -28,7 +30,6 @@ import java.util.Set;
 public class WebServer extends AbstractVerticle {
     private final short LISTENING_PORT;
     public static final String BASE_ADDRESS = "huesle.";
-    public static final String WS_SERVICE_ADDRESS = BASE_ADDRESS + "notification.service";
 
     public WebServer(short listeningPort) {
         LISTENING_PORT = listeningPort;
@@ -61,7 +62,6 @@ public class WebServer extends AbstractVerticle {
         Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
         router.route().consumes("application/json");
-
 
         // Non-protected routes
         UserRoutesConfigurator userRoutesConfigurator = new UserRoutesConfigurator(vertx);
@@ -126,10 +126,11 @@ public class WebServer extends AbstractVerticle {
     }
 
     private Router getEventBusRouter() {
+        int pingTimeout = 10000;
         SockJSBridgeOptions options = new SockJSBridgeOptions()
                 .addInboundPermitted(new PermittedOptions().setAddressRegex(BASE_ADDRESS + "*"))
                 .addOutboundPermitted(new PermittedOptions().setAddressRegex(BASE_ADDRESS + "*"))
-                .setPingTimeout(6000);
+                .setPingTimeout(pingTimeout);
 
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
         return sockJSHandler.bridge(options, event -> {
@@ -137,11 +138,22 @@ public class WebServer extends AbstractVerticle {
                 System.out.println("New socket created with URI: " + event.socket().uri());
             }
 
-            if (event.type() == BridgeEventType.SOCKET_CLOSED) {
-                System.out.println("The socket with URI: " + event.socket().uri() + " is closed");
+            if (event.type() == BridgeEventType.SOCKET_CLOSED || event.type() == BridgeEventType.SOCKET_IDLE) {
+                disconnectPlayer(event);
+                if (event.type() == BridgeEventType.SOCKET_IDLE)
+                    System.out.println("The socket " + event.socket().uri() +
+                            " didn't send any ping message for more than " + pingTimeout +
+                            " seconds, so it's considered to be idle and will be closed.");
+                else
+                    System.out.println("The socket " + event.socket().uri() + " was closed");
             }
 
             event.complete(true);
-        });
+        }).errorHandler(1, routingContext -> System.out.println(routingContext.failure().getMessage()));
+    }
+
+    private void disconnectPlayer(BridgeEvent event) {
+        JsonObject disconnectionMessage = new JsonObject().put("socketAddress", event.socket().uri());
+        vertx.eventBus().send(NotificationService.WS_PLAYER_DISCONNECTION, disconnectionMessage);
     }
 }
