@@ -17,10 +17,7 @@ import useAuth from "../hooks/useAuth";
 import BottomBar from "./BottomBar";
 import UserPicture from "./UserPicture";
 import ConfirmationDialog from "./ConfirmationDialog";
-import {
-    BACKEND_LEAVE_MATCH_ENDPOINT,
-    BASE_NOTIFICATION_ADDRESS,
-} from "../api/backend_endpoints";
+import { BACKEND_LEAVE_MATCH_ENDPOINT } from "../api/backend_endpoints";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import useSocket from "../hooks/useSocket";
 
@@ -39,27 +36,21 @@ const Match = () => {
     const { auth } = useAuth();
     const [leaveMatchDialogStatus, setLeaveMatchDialogStatus] = useState(false);
     const axiosPrivate = useAxiosPrivate();
-    const { socket, socketOpened } = useSocket();
+    const { socket, registerHandler } =
+        useSocket();
 
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         setLoading(true);
         loadBoard().then(() => setLoading(false));
+        // eslint-disable-next-line
     }, []);
 
     useEffect(() => {
-        if (socketOpened) {
-            try {
-                socket.registerHandler(
-                    BASE_NOTIFICATION_ADDRESS + auth.username,
-                    (_e, _m) => loadBoard()
-                );
-            } catch (error) {
-                console.log(error);
-            }
-        }
-    }, [socket, socketOpened, auth.username]);
+        if (socket) registerHandler((_error, _message) => loadBoard());
+        // eslint-disable-next-line
+    }, [socket]);
 
     const leaveMatch = async () => {
         try {

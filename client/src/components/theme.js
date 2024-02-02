@@ -12,7 +12,7 @@ export const getDesignTokens = (mode) => ({
             ? {
                   text: {
                       primary: "#1F1F1F",
-                      secondary: "#2F2F2F"
+                      secondary: "#2F2F2F",
                   },
                   link: {
                       main: "#2692E6",
@@ -22,7 +22,7 @@ export const getDesignTokens = (mode) => ({
                   },
                   button: {
                       main: "#72bddb",
-                      pulsing: "coral"
+                      pulsing: "coral",
                   },
                   colorBox: {
                       main: grey[900],
@@ -43,7 +43,7 @@ export const getDesignTokens = (mode) => ({
                       color: "#F0E442",
                       hintPosition: "#000000",
                       hintColor: "#5e5e5e",
-                      hintLabel: "#ffffff"
+                      hintLabel: "#ffffff",
                   },
                   switch: {
                       main: "#69b6c7",
@@ -86,7 +86,7 @@ export const getDesignTokens = (mode) => ({
                       color: "#F0E442",
                       hintPosition: "#ffffff",
                       hintColor: "#a3a3a3",
-                      hintLabel: "#000000"
+                      hintLabel: "#000000",
                   },
                   switch: {
                       main: "#388697",

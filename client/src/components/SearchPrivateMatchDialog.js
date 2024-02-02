@@ -31,7 +31,7 @@ export default function SearchPrivateMatchDialog({
 }) {
     const { enqueueSnackbar } = useSnackbar();
     const axiosPrivate = useAxiosPrivate();
-    const { socket, socketOpened } = useSocket();
+    const { socket, registerHandler } = useSocket();
     const navigate = useNavigate();
     const { auth } = useAuth();
 
@@ -53,15 +53,12 @@ export default function SearchPrivateMatchDialog({
     };
 
     useEffect(() => {
-        if (socketOpened)
-            socket.registerHandler(
-                BASE_NOTIFICATION_ADDRESS + auth.username,
-                (_e, _m) => {
-                    setConnectOpen(false);
-                    setSearchOver(false);
-                    navigate("/dashboard", { replace: true });
-                }
-            );
+        if (socket)
+            registerHandler((_error, _message) => {
+                setConnectOpen(false);
+                setSearchOver(false);
+                navigate("/dashboard", { replace: true });
+            });
 
         window.addEventListener("unload", handleClose);
         return () => {
