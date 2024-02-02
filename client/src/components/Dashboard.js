@@ -14,24 +14,25 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
-import {
-    BACKEND_GET_MATCHES_ENDPOINT,
-    BASE_NOTIFICATION_ADDRESS,
-} from "../api/backend_endpoints";
+import { BACKEND_GET_MATCHES_ENDPOINT } from "../api/backend_endpoints";
 import useAuth from "../hooks/useAuth";
 import useGameData from "../hooks/useGameData";
 import useSocket from "../hooks/useSocket";
 import BottomBar from "./BottomBar";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import PlayersStatusList from "./PlayersStatusList";
 
 const Dashboard = () => {
     const navigate = useNavigate();
     const axiosPrivate = useAxiosPrivate();
     const { auth } = useAuth();
-    const { socket, socketOpened } = useSocket();
-    const { loadBoard, GameStates } = useGameData();
-
+    const { socket, registerHandler, allPlayersStatus } = useSocket();
+    const { GameStates } = useGameData();
     const [loading, setLoading] = useState(false);
+    const [activeMatches, setActiveMatches] = useState([]);
+    const [completedMatches, setCompletedMatches] = useState([]);
+    const [currentOpponentsStatus, setCurrentOpponentsStatus] = useState([]);
+    const [opponentsProfilePics, setOpponentsProfilePics] = useState([]);
 
     const ActiveMatchesCard = styled(Box)(({ theme }) => ({
         width: "100%",
@@ -42,13 +43,11 @@ const Dashboard = () => {
         borderColor: theme.palette.background.paper,
     }));
 
-    const [activeMatches, setActiveMatches] = useState([]);
-    const [completedMatches, setCompletedMatches] = useState([]);
-
     async function updateMatches() {
         try {
             const temp_rows = [];
             const temp_endedrows = [];
+            const opponentsSet = new Set();
             const response = await axiosPrivate.get(
                 BACKEND_GET_MATCHES_ENDPOINT
             );
@@ -70,6 +69,18 @@ const Dashboard = () => {
                 const opponent = match.matchStatus.players.find(
                     (p) => p.username !== auth.username
                 );
+
+                // generate a set of opponents taken from the played and playing matches
+                if (!opponentsSet.has(opponent?.username))
+                    setOpponentsProfilePics((prevState) => {
+                        prevState.push({
+                            username: opponent?.username,
+                            picId: opponent.profilePictureID,
+                        });
+                        return prevState;
+                    });
+                opponentsSet.add(opponent?.username);
+
                 match.matchStatus.matchState === GameStates.PLAYING
                     ? temp_rows.push(
                           createData(
@@ -86,6 +97,20 @@ const Dashboard = () => {
                           )
                       );
             });
+
+            const opponentsStatusTemp = [];
+            opponentsSet.forEach((username) => {
+                const existingStatus = allPlayersStatus.find(
+                    (o) => o.username === username
+                )?.status;
+
+                opponentsStatusTemp.push({
+                    username,
+                    status: existingStatus ? existingStatus : "offline",
+                });
+            });
+            console.log(opponentsStatusTemp);
+            setCurrentOpponentsStatus(opponentsStatusTemp);
             setActiveMatches(temp_rows);
             setCompletedMatches(temp_endedrows);
         } catch (error) {
@@ -96,17 +121,9 @@ const Dashboard = () => {
     useEffect(() => {
         setLoading(true);
         updateMatches().then(() => setLoading(false));
-        if (socketOpened) {
-            try {
-                socket.registerHandler(
-                    BASE_NOTIFICATION_ADDRESS + auth.username,
-                    (_e, _m) => updateMatches()
-                );
-            } catch (error) {
-                console.log(error);
-            }
-        }
-    }, [socket, socketOpened, auth.username]);
+        if (socket) registerHandler((_error, _message) => updateMatches());
+        // eslint-disable-next-line
+    }, [socket]);
 
     function createData(id, name, matchStatus) {
         return { id, name, matchStatus };
@@ -145,7 +162,7 @@ const Dashboard = () => {
         return (
             <TableRow key={index} onClick={() => openSelectedMatch(row_id)}>
                 <TableCell component="th" scope="row" align="center">
-                    <Typography color="text.primary" variant="subtitle2">
+                    <Typography color="text.primary" variant="subtitle1">
                         {row_name}
                     </Typography>
                 </TableCell>
@@ -340,6 +357,27 @@ const Dashboard = () => {
                             </Typography>
                         )}
                     </ActiveMatchesCard>
+
+                    <Box style={{ height: "16px" }}></Box>
+
+                    <Typography
+                        color="text.primary"
+                        variant="h6"
+                        align="center"
+                    >
+                        Opponents status
+                    </Typography>
+                    {currentOpponentsStatus.length > 0 ? (
+                        <PlayersStatusList
+                            playersStatusList={currentOpponentsStatus}
+                            playersProfilePic={opponentsProfilePics}
+                        />
+                    ) : (
+                        <Typography variant="h7" marginLeft={1}>
+                            You don't have any opponents... for now!
+                        </Typography>
+                    )}
+
                     <BottomBar />
                 </Box>
             </Fade>
