@@ -70,16 +70,18 @@ public class NotificationService extends AbstractVerticle {
             playersSocketMap.computeIfAbsent(playerToRegister, k -> new HashSet<>()).add(socketAddress);
 
             // first of all reply to this message with the current state of all registered players
-            JsonArray allPlayersState = new JsonArray();
-            playersStatusMap.forEach((player, status) -> {
-                if (!player.equals(playerToRegister)) {
-                    JsonObject playerState = new JsonObject()
-                            .put("username", player)
-                            .put("status", status);
-                    allPlayersState.add(playerState);
-                }
-            });
-            message.reply(allPlayersState);
+            vertx.executeBlocking(() -> {
+                JsonArray allPlayersState = new JsonArray();
+                playersStatusMap.forEach((player, status) -> {
+                    if (!player.equals(playerToRegister)) {
+                        JsonObject playerState = new JsonObject()
+                                .put("username", player)
+                                .put("status", status);
+                        allPlayersState.add(playerState);
+                    }
+                });
+                return allPlayersState;
+            }).andThen(asyncResult -> message.reply(asyncResult.result()));
 
             playersStatusMap.put(playerToRegister, ONLINE);
             broadcastStateChange(playerToRegister);
@@ -115,34 +117,43 @@ public class NotificationService extends AbstractVerticle {
             // Search the username related to the socketAddress received,
             // remove the corresponding entry, mark his status as OFFLINE
             // and broadcast the status change
-            AtomicReference<String> possibleUsername = new AtomicReference<>();
-            playersSocketMap.forEach((username, socketAddresses) -> {
-                if (socketAddresses.contains(playerAddress))
-                    possibleUsername.set(username);
+            vertx.executeBlocking(() -> {
+                AtomicReference<String> possibleUsername = new AtomicReference<>();
+                playersSocketMap.forEach((username, socketAddresses) -> {
+                    if (socketAddresses.contains(playerAddress))
+                        possibleUsername.set(username);
+                });
+                return possibleUsername;
+            }).andThen(asyncResult -> {
+                String usernameToDisconnect = asyncResult.result().get();
+                if (usernameToDisconnect != null) {
+                    playersStatusMap.replace(usernameToDisconnect, OFFLINE);
+                    playersSocketMap.remove(usernameToDisconnect);
+                    broadcastStateChange(usernameToDisconnect);
+                }
             });
-
-            String usernameToDisconnect = possibleUsername.get();
-            if (usernameToDisconnect != null) {
-                playersStatusMap.replace(usernameToDisconnect, OFFLINE);
-                playersSocketMap.remove(usernameToDisconnect);
-                broadcastStateChange(usernameToDisconnect);
-            }
         });
     }
 
     private void broadcastStateChange(String originPlayer) {
-        String newStatus = playersStatusMap.get(originPlayer);
-        playersStatusMap.entrySet().stream()
-                .filter(entry -> !entry.getKey().equals(originPlayer))
-                .forEach(entry -> sendPlayerStatus(originPlayer, entry.getKey(), newStatus));
+        vertx.executeBlocking(() -> {
+            String newStatus = playersStatusMap.get(originPlayer);
+            playersStatusMap.entrySet().stream()
+                    .filter(entry -> !entry.getKey().equals(originPlayer))
+                    .forEach(entry -> sendPlayerStatus(originPlayer, entry.getKey(), newStatus));
+            return null;
+        });
     }
 
-    private synchronized void notify(String matchID, String originPlayer, JsonObject notificationData) {
-        matchPlayersMap.get(matchID).stream()
-                .filter(playerInRoom -> !playerInRoom.equals(originPlayer))
-                .forEach(playerToBeNotified -> vertx.eventBus().publish(WS_EVENTS_ADDRESS + playerToBeNotified, notificationData.encode()));
-        if (notificationData.getString("notificationType").equals(MessageType.MATCH_OVER.getType()))
-            matchPlayersMap.remove(matchID);
+    private void notify(String matchID, String originPlayer, JsonObject notificationData) {
+        vertx.executeBlocking(() -> {
+            matchPlayersMap.get(matchID).stream()
+                    .filter(playerInRoom -> !playerInRoom.equals(originPlayer))
+                    .forEach(playerToBeNotified -> vertx.eventBus().publish(WS_EVENTS_ADDRESS + playerToBeNotified, notificationData.encode()));
+            if (notificationData.getString("notificationType").equals(MessageType.MATCH_OVER.getType()))
+                matchPlayersMap.remove(matchID);
+            return null;
+        });
     }
 
     private void sendPlayerStatus(String originPlayer, String playerToNotify, String status) {
@@ -153,18 +164,21 @@ public class NotificationService extends AbstractVerticle {
         vertx.eventBus().send(WS_PLAYER_STATUS + playerToNotify, message.encode());
     }
 
-    private synchronized void createCommunicationRoom(JsonArray matches) {
-        matches.stream()
-                .map(JsonObject.class::cast)
-                .filter(match -> match.getJsonObject("matchStatus").getString("matchState").equals("PLAYING"))
-                .forEach(activeMatch -> {
-                    JsonArray matchPlayers = activeMatch.getJsonObject("matchStatus").getJsonArray("players");
-                    String activeMatchID = activeMatch.getString("_id");
-                    matchPlayersMap.computeIfAbsent(activeMatchID, matchID ->
-                            matchPlayers.stream()
-                                    .map(JsonObject.class::cast)
-                                    .map(player -> player.getString("username"))
-                                    .collect(Collectors.toSet()));
-                });
+    private void createCommunicationRoom(JsonArray matches) {
+        vertx.executeBlocking(() -> {
+            matches.stream()
+                    .map(JsonObject.class::cast)
+                    .filter(match -> match.getJsonObject("matchStatus").getString("matchState").equals("PLAYING"))
+                    .forEach(activeMatch -> {
+                        JsonArray matchPlayers = activeMatch.getJsonObject("matchStatus").getJsonArray("players");
+                        String activeMatchID = activeMatch.getString("_id");
+                        matchPlayersMap.computeIfAbsent(activeMatchID, matchID ->
+                                matchPlayers.stream()
+                                        .map(JsonObject.class::cast)
+                                        .map(player -> player.getString("username"))
+                                        .collect(Collectors.toSet()));
+                    });
+            return null;
+        });
     }
 }
