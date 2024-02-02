@@ -1,8 +1,7 @@
 package it.unibo.sd.project.mastermind.presentation;
 
-import it.unibo.sd.project.mastermind.model.user.*;
-import it.unibo.sd.project.mastermind.model.*;
 import it.unibo.sd.project.mastermind.model.match.*;
+import it.unibo.sd.project.mastermind.model.user.*;
 import it.unibo.sd.project.mastermind.presentation.deserializers.*;
 import it.unibo.sd.project.mastermind.presentation.serializers.*;
 
@@ -21,7 +20,6 @@ public class Presentation {
     private static void registerSerializers() {
         serializers.put(Player.class, new PlayerSerializer());
 
-        serializers.put(Game.class, new GameSerializer());
         serializers.put(Match.class, new MatchSerializer());
         serializers.put(MatchStatus.class, new MatchStatusSerializer());
         serializers.put(SecretCode.class, new SecretCodeSerializer());
@@ -44,7 +42,6 @@ public class Presentation {
         deserializers.put(MatchOperationResult.class, new OperationResultDeserializer());
         deserializers.put(GuessOperationResult.class, new OperationResultDeserializer());
 
-        deserializers.put(Game.class, new GameDeserializer());
         deserializers.put(Match.class, new MatchDeserializer());
         deserializers.put(MatchStatus.class, new MatchStatusDeserializer());
         deserializers.put(SecretCode.class, new SecretCodeDeserializer());
