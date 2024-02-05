@@ -12,7 +12,7 @@ dependencies {
     implementation("com.rabbitmq:amqp-client:5.20.0")
     implementation("at.favre.lib:bcrypt:0.10.2")
     implementation("org.slf4j:slf4j-log4j12:2.0.9")
-    implementation("io.vertx:vertx-auth-jwt:4.5.1")
+    implementation("io.vertx:vertx-auth-jwt:4.5.2")
     runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.101.Final:osx-x86_64")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.9.2")
@@ -33,14 +33,16 @@ val env = mapOf (
         "REFRESH_TOKEN_EXPIRATION" to 1440 // 24 hours
 )
 
+val environmentVariables: Map<String, Any> by rootProject.extra
+
 // Task used to run the microservice related to the game
 task("game", JavaExec::class) {
-    environment = env
+    environment = environmentVariables
     mainClass.set("it.unibo.sd.project.mastermind.Main")
     classpath = sourceSets["main"].runtimeClasspath
 }
 
 tasks.named<Test>("test") {
-    environment = env
+    environment = environmentVariables
     useJUnitPlatform()
 }
