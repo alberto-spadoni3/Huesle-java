@@ -58,7 +58,7 @@ public class UserRoutesConfigurator extends RoutesConfigurator {
                 MessageType.LOGOUT_USER,
                 (context, backendResponse) -> {
                     context.response().removeCookies("jwtRefreshToken");
-                    context.response().end(backendResponse.getString("resultMessage"));
+                    respondWithMessage().accept(context, backendResponse);
                 }
         ));
 
