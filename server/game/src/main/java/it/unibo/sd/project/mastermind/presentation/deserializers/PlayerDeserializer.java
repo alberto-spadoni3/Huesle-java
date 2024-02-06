@@ -29,9 +29,10 @@ public class PlayerDeserializer extends AbstractJsonDeserializer<Player> {
                         throw new RuntimeException("Cannot deserialize as " + AccessibilitySettings.class.getName());
                     }
                     String possibleToken = jsonPlayer.get("refreshToken").getAsString();
+                    String email = jsonPlayer.get("email").getAsString();
                     return new Player(
                             jsonPlayer.get("username").getAsString(),
-                            jsonPlayer.get("email").getAsString(),
+                            email.isBlank() ? null : email,
                             hashedPassword,
                             possibleToken.isBlank() ? null : possibleToken,
                             jsonPlayer.get("profilePictureID").getAsByte(),

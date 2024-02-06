@@ -85,8 +85,11 @@ public class Player {
         this.settings = settings;
     }
 
-    public void setDisabled(boolean disabled) {
-        this.disabled = disabled;
+    public void disable() {
+        if (!disabled) {
+            this.email = null;
+            this.disabled = true;
+        }
     }
 
     public boolean isDisabled() {
