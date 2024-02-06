@@ -4,7 +4,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import it.unibo.sd.project.mastermind.model.GameManager;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
-import it.unibo.sd.project.mastermind.model.user.UserManager;
+import it.unibo.sd.project.mastermind.model.UserManager;
 
 public class ServicesLauncher extends AbstractVerticle {
     private final short PORT;

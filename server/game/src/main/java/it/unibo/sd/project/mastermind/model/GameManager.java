@@ -1,6 +1,6 @@
 package it.unibo.sd.project.mastermind.model;
 
-import it.unibo.sd.project.mastermind.controllers.GameController;
+import it.unibo.sd.project.mastermind.controllers.GameLogicController;
 import it.unibo.sd.project.mastermind.controllers.SettingsController;
 import it.unibo.sd.project.mastermind.controllers.StatsController;
 import it.unibo.sd.project.mastermind.rabbit.MessageType;
@@ -19,14 +19,14 @@ public class GameManager extends AbstractManager {
     protected Map<MessageType, Function<String, String>> getManagementCallbacks() {
         Map<MessageType, Function<String, String>> gameCallbacks = new HashMap<>();
 
-        GameController gameController = new GameController(database);
-        gameCallbacks.put(MessageType.SEARCH_MATCH, gameController.searchMatch());
-        gameCallbacks.put(MessageType.JOIN_PRIVATE_MATCH, gameController.joinPrivateMatch());
-        gameCallbacks.put(MessageType.CANCEL_MATCH_SEARCH, gameController.cancelMatchSearch());
-        gameCallbacks.put(MessageType.GET_MATCHES_OF_USER, gameController.getMatchesOfUser());
-        gameCallbacks.put(MessageType.GET_MATCH, gameController.getMatchByID());
-        gameCallbacks.put(MessageType.LEAVE_MATCH, gameController.leaveMatchByID());
-        gameCallbacks.put(MessageType.DO_GUESS, gameController.doGuess());
+        GameLogicController gameLogicController = new GameLogicController(database);
+        gameCallbacks.put(MessageType.SEARCH_MATCH, gameLogicController.searchMatch());
+        gameCallbacks.put(MessageType.JOIN_PRIVATE_MATCH, gameLogicController.joinPrivateMatch());
+        gameCallbacks.put(MessageType.CANCEL_MATCH_SEARCH, gameLogicController.cancelMatchSearch());
+        gameCallbacks.put(MessageType.GET_MATCHES_OF_USER, gameLogicController.getMatchesOfUser());
+        gameCallbacks.put(MessageType.GET_MATCH, gameLogicController.getMatchByID());
+        gameCallbacks.put(MessageType.LEAVE_MATCH, gameLogicController.leaveMatchByID());
+        gameCallbacks.put(MessageType.DO_GUESS, gameLogicController.doGuess());
 
         SettingsController settingsController = new SettingsController(database);
         gameCallbacks.put(MessageType.GET_SETTINGS, settingsController.getSettings());

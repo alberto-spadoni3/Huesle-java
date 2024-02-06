@@ -1,7 +1,6 @@
-package it.unibo.sd.project.mastermind.model.user;
+package it.unibo.sd.project.mastermind.model;
 
 import it.unibo.sd.project.mastermind.controllers.UserController;
-import it.unibo.sd.project.mastermind.model.AbstractManager;
 import it.unibo.sd.project.mastermind.rabbit.MessageType;
 
 import java.util.HashMap;

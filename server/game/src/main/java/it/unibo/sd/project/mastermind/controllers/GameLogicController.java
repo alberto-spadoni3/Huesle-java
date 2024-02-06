@@ -18,12 +18,12 @@ import java.util.stream.Stream;
 
 import static com.mongodb.client.model.Filters.*;
 
-public class GameController {
+public class GameLogicController {
     private final DBManager<PendingMatchRequest> pendingMatchDB;
     private final DBManager<Match> matchDB;
     private final DBManager<Player> userDB;
 
-    public GameController(MongoDatabase database) {
+    public GameLogicController(MongoDatabase database) {
         pendingMatchDB = new DBManager<>(database, "pendingRequests", "requesterUsername", PendingMatchRequest.class);
         userDB = new DBManager<>(database, "users", "username", Player.class);
         matchDB = new DBManager<>(database, "matches", "_id", Match.class);
