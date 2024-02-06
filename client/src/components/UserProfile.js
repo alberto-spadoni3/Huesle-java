@@ -118,7 +118,7 @@ const UserProfile = () => {
                         color="button"
                         startIcon={<EditIcon />}
                         aria-label="Edit Profile"
-                        onClick={(e) => navigate("/user/editProfile")}
+                        onClick={(_e) => navigate("/user/editProfile")}
                     >
                         Edit profile
                     </Button>
