@@ -36,8 +36,7 @@ const Match = () => {
     const { auth } = useAuth();
     const [leaveMatchDialogStatus, setLeaveMatchDialogStatus] = useState(false);
     const axiosPrivate = useAxiosPrivate();
-    const { socket, registerHandler } =
-        useSocket();
+    const { socket, registerHandler } = useSocket();
 
     const [loading, setLoading] = useState(false);
 
@@ -63,7 +62,10 @@ const Match = () => {
         }
     };
 
-    const Player = ({ name = "", reverse, hideLabel }) => {
+    const Player = ({ player = {}, reverse, hideLabel }) => {
+        const name = player.disabled
+            ? player.username + " (deleted)"
+            : player.username;
         return (
             <Stack
                 sx={{ width: "fit-content" }}
@@ -74,7 +76,8 @@ const Match = () => {
                 <UserPicture
                     size={80}
                     userPic={
-                        profilePics.find((p) => p.username === name)?.picId
+                        profilePics.find((p) => p.username === player.username)
+                            ?.picId
                     }
                 />
                 {!hideLabel && <Typography variant="h6">{name}</Typography>}
@@ -155,7 +158,7 @@ const Match = () => {
                     {players.length > 0 && (
                         <>
                             <Stack alignItems="center" marginY={4}>
-                                <Player name={auth.username} />
+                                <Player player={{ username: auth.username }} />
                                 <Typography
                                     variant="h3"
                                     color="text.primary"
@@ -164,13 +167,10 @@ const Match = () => {
                                     VS
                                 </Typography>
                                 <Player
-                                    name={
-                                        players.find(
-                                            (player) =>
-                                                player.username !==
-                                                auth.username
-                                        )?.username
-                                    }
+                                    player={players.find(
+                                        (player) =>
+                                            player.username !== auth.username
+                                    )}
                                     reverse
                                 />
                             </Stack>

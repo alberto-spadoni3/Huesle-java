@@ -4,15 +4,20 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.JWTAuthHandler;
 import it.unibo.sd.project.webservice.rabbit.MessageType;
 
 import java.util.function.BiConsumer;
 
 public class UserRoutesConfigurator extends RoutesConfigurator {
-    public UserRoutesConfigurator(Vertx vertx) {
+    private final JWTAuth jwtAccessProvider;
+
+    public UserRoutesConfigurator(Vertx vertx, JWTAuth jwtAccessProvider) {
         super(vertx);
+        this.jwtAccessProvider = jwtAccessProvider;
     }
 
     @Override
@@ -62,6 +67,18 @@ public class UserRoutesConfigurator extends RoutesConfigurator {
                 }
         ));
 
+        router.delete("/delete")
+                // since this router belongs to a non-protected-route,
+                // we first need to authenticate the user using JWT
+                .blockingHandler(JWTAuthHandler.create(jwtAccessProvider))
+                .blockingHandler(extractUsername(
+                        (routingContext, username) -> getHandler(
+                                MessageType.DELETE_USER,
+                                username,
+                                respondWithMessage()
+                        ).handle(routingContext)
+                ));
+
         return router;
     }
 
@@ -83,5 +100,4 @@ public class UserRoutesConfigurator extends RoutesConfigurator {
             }
         };
     }
-
 }

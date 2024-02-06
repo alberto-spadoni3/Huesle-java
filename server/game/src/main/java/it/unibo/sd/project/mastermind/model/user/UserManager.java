@@ -22,6 +22,7 @@ public class UserManager extends AbstractManager {
         userCallbacks.put(MessageType.LOGIN_USER, userController.loginUser());
         userCallbacks.put(MessageType.LOGOUT_USER, userController.logoutUser());
         userCallbacks.put(MessageType.REFRESH_ACCESS_TOKEN, userController.refreshAccessToken());
+        userCallbacks.put(MessageType.DELETE_USER, userController.deleteUserAccount());
         return userCallbacks;
     }
 }

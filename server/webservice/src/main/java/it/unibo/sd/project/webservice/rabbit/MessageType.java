@@ -6,6 +6,7 @@ public enum MessageType {
     LOGIN_USER("login"),
     REFRESH_ACCESS_TOKEN("refreshAccessToken"),
     LOGOUT_USER("logout"),
+    DELETE_USER("deleteUser"),
 
     // Game-related types
     SEARCH_MATCH("createMatch"),

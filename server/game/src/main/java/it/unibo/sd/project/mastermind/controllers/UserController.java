@@ -8,18 +8,29 @@ import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
-import it.unibo.sd.project.mastermind.model.user.Player;
+import it.unibo.sd.project.mastermind.model.match.Match;
+import it.unibo.sd.project.mastermind.model.match.MatchState;
+import it.unibo.sd.project.mastermind.model.match.MatchStatus;
+import it.unibo.sd.project.mastermind.model.match.PendingMatchRequest;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.user.LoginRequest;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
+import org.bson.conversions.Bson;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.stream.Stream;
+
+import static com.mongodb.client.model.Filters.elemMatch;
+import static com.mongodb.client.model.Filters.eq;
 
 public class UserController {
     private final DBManager<Player> userDB;
+    private final DBManager<Match> matchDB;
+    private final DBManager<PendingMatchRequest> pendingMatchDB;
     private final short SUCCESS_HTTP_CODE = 200;
     private final short REGISTRATION_DONE_HTTP_CODE = 201;
     private final short NO_CONTENT_HTTP_CODE = 204;
@@ -36,6 +47,8 @@ public class UserController {
 
     public UserController(MongoDatabase database) {
         this.userDB = new DBManager<>(database, "users", "username", Player.class);
+        this.matchDB = new DBManager<>(database, "matches", "_id", Match.class);
+        this.pendingMatchDB = new DBManager<>(database, "pendingRequests", "requesterUsername", PendingMatchRequest.class);
     }
 
     public Function<String, String> registerUser() {
@@ -161,6 +174,56 @@ public class UserController {
                     result.set(new UserOperationResult(FORBIDDEN_HTTP_CODE, "Forbidden"));
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(result.get());
+        };
+    }
+
+    public Function<String, String> deleteUserAccount() {
+        return username -> {
+            UserOperationResult result = null;
+            try {
+                Optional<Player> optionalPlayer = userDB.getDocumentByField("username", username);
+                if (optionalPlayer.isPresent()) {
+                    // leave all matches the user was playing
+                    Bson matchesOfUserQuery = elemMatch("matchStatus.players", eq("username", username));
+                    matchDB.getDocumentsByQuery(matchesOfUserQuery)
+                        .ifPresent(matches ->
+                            matches.stream()
+                                .filter(match -> match.getMatchStatus().getState() == MatchState.PLAYING)
+                                .forEach(playingMatch -> {
+                                    MatchStatus matchStatus = playingMatch.getMatchStatus();
+                                    matchStatus.setState(MatchState.VICTORY);
+                                    Stream<Player> otherPlayer = matchStatus
+                                            .getPlayers()
+                                            .stream()
+                                            .filter(player -> !player.getUsername().equals(username));
+                                    otherPlayer.findFirst().ifPresent(p -> matchStatus.changeNextPlayer(p.getUsername()));
+                                    matchStatus.setAbandoned();
+                                    matchDB.update(playingMatch.getMatchID().toString(), playingMatch);
+                                })
+                        );
+
+                    // delete possible pending request the user has created
+                    Bson pendingReqOfCurrentPlayer = eq("requesterUsername", username);
+                    pendingMatchDB.getDocumentByQuery(pendingReqOfCurrentPlayer)
+                            .ifPresent(pendingMatchRequest -> pendingMatchDB.deleteByQuery(pendingReqOfCurrentPlayer));
+
+                    // disable the user account
+                    Player deletedUser = optionalPlayer.get();
+                    deletedUser.disable();
+                    userDB.update(username, deletedUser);
+                    result = new UserOperationResult(
+                            (short) 200, "User " + username + " deleted successfully!"
+                    );
+                }
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            } finally {
+                if (result == null)
+                    result = new UserOperationResult(
+                            (short) 400, "Problems in deleting the user " + username
+                    );
+            }
+            return Presentation.serializerOf(UserOperationResult.class).serialize(result);
         };
     }
 

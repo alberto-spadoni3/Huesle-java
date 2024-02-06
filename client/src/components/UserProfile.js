@@ -43,6 +43,22 @@ const UserProfile = () => {
         matches_drawn: 0,
     });
 
+    const deleteUser = async () => {
+        try {
+            const response = await axiosPrivate.delete(
+                BACKEND_DELETE_USER_ENDPOINT
+            );
+            if (response.status === 200) {
+                enqueueSnackbar(response.data.resultMessage, {
+                    variant: "success",
+                });
+                await logout();
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     useEffect(() => {
         try {
             const response = axiosPrivate.get(BACKEND_GET_USER_STATS_ENDPOINT);
@@ -136,21 +152,7 @@ const UserProfile = () => {
                             "Are you sure you want to delete your account?" +
                             " All your data will be lost forever!"
                         }
-                        callbackOnYes={async () => {
-                            try {
-                                const response = await axiosPrivate.delete(
-                                    BACKEND_DELETE_USER_ENDPOINT
-                                );
-                                if (response.status === 200) {
-                                    enqueueSnackbar(response.data.message, {
-                                        variant: "success",
-                                    });
-                                    await logout();
-                                }
-                            } catch (error) {
-                                console.log(error);
-                            }
-                        }}
+                        callbackOnYes={deleteUser}
                     />
                 </Box>
             </Fade>
