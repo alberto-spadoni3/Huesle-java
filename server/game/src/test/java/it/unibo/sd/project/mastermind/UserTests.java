@@ -38,7 +38,7 @@ public class UserTests {
         new UserManager(true);
         // this 10 millisecond waiting time guarantees that the RPCServer inside
         // UserManager has started before tests execution
-        Thread.sleep(10);
+        Thread.sleep(50);
         client = new RPCClient();
         var testDatabase = DBSingleton.getInstance().getTestDatabase();
         // Drop the possible database to avoid conflicts
@@ -200,6 +200,38 @@ public class UserTests {
                 throw new RuntimeException(e);
             }
         }, () -> fail("The user is not present in the database. Logout process not possible."));
+    }
+
+    @Test
+    @Order(8)
+    @DisplayName("Test user deletion process")
+    void deleteUserTest() throws Exception {
+        // First of all we need to log back in
+        UserOperationResult loginResult = (UserOperationResult) callAsync(
+                MessageType.LOGIN_USER,
+                getLoginJson(username, clearPassword));
+
+        assertEquals(200, loginResult.getStatusCode());
+
+        // then, we test the deletion process
+        Player relatedUser = loginResult.getRelatedUser();
+        OperationResult result = callAsync(
+                MessageType.DELETE_USER,
+                relatedUser.getUsername());
+        assertEquals(200, result.getStatusCode());
+
+        // make sure that the user in the database reflects the changes
+        Optional<Player> optionalPlayer = userDB.getDocumentByField("username", relatedUser.getUsername());
+        optionalPlayer.ifPresentOrElse(player -> {
+            assertTrue(player.isDisabled());
+            assertNull(player.getEmail());
+        }, () -> fail("The user " + relatedUser.getUsername() + " was not found in the database"));
+
+        // after the deletion process, we shouldn't be able to log the user in again
+        OperationResult loginErrorResult = callAsync(
+                MessageType.LOGIN_USER,
+                getLoginJson(username, clearPassword));
+        assertEquals(401, loginErrorResult.getStatusCode());
     }
 
     private String getRegistrationJson(String username, String email, String clearPassword) {

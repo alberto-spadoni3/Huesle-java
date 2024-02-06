@@ -62,13 +62,13 @@ public class WebServer extends AbstractVerticle {
         Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
         router.route().consumes("application/json");
+        JWTAuth jwtAccessProvider = getJwtAuthProvider();
 
         // Non-protected routes
-        UserRoutesConfigurator userRoutesConfigurator = new UserRoutesConfigurator(vertx);
+        UserRoutesConfigurator userRoutesConfigurator = new UserRoutesConfigurator(vertx, jwtAccessProvider);
         router.route("/user/*").subRouter(userRoutesConfigurator.configure());
 
         // Protected routes
-        JWTAuth jwtAccessProvider = getJwtAuthProvider();
         router.route("/protected/*")
                 .handler(JWTAuthHandler.create(jwtAccessProvider))
                 .failureHandler(this::manageAuthFailures)

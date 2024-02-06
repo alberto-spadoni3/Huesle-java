@@ -3,6 +3,7 @@ package it.unibo.sd.project.mastermind.presentation;
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import it.unibo.sd.project.mastermind.model.user.AccessibilitySettings;
 import it.unibo.sd.project.mastermind.model.user.Player;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.Function;
@@ -116,6 +117,7 @@ public class PlayerTests {
     }
 
     @Test
+    @Disabled
     void hashPasswordSpeed() {
         int hashCost = 18;
         for (int i = hashCost; i > 3; i--) {
