@@ -39,7 +39,7 @@ export default function DashboardMenu({ anchorEl, setAnchorEl, open }) {
             onClose={handleMenuClose}
             onClick={handleMenuClose}
             slotProps={{
-                paper: (props) => ({
+                paper: () => ({
                     elevation: 0,
                     sx: {
                         overflow: "visible",
@@ -52,7 +52,6 @@ export default function DashboardMenu({ anchorEl, setAnchorEl, open }) {
                             ml: -0.5,
                             mr: 1,
                         },
-                        ...props,
                     },
                 }),
             }}

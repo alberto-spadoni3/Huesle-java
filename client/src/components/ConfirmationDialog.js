@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 
 const Transition = forwardRef(function Transition(props, ref) {
-    return <Slide direction="up" ref={ref} {...props}  children={}/>;
+    return <Slide direction="up" ref={ref} {...props} />;
 });
 
 export default function ConfirmationDialog({

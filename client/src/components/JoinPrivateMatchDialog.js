@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 
 const Transition = forwardRef(function Transition(props, ref) {
-    return <Slide direction="up" ref={ref} {...props}  children={}/>;
+    return <Slide direction="up" ref={ref} {...props} />;
 });
 
 export default function JoinPrivateMatchDialog({ open, setOpen }) {

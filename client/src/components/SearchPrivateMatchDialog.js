@@ -16,7 +16,7 @@ import useSocket from "../hooks/useSocket";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 
 const Transition = forwardRef(function Transition(props, ref) {
-    return <Slide direction="up" ref={ref} {...props}  children={}/>;
+    return <Slide direction="up" ref={ref} {...props} />;
 });
 
 export default function SearchPrivateMatchDialog({
