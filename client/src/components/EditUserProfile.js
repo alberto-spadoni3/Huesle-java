@@ -12,7 +12,6 @@ import UserPictureSelector from "./UserPictureSelector";
 import useRefreshToken from "../hooks/useRefreshToken";
 
 const EMAIL_REGEX = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
-const USERNAME_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
 const PASSWORD_REGEX =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
@@ -25,9 +24,6 @@ const EditUserProfile = () => {
     const [validEmail, setValidEmail] = useState(false);
     const [emailUpdated, setEmailUpdated] = useState(false);
 
-    const [username, setUsername] = useState("");
-    const [validUsername, setValidUsername] = useState(false);
-
     const [oldPassword, setOldPassword] = useState("");
 
     const [password, setPassword] = useState("");
@@ -39,10 +35,6 @@ const EditUserProfile = () => {
     useEffect(() => {
         setValidEmail(EMAIL_REGEX.test(email));
     }, [email]);
-
-    useEffect(() => {
-        setValidUsername(USERNAME_REGEX.test(username));
-    }, [username]);
 
     useEffect(() => {
         setValidPassword(PASSWORD_REGEX.test(password));
@@ -171,23 +163,6 @@ const EditUserProfile = () => {
                             autoComplete="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            sx={{ mt: 1 }}
-                        />
-
-                        <Divider sx={{ m: 3, borderBottomWidth: "thick" }} />
-
-                        <Typography color="text.primary" variant="h5">
-                            Username
-                        </Typography>
-                        <TextField
-                            fullWidth
-                            error={!validUsername && username ? true : false}
-                            id="editUsername"
-                            label="New Username"
-                            name="editUsername"
-                            autoComplete="off"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
                             sx={{ mt: 1 }}
                         />
 

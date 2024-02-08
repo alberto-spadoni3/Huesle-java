@@ -2,7 +2,6 @@
 export const BACKEND_LOGIN_ENDPOINT = "/user/login";
 export const BACKEND_SETTINGS_ENDPOINT = "/protected/settings/profileSettings";
 export const BACKEND_REGISTRATION_ENDPOINT = "/user/register";
-export const BACKEND_UPDATE_USERNAME = "/protected/settings/updateUsername";
 export const BACKEND_UPDATE_EMAIL = "/protected/settings/updateEmail";
 export const BACKEND_UPDATE_PASSWORD_ENDPOINT =
     "/protected/settings/updatePassword";
@@ -35,13 +34,3 @@ export const BACKEND_GET_MATCHES_ENDPOINT = "/protected/game/getMatches";
 export const BACKEND_UPDATE_USER_PIC_ENDPOINT =
     "/protected/settings/profilePicture";
 export const BACKEND_GET_USER_STATS_ENDPOINT = "/protected/stats/userStats";
-
-//Password Reset
-export const BACKEND_FORGOT_PASSWORD_ENDPOINT = "/user/forgotPassword";
-export const BACKEND_CHECK_REQUEST_TOKEN_ENDPOINT = "/user/checkRequestToken";
-export const BACKEND_RESET_PASSWORD_ENDPOINT = "/user/resetPassword";
-
-//Notifications
-export const BACKEND_NOTIFICATIONS_ENDPOINT = "/protected/stats/notifications";
-export const BACKEND_NEW_NOTIFICATIONS_ENDPOINT =
-    "/protected/stats/newNotifications";

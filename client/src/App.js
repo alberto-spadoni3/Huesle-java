@@ -21,8 +21,6 @@ import GameContext from "./context/GameContext";
 import GameRules from "./components/GameRules";
 import Match from "./components/Match";
 import { SocketProvider } from "./context/SocketProvider";
-import ForgotPassword from "./components/ForgotPassword";
-import ResetPassword from "./components/ResetPassword";
 import ScrollToTop from "./components/ScrollToTop";
 
 const App = () => {
@@ -51,19 +49,9 @@ const App = () => {
                                 {/* Public routes */}
                                 <Route path="login" element={<Login />} />
                                 <Route path="register" element={<Register />} />
-                                <Route
-                                    path="forgotPassword"
-                                    element={<ForgotPassword />}
-                                />
-                                <Route
-                                    path="resetPassword"
-                                    element={<ResetPassword />}
-                                />
-
                                 <Route path="rules" element={<GameRules />} />
 
                                 {/* Routes that require authentication */}
-
                                 <Route element={<PersistLogin />}>
                                     <Route index element={<Home />} />
                                     <Route element={<RequireAuth />}>

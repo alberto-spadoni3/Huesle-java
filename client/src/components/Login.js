@@ -165,24 +165,10 @@ export default function Login() {
                             >
                                 Sign In
                             </Button>
-                            <Grid
-                                container
-                                direction="column"
-                                justifyContent="flex-start"
-                                alignItems="flex-end"
-                            >
-                                <Grid item xs>
-                                    <Link
-                                        variant="body2"
-                                        component={RouterLink}
-                                        to="/forgotPassword"
-                                    >
-                                        Forgot password?
-                                    </Link>
-                                </Grid>
+                            <Grid container justifyContent="flex-end">
                                 <Grid item>
                                     <Link
-                                        ariant="body2"
+                                        variant="body2"
                                         component={RouterLink}
                                         to="/register"
                                     >
