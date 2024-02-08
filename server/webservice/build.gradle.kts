@@ -18,14 +18,14 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(19))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
 val environmentVariables: Map<String, Any> by rootProject.extra
 
 // Task used to run the microservice related to the web service
-task("web-service", JavaExec::class) {
+task("webservice", JavaExec::class) {
     environment = environmentVariables
     mainClass.set("it.unibo.sd.project.webservice.Main")
     classpath = sourceSets["main"].runtimeClasspath

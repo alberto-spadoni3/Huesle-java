@@ -1,3 +1,5 @@
-game/build
-webservice/build
+*/build
 .gradle
+.dockerignore
+*/Dockerfile
+**/.DS_Store
