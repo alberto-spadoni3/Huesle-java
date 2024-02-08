@@ -1,5 +1,7 @@
 import axios from "axios";
-const BASE_URL = "http://localhost:8080/api";
+
+const BACKEND_HOST = process.env.BACKEND_HOST || "localhost";
+const BASE_URL = "http://" + BACKEND_HOST + ":8080/api";
 
 export default axios.create({
     baseURL: BASE_URL,

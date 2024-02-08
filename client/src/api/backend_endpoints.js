@@ -20,7 +20,9 @@ export const BACKEND_DO_GUESS_ENDPOINT = "/protected/game/doGuess";
 export const BACKEND_LEAVE_MATCH_ENDPOINT = "/protected/game/leaveMatch";
 
 //Socket
-export const BACKEND_SOCKET_ENDPOINT = "http://localhost:8080/eventbus";
+const BACKEND_HOST = process.env.BACKEND_HOST || "localhost";
+export const BACKEND_SOCKET_ENDPOINT =
+    "http://" + BACKEND_HOST + ":8080/eventbus";
 export const BASE_NOTIFICATION_ADDRESS = "huesle.";
 export const EVENTS_NOTIFICATION_ADDRESS =
     BASE_NOTIFICATION_ADDRESS + "notification.events.";

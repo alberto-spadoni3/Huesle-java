@@ -14,6 +14,8 @@ services:
     client:
         container_name: huesle-client
         build: ./client
+        environment:
+            BACKEND_HOST: "localhost"
         ports:
             - "3000:3000"
         restart: unless-stopped
