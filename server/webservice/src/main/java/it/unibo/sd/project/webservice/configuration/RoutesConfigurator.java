@@ -23,12 +23,12 @@ public abstract class RoutesConfigurator {
 
     public abstract Router configure();
 
-    protected Handler<RoutingContext> getHandler(MessageType messageType, BiConsumer<RoutingContext, JsonObject> consumer) {
-        return routingContext -> getHandler(messageType, routingContext.body().asString(), consumer).handle(routingContext);
+    protected Handler<RoutingContext> backendHandler(MessageType messageType, BiConsumer<RoutingContext, JsonObject> consumer) {
+        return routingContext -> backendHandler(messageType, routingContext.body().asString(), consumer).handle(routingContext);
     }
 
-    protected Handler<RoutingContext> getHandler(MessageType messageType, String message,
-                                               BiConsumer<RoutingContext, JsonObject> consumer) {
+    protected Handler<RoutingContext> backendHandler(MessageType messageType, String message,
+                                                     BiConsumer<RoutingContext, JsonObject> consumer) {
         return routingContext -> gameBackend.call(messageType, message, res -> {
             JsonObject backendResponse = new JsonObject(res);
             int statusCode = backendResponse.getInteger("statusCode");

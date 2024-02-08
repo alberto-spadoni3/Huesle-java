@@ -21,7 +21,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
                     matchRequest
                             .put("isPrivateMatch", isMatchPrivate);
 
-                    getHandler(MessageType.SEARCH_MATCH, matchRequest.encode(),
+                    backendHandler(MessageType.SEARCH_MATCH, matchRequest.encode(),
                             (context, backendResponse) -> {
                                 JsonObject responseBody = new JsonObject();
                                 responseBody
@@ -37,7 +37,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
         ));
 
         router.delete("/searchMatch").blockingHandler(extractUsername(
-                (routingContext, username) -> getHandler(MessageType.CANCEL_MATCH_SEARCH, username,
+                (routingContext, username) -> backendHandler(MessageType.CANCEL_MATCH_SEARCH, username,
                         respondWithMessage()).handle(routingContext)
         ));
 
@@ -47,7 +47,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
                     matchRequest
                             .put("matchAccessCode", matchAccessCode);
 
-                    getHandler(MessageType.JOIN_PRIVATE_MATCH, matchRequest.encode(),
+                    backendHandler(MessageType.JOIN_PRIVATE_MATCH, matchRequest.encode(),
                             (context, backendResponse) -> {
                                 context.response().end(backendResponse.getString("resultMessage"));
                                 notifyNewMatch(
@@ -59,7 +59,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
         ));
 
         router.get("/getMatches").blockingHandler(extractUsername(
-                (routingContext, username) -> getHandler(
+                (routingContext, username) -> backendHandler(
                         MessageType.GET_MATCHES_OF_USER,
                         username,
                         (context, backendResponse) -> {
@@ -80,7 +80,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
         router.get("/getMatch").blockingHandler(extractUsername(
                 (routingContext, username) -> {
                     String matchID = routingContext.queryParam("matchId").get(0);
-                    getHandler(
+                    backendHandler(
                             MessageType.GET_MATCH,
                             matchID,
                             (context, backendResponse) -> {
@@ -114,7 +114,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
                             .put("requesterUsername", username)
                             .put("matchID", matchID);
 
-                    getHandler(
+                    backendHandler(
                             MessageType.LEAVE_MATCH,
                             request.encode(),
                             (context, backendResponse) -> {
@@ -135,7 +135,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
                             .put("matchID", matchID)
                             .put("colorSequence", sequence);
 
-                    getHandler(
+                    backendHandler(
                             MessageType.DO_GUESS,
                             request.encode(),
                             (context, backendResponse) -> {

@@ -13,7 +13,7 @@ public class SettingsRoutesConfigurator extends RoutesConfigurator {
     @Override
     public Router configure() {
         router.get("/profileSettings").blockingHandler(extractUsername(
-                (routingContext, username) -> getHandler(
+                (routingContext, username) -> backendHandler(
                         MessageType.GET_SETTINGS,
                         username,
                         (context, backendResponse) -> {
@@ -32,7 +32,7 @@ public class SettingsRoutesConfigurator extends RoutesConfigurator {
                     request.put("accessibilitySettings", getSettings(
                                         body.getBoolean("darkMode"),
                                         body.getBoolean("colorblindMode")));
-                    getHandler(
+                    backendHandler(
                             MessageType.UPDATE_SETTINGS,
                             request.encode(),
                             (context, backendResponse) -> {
@@ -48,7 +48,7 @@ public class SettingsRoutesConfigurator extends RoutesConfigurator {
                     JsonObject body = routingContext.body().asJsonObject();
                     request.put("profilePictureID", body.getInteger("profilePicID"));
 
-                    getHandler(
+                    backendHandler(
                             MessageType.UPDATE_PROFILE_PIC,
                             request.encode(),
                             (context, backendResponse) -> {
@@ -64,7 +64,7 @@ public class SettingsRoutesConfigurator extends RoutesConfigurator {
                 (routingContext, request) -> {
                     JsonObject body = routingContext.body().asJsonObject();
                     request.put("newEmail", body.getString("newEmail"));
-                    getHandler(
+                    backendHandler(
                             MessageType.UPDATE_EMAIL,
                             request.encode(),
                             respondWithMessage()
@@ -77,7 +77,7 @@ public class SettingsRoutesConfigurator extends RoutesConfigurator {
                     JsonObject body = routingContext.body().asJsonObject();
                     request.put("oldPassword", body.getString("oldPassword"))
                            .put("newPassword", body.getString("newPassword"));
-                    getHandler(
+                    backendHandler(
                             MessageType.UPDATE_PASSWORD,
                             request.encode(),
                             respondWithMessage()

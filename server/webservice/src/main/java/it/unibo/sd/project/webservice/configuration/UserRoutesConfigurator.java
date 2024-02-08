@@ -22,10 +22,10 @@ public class UserRoutesConfigurator extends RoutesConfigurator {
 
     @Override
     public Router configure() {
-        router.post("/register").blockingHandler(getHandler(
+        router.post("/register").blockingHandler(backendHandler(
                 MessageType.REGISTER_USER, respondWithMessage()));
 
-        router.post("/login").blockingHandler(getHandler(
+        router.post("/login").blockingHandler(backendHandler(
                 MessageType.LOGIN_USER,
                 (routingContext, backendResponse) -> {
                     JsonObject user = backendResponse.getJsonObject("relatedUser");
@@ -72,7 +72,7 @@ public class UserRoutesConfigurator extends RoutesConfigurator {
                 // we first need to authenticate the user using JWT
                 .blockingHandler(JWTAuthHandler.create(jwtAccessProvider))
                 .blockingHandler(extractUsername(
-                        (routingContext, username) -> getHandler(
+                        (routingContext, username) -> backendHandler(
                                 MessageType.DELETE_USER,
                                 username,
                                 respondWithMessage()
@@ -89,7 +89,7 @@ public class UserRoutesConfigurator extends RoutesConfigurator {
             Cookie cookie = routingContext.request().getCookie(cookieName);
             if (cookie != null) {
                 String refreshToken = cookie.getValue();
-                getHandler(messageType, refreshToken, consumer).handle(routingContext);
+                backendHandler(messageType, refreshToken, consumer).handle(routingContext);
             }
             else {
                 int statusCode = messageType.getType().equals(MessageType.LOGOUT_USER.getType()) ? 204 : 401;
