@@ -1,14 +1,48 @@
+version: "3.8"
+
 services:
-    client:
-        build: ./client
-        ports:
-            - "80:3000"
-    server:
-        build: ./server
-        ports:
-            - "8080:8080"
-            - "8081:8081"
     database:
-        build: ./db
+        container_name: huesle-database
+        image: mongo:latest
         ports:
             - "27017:27017"
+        restart: unless-stopped
+
+    rabbitmq:
+        container_name: huesle-rabbitmq
+        image: rabbitmq:alpine
+        restart: unless-stopped
+
+    client:
+        container_name: huesle-client-service
+        build: ./client
+        ports:
+            - "3000:3000"
+        restart: unless-stopped
+
+    game:
+        container_name: huesle-game-service
+        build:
+            context: ./server
+            dockerfile: ./game/Dockerfile
+        environment:
+            RABBIT_HOST: "rabbitmq"
+            MONGO_CONN: "mongodb://database:27017"
+        depends_on:
+            - database
+            - rabbitmq
+        restart: unless-stopped
+
+    webservice:
+        container_name: huesle-web-service
+        build:
+            context: ./server
+            dockerfile: ./webservice/Dockerfile
+        environment:
+            RABBIT_HOST: "rabbitmq"
+        depends_on:
+            - database
+            - rabbitmq
+        ports:
+            - "8080:8080"
+        restart: unless-stopped

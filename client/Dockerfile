@@ -1,16 +1,13 @@
-FROM node:16.17.0-alpine3.15
+FROM node:18-alpine3.18
 
-WORKDIR /usr/huesle-client
-
-COPY package*.json ./
-
-RUN npm install
+WORKDIR client
 
 COPY . .
 
-EXPOSE 3000
+RUN npm install
 
-RUN npm run build; \
-    npm install -g serve;
+RUN npm run build && npm install -g serve;
+
+EXPOSE 3000
 
 CMD [ "serve", "-s", "build" ]
