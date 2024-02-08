@@ -20,7 +20,7 @@ public class DBSingleton {
     }
 
     private DBSingleton() {
-        String connectionString = Objects.requireNonNull(System.getenv("MONGO_HOST"));
+        String connectionString = Objects.requireNonNull(System.getenv("MONGO_CONN"));
         MongoClient mongoClient = MongoClients.create(connectionString);
         database = mongoClient.getDatabase(DATABASE_NAME);
         testDatabase = mongoClient.getDatabase(DATABASE_NAME + "-test");
