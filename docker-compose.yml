@@ -4,8 +4,6 @@ services:
     database:
         container_name: huesle-database
         image: mongo:latest
-        ports:
-            - "27017:27017"
         restart: unless-stopped
 
     rabbitmq:
@@ -14,14 +12,14 @@ services:
         restart: unless-stopped
 
     client:
-        container_name: huesle-client-service
+        container_name: huesle-client
         build: ./client
         ports:
             - "3000:3000"
         restart: unless-stopped
 
     game:
-        container_name: huesle-game-service
+        container_name: huesle-game
         build:
             context: ./server
             dockerfile: ./game/Dockerfile
@@ -34,7 +32,7 @@ services:
         restart: unless-stopped
 
     webservice:
-        container_name: huesle-web-service
+        container_name: huesle-webservice
         build:
             context: ./server
             dockerfile: ./webservice/Dockerfile
