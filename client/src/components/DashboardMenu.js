@@ -10,7 +10,7 @@ import useLogout from "../hooks/useLogout";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 
-function StyledBadge(props) {
+function StyledBadge(_props) {
     return null;
 }
 
@@ -38,20 +38,23 @@ export default function DashboardMenu({ anchorEl, setAnchorEl, open }) {
             open={open}
             onClose={handleMenuClose}
             onClick={handleMenuClose}
-            PaperProps={{
-                elevation: 0,
-                sx: {
-                    overflow: "visible",
-                    filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
-                    mt: "3px",
-                    bgcolor: "background.dashboardMenu",
-                    "& .MuiAvatar-root": {
-                        width: 64,
-                        height: 64,
-                        ml: -0.5,
-                        mr: 1,
+            slotProps={{
+                paper: (props) => ({
+                    elevation: 0,
+                    sx: {
+                        overflow: "visible",
+                        filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                        mt: "3px",
+                        bgcolor: "background.dashboardMenu",
+                        "& .MuiAvatar-root": {
+                            width: 64,
+                            height: 64,
+                            ml: -0.5,
+                            mr: 1,
+                        },
+                        ...props,
                     },
-                },
+                }),
             }}
             anchorOrigin={{
                 vertical: "top",

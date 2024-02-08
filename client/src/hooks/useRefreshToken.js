@@ -1,7 +1,7 @@
 import axios from "../api/axios";
 import useAuth from "./useAuth";
 import useSocket from "./useSocket";
-import {BACKEND_REFRESH_TOKEN_ENDPOINT} from "../api/backend_endpoints";
+import { BACKEND_REFRESH_TOKEN_ENDPOINT } from "../api/backend_endpoints";
 
 const useRefreshToken = () => {
     const { setAuth } = useAuth();

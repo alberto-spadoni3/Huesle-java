@@ -2,7 +2,7 @@ import Radio from "@mui/material/Radio";
 import Stack from "@mui/material/Stack";
 import useGameData from "../hooks/useGameData";
 
-const ColorSelector = ({ theme }) => {
+const ColorSelector = () => {
     const { selectedColor, setSelectedColor, guessableColors, colorblindMode } =
         useGameData();
 

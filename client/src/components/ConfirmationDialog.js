@@ -1,4 +1,4 @@
-import React, {forwardRef } from "react";
+import React, { forwardRef } from "react";
 import {
     Button,
     Dialog,
@@ -6,16 +6,11 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
-    Slide } from "@mui/material";
-import {
-    BACKEND_LEAVE_MATCH_ENDPOINT
-} from "../api/backend_endpoints";
-import useGameData from "../hooks/useGameData";
-import useAuth from "../hooks/useAuth";
-import useAxiosPrivate from "../hooks/useAxiosPrivate";
+    Slide,
+} from "@mui/material";
 
 const Transition = forwardRef(function Transition(props, ref) {
-    return <Slide direction="up" ref={ref} {...props} />;
+    return <Slide direction="up" ref={ref} {...props}  children={}/>;
 });
 
 export default function ConfirmationDialog({
@@ -23,9 +18,8 @@ export default function ConfirmationDialog({
     setOpenStatus,
     title,
     message,
-    callbackOnYes
+    callbackOnYes,
 }) {
-
     const handleClose = (event) => {
         event.preventDefault();
         setOpenStatus(false);
@@ -34,7 +28,7 @@ export default function ConfirmationDialog({
     const doAction = async (event) => {
         callbackOnYes();
         handleClose(event);
-    }
+    };
 
     return (
         <>
@@ -54,8 +48,18 @@ export default function ConfirmationDialog({
                         {message}
                     </DialogContentText>
                     <DialogActions>
-                        <Button sx={{color:"text.secondary"}} onClick={doAction}>Yes</Button>
-                        <Button sx={{color:"text.secondary"}} onClick={handleClose}>No</Button>
+                        <Button
+                            sx={{ color: "text.secondary" }}
+                            onClick={doAction}
+                        >
+                            Yes
+                        </Button>
+                        <Button
+                            sx={{ color: "text.secondary" }}
+                            onClick={handleClose}
+                        >
+                            No
+                        </Button>
                     </DialogActions>
                 </DialogContent>
             </Dialog>

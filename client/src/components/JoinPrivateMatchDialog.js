@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 
 const Transition = forwardRef(function Transition(props, ref) {
-    return <Slide direction="up" ref={ref} {...props} />;
+    return <Slide direction="up" ref={ref} {...props}  children={}/>;
 });
 
 export default function JoinPrivateMatchDialog({ open, setOpen }) {
@@ -29,7 +29,7 @@ export default function JoinPrivateMatchDialog({ open, setOpen }) {
     const handleSearch = async (event) => {
         event.preventDefault();
 
-        if (matchAccessCode.length != 5) {
+        if (matchAccessCode.length !== 5) {
             enqueueSnackbar("Secret Code not valid", {
                 variant: "warning",
                 autoHideDuration: 2500,

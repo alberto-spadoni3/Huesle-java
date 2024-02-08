@@ -4,47 +4,47 @@ import Hints from "./Hints";
 import useGameData from "../hooks/useGameData";
 
 const DecodeRow = ({ rowID }) => {
-  const { PEGS_PER_ROW, isItActivePlayer, attempts } = useGameData();
+    const { PEGS_PER_ROW, isItActivePlayer, attempts } = useGameData();
 
-  const getRowAspect = () => {
-    let cssProps = {
-      width: "fit-content",
-      padding: 1,
-      border: "3px solid",
-      borderRadius: 2,
+    const getRowAspect = () => {
+        let cssProps = {
+            width: "fit-content",
+            padding: 1,
+            border: "3px solid",
+            borderRadius: 2,
+        };
+
+        if (rowID === attempts.length && isItActivePlayer())
+            cssProps = {
+                ...cssProps,
+                borderStyle: "dashed",
+                borderColor: "springgreen",
+            };
+        else if (rowID < attempts.length)
+            cssProps = { ...cssProps, borderColor: "text.secondary" };
+        else cssProps = { opacity: 0.5 };
+
+        return cssProps;
     };
 
-    if (rowID === attempts.length && isItActivePlayer())
-      cssProps = {
-        ...cssProps,
-        borderStyle: "dashed",
-        borderColor: "springgreen",
-      };
-    else if (rowID < attempts.length)
-      cssProps = { ...cssProps, borderColor: "text.secondary" };
-    else cssProps = { opacity: 0.5 };
-
-    return cssProps;
-  };
-
-  return (
-    <Stack
-      id={rowID}
-      direction="row"
-      spacing={2}
-      justifyContent="center"
-      alignItems="center"
-      height="72px"
-      sx={getRowAspect}
-    >
-      {Array(PEGS_PER_ROW)
-        .fill()
-        .map((_, index) => (
-          <Peg key={index} pegID={index} isInRow={rowID} />
-        ))}
-      <Hints key={rowID + "hints"} isInRow={rowID} />
-    </Stack>
-  );
+    return (
+        <Stack
+            id={rowID}
+            direction="row"
+            spacing={2}
+            justifyContent="center"
+            alignItems="center"
+            height="72px"
+            sx={getRowAspect}
+        >
+            {Array(PEGS_PER_ROW)
+                .fill()
+                .map((_, index) => (
+                    <Peg key={index} pegID={index} isInRow={rowID} />
+                ))}
+            <Hints key={rowID + "hints"} isInRow={rowID} />
+        </Stack>
+    );
 };
 
 export default DecodeRow;

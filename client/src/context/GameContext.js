@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { GameDataProvider } from "../context/GameDataProvider";
+import { GameDataProvider } from "./GameDataProvider";
 
 const GameContext = () => {
     return (

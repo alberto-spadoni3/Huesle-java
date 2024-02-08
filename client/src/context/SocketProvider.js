@@ -1,4 +1,4 @@
-import { useState, createContext, useEffect } from "react";
+import { createContext, useEffect, useState } from "react";
 import EventBus from "@vertx/eventbus-bridge-client.js";
 import useAuth from "../hooks/useAuth";
 import {
@@ -127,8 +127,7 @@ export const SocketProvider = ({ children }) => {
     const getRelativeSocketAddress = (absoluteAddress) => {
         try {
             const url = new URL(absoluteAddress);
-            const relativeAddress = url.pathname;
-            return relativeAddress;
+            return url.pathname;
         } catch (error) {
             console.error(error);
             return absoluteAddress;

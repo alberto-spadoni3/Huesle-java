@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef } from "react";
+import React, { useEffect, forwardRef } from "react";
 import {
     Button,
     LinearProgress,
@@ -9,18 +9,14 @@ import {
     DialogTitle,
     Slide,
 } from "@mui/material";
-import {
-    BACKEND_SEARCH_MATCH_ENDPOINT,
-    BASE_NOTIFICATION_ADDRESS,
-} from "../api/backend_endpoints";
+import { BACKEND_SEARCH_MATCH_ENDPOINT } from "../api/backend_endpoints";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 import useSocket from "../hooks/useSocket";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
-import useAuth from "../hooks/useAuth";
 
 const Transition = forwardRef(function Transition(props, ref) {
-    return <Slide direction="up" ref={ref} {...props} />;
+    return <Slide direction="up" ref={ref} {...props}  children={}/>;
 });
 
 export default function SearchPrivateMatchDialog({
@@ -33,7 +29,6 @@ export default function SearchPrivateMatchDialog({
     const axiosPrivate = useAxiosPrivate();
     const { socket, registerHandler } = useSocket();
     const navigate = useNavigate();
-    const { auth } = useAuth();
 
     const handleClose = async (event) => {
         event.preventDefault();

@@ -35,7 +35,6 @@ const SearchMatch = () => {
             });
 
             navigate("/dashboard", { replace: true });
-
         } catch (error) {
             console.log(error);
             if (error.response?.status === 400) {

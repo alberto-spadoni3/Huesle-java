@@ -41,7 +41,7 @@ const EditUserProfile = () => {
         setValidMatchPassword(password === matchPassword);
     }, [password, matchPassword]);
 
-    const handleEditProfile = async (e) => {
+    const handleEditProfile = async (_e) => {
         const emailPresentAndValid = email.trim() !== "" && validEmail;
         const passwordPresentAndValid =
             password.trim() !== "" && validPassword && validMatchPassword;
@@ -156,7 +156,7 @@ const EditUserProfile = () => {
                         </Typography>
                         <TextField
                             fullWidth
-                            error={!validEmail && email ? true : false}
+                            error={!!(!validEmail && email)}
                             id="editEmail"
                             label="New Email"
                             name="editEmail"
@@ -184,7 +184,7 @@ const EditUserProfile = () => {
                         />
                         <TextField
                             fullWidth
-                            error={!validPassword && password ? true : false}
+                            error={!!(!validPassword && password)}
                             name="newPassword"
                             label="New Password"
                             type="password"
@@ -196,11 +196,7 @@ const EditUserProfile = () => {
                         />
                         <TextField
                             fullWidth
-                            error={
-                                !validMatchPassword && matchPassword
-                                    ? true
-                                    : false
-                            }
+                            error={!!(!validMatchPassword && matchPassword)}
                             name="matchNewPassword"
                             label="Confirm New Password"
                             type="password"

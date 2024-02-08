@@ -13,7 +13,7 @@ import axios from "../api/axios";
 import BackButton from "./BackButton";
 import { useSnackbar } from "notistack";
 import { BACKEND_REGISTRATION_ENDPOINT } from "../api/backend_endpoints";
-import {Fade} from "@mui/material";
+import { Fade } from "@mui/material";
 
 const EMAIL_REGEX = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
@@ -154,44 +154,46 @@ export default function Register() {
                                     <TextField
                                         required
                                         fullWidth
-                                        error={!validEmail && email ? true : false}
+                                        error={!!(!validEmail && email)}
                                         id="email"
                                         label="Email Address"
                                         name="email"
                                         autoComplete="email"
                                         value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
+                                        onChange={(e) =>
+                                            setEmail(e.target.value)
+                                        }
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
                                     <TextField
                                         required
                                         fullWidth
-                                        error={
-                                            !validUsername && username ? true : false
-                                        }
+                                        error={!!(!validUsername && username)}
                                         id="username"
                                         label="Username"
                                         name="username"
                                         autoComplete="off"
                                         value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
+                                        onChange={(e) =>
+                                            setUsername(e.target.value)
+                                        }
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
                                     <TextField
                                         required
                                         fullWidth
-                                        error={
-                                            !validPassword && password ? true : false
-                                        }
+                                        error={!!(!validPassword && password)}
                                         name="password"
                                         label="Password"
                                         type="password"
                                         id="password"
                                         autoComplete="off"
                                         value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
+                                        onChange={(e) =>
+                                            setPassword(e.target.value)
+                                        }
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
@@ -199,9 +201,10 @@ export default function Register() {
                                         required
                                         fullWidth
                                         error={
-                                            !validMatchPassword && matchPassword
-                                                ? true
-                                                : false
+                                            !!(
+                                                !validMatchPassword &&
+                                                matchPassword
+                                            )
                                         }
                                         name="matchPassword"
                                         label="Confirm Password"

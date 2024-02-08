@@ -12,7 +12,7 @@ const GameRules = () => {
         "- Search for a public match with another random player.",
         "- Create a private match associated to a secret key.",
         "- Join a private match using the corresponding secret key.",
-        "To do an attempt, choose a color from the bottom palette and then select where in the highlighted row you want to locate it."
+        "To do an attempt, choose a color from the bottom palette and then select where in the highlighted row you want to locate it.",
     ];
 
     const RulesBox = styled(Box)(({ theme }) => ({
@@ -66,11 +66,7 @@ const GameRules = () => {
                                 {rule}
                             </Typography>
                         ))}
-                        <Typography
-                            textAlign="justify"
-                            variant="body1"
-                            mt={3}
-                        >
+                        <Typography textAlign="justify" variant="body1" mt={3}>
                             Have fun with Huesle!
                         </Typography>
                     </RulesBox>

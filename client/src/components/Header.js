@@ -2,7 +2,6 @@ import { Box, Container, Stack, Typography } from "@mui/material";
 import AppSymbol from "./AppSymbol";
 
 const Header = () => {
-
     return (
         <header>
             <Box>

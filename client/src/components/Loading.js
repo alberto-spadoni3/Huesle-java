@@ -1,4 +1,4 @@
-import {Box, CircularProgress, Fade} from "@mui/material";
+import { Box, CircularProgress, Fade } from "@mui/material";
 
 const Loading = () => {
     return (
