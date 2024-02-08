@@ -96,13 +96,13 @@ export default function Register() {
                     variant: "info",
                 });
             } else if (error.response?.status === 400) {
-                console.log(error.response?.data?.message);
-                enqueueSnackbar(error.response?.data?.message, {
+                console.log(error.response?.data?.resultMessage);
+                enqueueSnackbar(error.response?.data?.resultMessage, {
                     variant: "warning",
                 });
             } else if (error.response?.status === 409) {
-                console.log(error.response?.data?.message);
-                enqueueSnackbar(error.response?.data?.message, {
+                console.log(error.response?.data?.resultMessage);
+                enqueueSnackbar(error.response?.data?.resultMessage, {
                     variant: "warning",
                 });
             } else {
