@@ -109,7 +109,6 @@ const Dashboard = () => {
                     status: existingStatus ? existingStatus : "offline",
                 });
             });
-            console.log(opponentsStatusTemp);
             setCurrentOpponentsStatus(opponentsStatusTemp);
             setActiveMatches(temp_rows);
             setCompletedMatches(temp_endedrows);

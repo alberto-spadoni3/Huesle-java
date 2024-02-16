@@ -39,7 +39,7 @@ export default function DashboardMenu({ anchorEl, setAnchorEl, open }) {
             onClose={handleMenuClose}
             onClick={handleMenuClose}
             slotProps={{
-                paper: () => ({
+                paper: {
                     elevation: 0,
                     sx: {
                         overflow: "visible",
@@ -53,7 +53,7 @@ export default function DashboardMenu({ anchorEl, setAnchorEl, open }) {
                             mr: 1,
                         },
                     },
-                }),
+                },
             }}
             anchorOrigin={{
                 vertical: "top",
@@ -70,7 +70,6 @@ export default function DashboardMenu({ anchorEl, setAnchorEl, open }) {
                 </ListItemIcon>
                 How To Play
             </MenuItem>
-            <Divider />
             <MenuItem onClick={(_e) => navigate("/settings")}>
                 <ListItemIcon>
                     <Settings fontSize="small" />
