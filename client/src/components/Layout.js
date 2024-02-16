@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import useAuth from "../hooks/useAuth";
 import { BACKEND_SETTINGS_ENDPOINT } from "../api/backend_endpoints";
+import NetworkOverlay from "./NetworkOverlay";
 
 const Layout = ({ setThemeMode }) => {
     const { auth } = useAuth();
@@ -37,6 +38,7 @@ const Layout = ({ setThemeMode }) => {
                     <Outlet />
                 </MainContainer>
             </Box>
+            <NetworkOverlay />
         </>
     );
 };
