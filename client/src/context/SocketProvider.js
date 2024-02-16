@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useRef } from "react";
 import EventBus from "@vertx/eventbus-bridge-client.js";
 import useAuth from "../hooks/useAuth";
 import {
@@ -15,7 +15,10 @@ export const SocketProvider = ({ children }) => {
     const { auth } = useAuth();
     const [socket, setSocket] = useState(null);
     const [allPlayersStatus, setAllPlayersStatus] = useState([]);
-    const { enqueueSnackbar } = useSnackbar();
+    const [lostConnection, setLostConnection] = useState(false);
+    const errorSnackbarID = useRef(undefined);
+    const socketClosedIntentionally = useRef(false);
+    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
     const displayGameEvents = (_error, message) => {
         const body = JSON.parse(message.body);
@@ -63,6 +66,7 @@ export const SocketProvider = ({ children }) => {
         if (socket) {
             try {
                 sendStatusChange(PlayerStatus.OFFLINE);
+                socketClosedIntentionally.current = true;
                 socket.close();
             } catch (error) {
                 console.log(error);
@@ -151,21 +155,45 @@ export const SocketProvider = ({ children }) => {
     }, [auth]);
 
     useEffect(() => {
-        if (socket)
+        if (socket) {
             socket.onopen = () => {
+                setLostConnection(false);
+
                 registerSocket();
 
                 registerHandler((error, message) =>
                     displayGameEvents(error, message)
                 );
-
                 registerHandler(
                     (error, message) => updatePlayerStatus(error, message),
                     PLAYER_STATUS_ADDRESS
                 );
             };
+
+            socket.onclose = () => setLostConnection(true);
+        }
         // eslint-disable-next-line
     }, [socket]);
+
+    useEffect(() => {
+        if (lostConnection) {
+            if (!errorSnackbarID.current && !socketClosedIntentionally.current)
+                errorSnackbarID.current = enqueueSnackbar("Server offline!", {
+                    variant: "error",
+                    persist: true,
+                });
+        } else {
+            if (errorSnackbarID.current) {
+                enqueueSnackbar("Server back online!", {
+                    variant: "success",
+                    autoHideDuration: 2500,
+                });
+                closeSnackbar(errorSnackbarID.current);
+                errorSnackbarID.current = undefined;
+            }
+            socketClosedIntentionally.current = false;
+        }
+    }, [lostConnection]);
 
     const NotificationTypes = {
         NEW_MATCH: "newMatch",
@@ -188,6 +216,7 @@ export const SocketProvider = ({ children }) => {
                 sendStatusChange,
                 closeSocket,
                 registerHandler,
+                lostConnection,
             }}
         >
             {children}
