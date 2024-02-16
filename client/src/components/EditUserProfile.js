@@ -10,6 +10,7 @@ import {
 } from "../api/backend_endpoints";
 import UserPictureSelector from "./UserPictureSelector";
 import useRefreshToken from "../hooks/useRefreshToken";
+import useSocket from "../hooks/useSocket";
 
 const EMAIL_REGEX = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 const PASSWORD_REGEX =
@@ -31,6 +32,8 @@ const EditUserProfile = () => {
 
     const [matchPassword, setMatchPassword] = useState("");
     const [validMatchPassword, setValidMatchPassword] = useState(false);
+
+    const { lostConnection } = useSocket();
 
     useEffect(() => {
         setValidEmail(EMAIL_REGEX.test(email));
@@ -216,6 +219,7 @@ const EditUserProfile = () => {
                         margin: "24px 0 24px 0",
                     }}
                     variant="contained"
+                    disabled={lostConnection}
                     startIcon={<SaveIcon />}
                     aria-label="Save Changes"
                     color="button"

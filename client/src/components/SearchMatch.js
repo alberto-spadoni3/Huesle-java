@@ -11,6 +11,7 @@ import { BACKEND_SEARCH_MATCH_ENDPOINT } from "../api/backend_endpoints";
 import { useSnackbar } from "notistack";
 import BottomBar from "./BottomBar";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import useSocket from "../hooks/useSocket";
 
 const SearchMatch = () => {
     const navigate = useNavigate();
@@ -21,6 +22,7 @@ const SearchMatch = () => {
     const [searchPrivateOpen, setSearchPrivateOpen] = useState(false);
     const [secretCode, setSecretCode] = useState("");
     const [joinPrivateOpen, setJoinPrivateOpen] = useState(false);
+    const { lostConnection } = useSocket();
 
     const generatePublicMatch = async () => {
         try {
@@ -94,6 +96,7 @@ const SearchMatch = () => {
                             marginTop: 2,
                             marginBottom: 2,
                         }}
+                        disabled={lostConnection}
                         color="button"
                         variant="contained"
                         startIcon={<SearchIcon />}
@@ -117,6 +120,7 @@ const SearchMatch = () => {
                         <Button
                             sx={{ width: "100%", height: "50px", marginTop: 2 }}
                             variant="contained"
+                            disabled={lostConnection}
                             startIcon={<EmojiPeopleRoundedIcon />}
                             aria-label="Create Match"
                             onClick={() => generatePrivateMatch()}
@@ -155,6 +159,7 @@ const SearchMatch = () => {
                             marginTop: 2,
                         }}
                         variant="contained"
+                        disabled={lostConnection}
                         startIcon={<PeopleOutlineRoundedIcon />}
                         aria-label="Join Match"
                         onClick={(_e) => setJoinPrivateOpen(true)}
@@ -167,7 +172,7 @@ const SearchMatch = () => {
                         setOpen={setJoinPrivateOpen}
                     />
                     {/* FOOTER */}
-                    <BottomBar></BottomBar>
+                    <BottomBar />
                 </Box>
             </Fade>
         </>

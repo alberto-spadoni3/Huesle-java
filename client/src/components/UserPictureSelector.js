@@ -7,6 +7,7 @@ import { BACKEND_UPDATE_USER_PIC_ENDPOINT } from "../api/backend_endpoints";
 import { useSnackbar } from "notistack";
 import UserPicture from "./UserPicture";
 import useAuth from "../hooks/useAuth";
+import useSocket from "../hooks/useSocket";
 
 const USER_PICS_NUMBER = 10;
 
@@ -14,6 +15,7 @@ const UserPictureSelector = ({ size }) => {
     const { enqueueSnackbar } = useSnackbar();
     const axiosPrivate = useAxiosPrivate();
     const { auth, setAuth } = useAuth();
+    const { lostConnection } = useSocket();
 
     const [picSelector, setPicSelector] = useState(
         auth.profilePicID ? auth.profilePicID : 0
@@ -92,7 +94,7 @@ const UserPictureSelector = ({ size }) => {
             </Stack>
             <Button
                 variant="outlined"
-                disabled={currentUserPic === picSelector}
+                disabled={currentUserPic === picSelector || lostConnection}
                 sx={{
                     mt: 1.5,
                     mb: 1.5,

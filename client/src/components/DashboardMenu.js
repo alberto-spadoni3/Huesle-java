@@ -9,6 +9,7 @@ import Logout from "@mui/icons-material/Logout";
 import useLogout from "../hooks/useLogout";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
+import useSocket from "../hooks/useSocket";
 
 function StyledBadge(_props) {
     return null;
@@ -26,6 +27,7 @@ StyledBadge.propTypes = {
 export default function DashboardMenu({ anchorEl, setAnchorEl, open }) {
     const logout = useLogout();
     const navigate = useNavigate();
+    const { lostConnection } = useSocket();
 
     const handleMenuClose = () => {
         setAnchorEl(null);
@@ -77,7 +79,7 @@ export default function DashboardMenu({ anchorEl, setAnchorEl, open }) {
                 Settings
             </MenuItem>
             <Divider />
-            <MenuItem onClick={logout}>
+            <MenuItem disabled={lostConnection} onClick={logout}>
                 <ListItemIcon>
                     <Logout color="error" fontSize="small" />
                 </ListItemIcon>

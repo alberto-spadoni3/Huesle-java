@@ -36,13 +36,17 @@ const Match = () => {
     const { auth } = useAuth();
     const [leaveMatchDialogStatus, setLeaveMatchDialogStatus] = useState(false);
     const axiosPrivate = useAxiosPrivate();
-    const { socket, registerHandler } = useSocket();
+    const { socket, registerHandler, lostConnection } = useSocket();
 
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        setLoading(true);
-        loadBoard().then(() => setLoading(false));
+        const loadGameBoard = async () => {
+            setLoading(true);
+            await loadBoard();
+            setLoading(false);
+        };
+        loadGameBoard();
         // eslint-disable-next-line
     }, []);
 
@@ -230,6 +234,7 @@ const Match = () => {
                             marginTop: 2,
                         }}
                         variant="contained"
+                        disabled={lostConnection}
                         color="button"
                         startIcon={<SportsEsportsIcon />}
                         aria-label={!isMatchOver() ? "Play" : "Show game board"}
@@ -246,6 +251,7 @@ const Match = () => {
                             }}
                             variant="outlined"
                             color="error"
+                            disabled={lostConnection}
                             startIcon={<OutlinedFlagIcon />}
                             aria-label="Leave Match"
                             onClick={() => setLeaveMatchDialogStatus(true)}
@@ -266,7 +272,7 @@ const Match = () => {
                         callbackOnYes={leaveMatch}
                     />
                     {/* FOOTER */}
-                    <BottomBar></BottomBar>
+                    <BottomBar />
                 </Box>
             </Fade>
         </>

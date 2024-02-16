@@ -16,6 +16,7 @@ import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import UserPicture from "./UserPicture";
 import { useSnackbar } from "notistack";
 import ConfirmationDialog from "./ConfirmationDialog";
+import useSocket from "../hooks/useSocket";
 
 const UserProfile = () => {
     const navigate = useNavigate();
@@ -25,6 +26,7 @@ const UserProfile = () => {
     const logout = useLogout();
     const [deleteAccountDialogStatus, setDeleteAccountDialogStatus] =
         useState(false);
+    const { lostConnection } = useSocket();
 
     const StatisticsCard = styled(Box)(({ theme }) => ({
         width: "100%",
@@ -60,16 +62,20 @@ const UserProfile = () => {
     };
 
     useEffect(() => {
-        try {
-            const response = axiosPrivate.get(BACKEND_GET_USER_STATS_ENDPOINT);
-            response.then((response) => {
+        const getUserStats = async () => {
+            try {
+                const response = await axiosPrivate.get(
+                    BACKEND_GET_USER_STATS_ENDPOINT
+                );
                 if (response.status === 200) {
                     setStats(response.data);
                 }
-            });
-        } catch (error) {
-            console.log(error);
-        }
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        getUserStats();
     }, []);
 
     return (
@@ -127,6 +133,7 @@ const UserProfile = () => {
                             sx={{ width: "100%" }}
                             variant="contained"
                             color="error"
+                            disabled={lostConnection}
                             startIcon={<LogoutIcon />}
                             aria-label="Logout"
                             onClick={logout}
@@ -137,6 +144,7 @@ const UserProfile = () => {
                             sx={{ width: "100%" }}
                             variant="outlined"
                             color="error"
+                            disabled={lostConnection}
                             startIcon={<DeleteIcon />}
                             aria-label="Delete account"
                             onClick={() => setDeleteAccountDialogStatus(true)}

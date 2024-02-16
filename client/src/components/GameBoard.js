@@ -17,7 +17,7 @@ const GameBoard = () => {
     const { enqueueSnackbar } = useSnackbar();
     const axiosPrivate = useAxiosPrivate();
     const { auth } = useAuth();
-    const { sendStatusChange, PlayerStatus } = useSocket();
+    const { sendStatusChange, PlayerStatus, lostConnection } = useSocket();
 
     const {
         currentPegsColor,
@@ -142,7 +142,8 @@ const GameBoard = () => {
                             }}
                             disabled={
                                 attempts.length === NUMBER_OF_ATTEMPTS ||
-                                !isItActivePlayer()
+                                !isItActivePlayer() ||
+                                lostConnection
                             }
                             variant="contained"
                             color="neutral"

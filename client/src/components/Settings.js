@@ -6,11 +6,13 @@ import { BACKEND_SETTINGS_ENDPOINT } from "../api/backend_endpoints";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import useGameData from "../hooks/useGameData";
 import { useSnackbar } from "notistack";
+import useSocket from "../hooks/useSocket";
 
 const Settings = ({ themeMode, setThemeMode }) => {
     const axiosPrivate = useAxiosPrivate();
     const { colorblindMode, setColorblindMode } = useGameData();
     const { enqueueSnackbar } = useSnackbar();
+    const { lostConnection } = useSocket();
     const dmSwitch = { "aria-label": "Switch for dark mode" };
     const cbSwitch = { "aria-label": "Switch for colorblind mode" };
 
@@ -123,6 +125,7 @@ const Settings = ({ themeMode, setThemeMode }) => {
                                     Dark mode
                                 </Typography>
                                 <Switch
+                                    disabled={lostConnection}
                                     color="switch"
                                     checked={themeMode === "dark"}
                                     onChange={(_e) => {
@@ -148,6 +151,7 @@ const Settings = ({ themeMode, setThemeMode }) => {
                                     Colorblind mode
                                 </Typography>
                                 <Switch
+                                    disabled={lostConnection}
                                     color="switch"
                                     checked={colorblindMode}
                                     onClick={(_e) => {

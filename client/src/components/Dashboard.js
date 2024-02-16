@@ -26,7 +26,8 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const axiosPrivate = useAxiosPrivate();
     const { auth } = useAuth();
-    const { socket, registerHandler, allPlayersStatus } = useSocket();
+    const { socket, registerHandler, allPlayersStatus, lostConnection } =
+        useSocket();
     const { GameStates } = useGameData();
     const [loading, setLoading] = useState(false);
     const [activeMatches, setActiveMatches] = useState([]);
@@ -169,6 +170,7 @@ const Dashboard = () => {
                     <Button
                         variant={button_type}
                         aria-label={button_label}
+                        disabled={lostConnection}
                         sx={{
                             width: "70%",
                             height: "50%",
