@@ -36,6 +36,7 @@ export const getDesignTokens = (mode) => ({
                       border: "#c6cac6",
                       paper: "#E6E8E6",
                       dashboardMenu: "#E6E8E6",
+                      overlay: "#cccccc",
                   },
                   gameboard: {
                       background: "#DCCCBB",
@@ -79,6 +80,7 @@ export const getDesignTokens = (mode) => ({
                       border: "#3c3c3c",
                       paper: "#2F2F2F",
                       dashboardMenu: "#2F2F2F",
+                      overlay: "#333333",
                   },
                   gameboard: {
                       background: "#433423",
