@@ -160,7 +160,7 @@ const Dashboard = () => {
                 break;
         }
         return (
-            <TableRow key={index} onClick={() => openSelectedMatch(row_id)}>
+            <TableRow key={index}>
                 <TableCell component="th" scope="row" align="center">
                     <Typography color="text.primary" variant="subtitle1">
                         {row_name}
@@ -170,6 +170,7 @@ const Dashboard = () => {
                     <Button
                         variant={button_type}
                         aria-label={button_label}
+                        onClick={() => openSelectedMatch(row_id)}
                         disabled={lostConnection}
                         sx={{
                             width: "70%",
