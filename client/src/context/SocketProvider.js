@@ -184,10 +184,13 @@ export const SocketProvider = ({ children }) => {
                 });
         } else {
             if (errorSnackbarID.current) {
-                enqueueSnackbar("Server back online!", {
-                    variant: "success",
-                    autoHideDuration: 2500,
-                });
+                enqueueSnackbar(
+                    "Server back online! Consider reloading the page",
+                    {
+                        variant: "success",
+                        autoHideDuration: 3500,
+                    }
+                );
                 closeSnackbar(errorSnackbarID.current);
                 errorSnackbarID.current = undefined;
             }

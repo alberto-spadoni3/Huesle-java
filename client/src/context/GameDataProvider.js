@@ -92,21 +92,28 @@ export const GameDataProvider = ({ children }) => {
         return swappedColors;
     };
 
-    function loadBoard(matchId = localStorage.getItem("matchId")) {
+    async function loadBoard(matchId = localStorage.getItem("matchId")) {
         if (matchId) {
-            const response = axiosPrivate.get(BACKEND_GET_MATCH_ENDPOINT, {
-                params: { matchId: matchId },
-            });
-            response.then((response) => {
-                const { matchStatus, attempts } = response?.data?.matches[0];
-                setId(matchId);
-                setPlayers(matchStatus.players);
-                setStatus(matchStatus);
-                setAttempts(attempts);
-                setProfilePics(response?.data?.profile_pics);
-            });
-            localStorage.setItem("matchId", matchId);
-            return Promise.resolve();
+            try {
+                const response = await axiosPrivate.get(
+                    BACKEND_GET_MATCH_ENDPOINT,
+                    {
+                        params: { matchId: matchId },
+                    }
+                );
+                if (response.status === 200) {
+                    const { matchStatus, attempts } =
+                        response?.data?.matches[0];
+                    setId(matchId);
+                    setPlayers(matchStatus.players);
+                    setStatus(matchStatus);
+                    setAttempts(attempts);
+                    setProfilePics(response?.data?.profile_pics);
+                    localStorage.setItem("matchId", matchId);
+                }
+            } catch (error) {
+                console.error(error);
+            }
         }
     }
 
