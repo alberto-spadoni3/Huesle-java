@@ -14,7 +14,7 @@ public class UserManager extends AbstractManager {
     }
 
     @Override
-    protected Map<MessageType, Function<String, String>> getManagementCallbacks() {
+    public Map<MessageType, Function<String, String>> getManagementCallbacks() {
         Map<MessageType, Function<String, String>> userCallbacks = new HashMap<>();
         UserController userController = new UserController(database);
         userCallbacks.put(MessageType.REGISTER_USER, userController.registerUser());

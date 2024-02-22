@@ -22,5 +22,5 @@ public abstract class AbstractManager implements Manager {
         Executors.newSingleThreadExecutor().submit(new RPCServer(getManagementCallbacks(), this.getClass().getSimpleName()));
     }
 
-    protected abstract Map<MessageType, Function<String, String>> getManagementCallbacks();
+    public abstract Map<MessageType, Function<String, String>> getManagementCallbacks();
 }

@@ -16,7 +16,7 @@ public class GameManager extends AbstractManager {
     }
 
     @Override
-    protected Map<MessageType, Function<String, String>> getManagementCallbacks() {
+    public Map<MessageType, Function<String, String>> getManagementCallbacks() {
         Map<MessageType, Function<String, String>> gameCallbacks = new HashMap<>();
 
         GameLogicController gameLogicController = new GameLogicController(database);

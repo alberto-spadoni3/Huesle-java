@@ -7,8 +7,7 @@ import java.util.function.Function;
 
 public interface Manager {
     void init();
+    void initForTesting();
 
-    private Map<MessageType, Function<String, String>> getManagementCallbacks() {
-        throw new RuntimeException("Not implemented");
-    }
+    Map<MessageType, Function<String, String>> getManagementCallbacks();
 }
