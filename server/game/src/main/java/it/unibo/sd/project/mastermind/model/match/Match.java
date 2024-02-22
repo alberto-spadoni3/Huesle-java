@@ -41,7 +41,7 @@ public class Match {
         if (attempt.getHints().getRightPositions() == SecretCode.COLOR_SEQUENCE_LENGTH)
             matchStatus.setState(MatchState.VICTORY);
         else if (remainingAttempts > 0)
-            matchStatus.switchPlayer();
+            matchStatus.changeTurn();
         else
             matchStatus.setState(MatchState.DRAW);
     }

@@ -61,7 +61,7 @@ public class MatchStatus {
         return this.players.get(new Random().nextInt(2)).getUsername();
     }
 
-    public void switchPlayer() {
+    public void changeTurn() {
         Optional<Player> player = this.players.stream().filter((p) -> !p.getUsername().equals(nextPlayer)).findFirst();
         player.ifPresentOrElse(
                 p -> this.nextPlayer = p.getUsername(),

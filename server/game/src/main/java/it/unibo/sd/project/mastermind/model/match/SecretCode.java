@@ -6,7 +6,6 @@ import java.util.Random;
 
 public class SecretCode {
     public static final int COLOR_SEQUENCE_LENGTH = 4;
-
     private final List<String> possibleColours = List.of("crimson",
                                                          "coral",
                                                          "gold",
@@ -19,12 +18,12 @@ public class SecretCode {
         this.colorCode = this.generateColorSequence();
     }
 
-    public List<String> getCode() {
-        return this.colorCode;
-    }
-
     public SecretCode(ArrayList<String> sequence) {
         this.colorCode = sequence;
+    }
+
+    public List<String> getCode() {
+        return this.colorCode;
     }
 
     private ArrayList<String> generateColorSequence() {
