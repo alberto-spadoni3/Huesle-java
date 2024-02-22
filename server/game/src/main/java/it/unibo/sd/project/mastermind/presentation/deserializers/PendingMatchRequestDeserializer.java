@@ -2,7 +2,7 @@ package it.unibo.sd.project.mastermind.presentation.deserializers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import it.unibo.sd.project.mastermind.model.match.PendingMatchRequest;
+import it.unibo.sd.project.mastermind.model.request.PendingMatchRequest;
 
 public class PendingMatchRequestDeserializer extends AbstractJsonDeserializer<PendingMatchRequest> {
     @Override

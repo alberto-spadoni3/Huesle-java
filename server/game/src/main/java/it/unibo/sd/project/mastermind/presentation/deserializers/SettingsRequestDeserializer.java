@@ -2,7 +2,7 @@ package it.unibo.sd.project.mastermind.presentation.deserializers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import it.unibo.sd.project.mastermind.model.user.SettingsRequest;
+import it.unibo.sd.project.mastermind.model.request.SettingsRequest;
 import it.unibo.sd.project.mastermind.model.user.AccessibilitySettings;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 

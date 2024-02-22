@@ -1,10 +1,10 @@
 package it.unibo.sd.project.mastermind.controllers;
 
 import com.mongodb.client.MongoDatabase;
-import it.unibo.sd.project.mastermind.model.user.SettingsRequest;
+import it.unibo.sd.project.mastermind.model.request.SettingsRequest;
 import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
-import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
+import it.unibo.sd.project.mastermind.model.result.UserOperationResult;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 
 import java.util.Optional;

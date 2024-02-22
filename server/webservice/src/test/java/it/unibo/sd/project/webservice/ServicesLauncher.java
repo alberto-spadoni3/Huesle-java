@@ -2,9 +2,9 @@ package it.unibo.sd.project.webservice;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import it.unibo.sd.project.mastermind.model.GameManager;
+import it.unibo.sd.project.mastermind.GameManager;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
-import it.unibo.sd.project.mastermind.model.UserManager;
+import it.unibo.sd.project.mastermind.UserManager;
 
 public class ServicesLauncher extends AbstractVerticle {
     private final short PORT;

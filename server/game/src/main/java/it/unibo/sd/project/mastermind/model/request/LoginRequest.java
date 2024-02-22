@@ -1,6 +1,4 @@
-package it.unibo.sd.project.mastermind.model.user;
-
-import it.unibo.sd.project.mastermind.model.OperationRequest;
+package it.unibo.sd.project.mastermind.model.request;
 
 public class LoginRequest extends OperationRequest {
     private final String clearPassword;

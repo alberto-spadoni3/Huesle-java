@@ -1,4 +1,4 @@
-package it.unibo.sd.project.mastermind.model;
+package it.unibo.sd.project.mastermind;
 
 import it.unibo.sd.project.mastermind.rabbit.MessageType;
 

@@ -3,11 +3,9 @@ package it.unibo.sd.project.mastermind.presentation.serializers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import it.unibo.sd.project.mastermind.model.*;
 import it.unibo.sd.project.mastermind.model.match.*;
+import it.unibo.sd.project.mastermind.model.result.*;
 import it.unibo.sd.project.mastermind.model.user.Player;
-import it.unibo.sd.project.mastermind.model.user.StatsOperationResult;
-import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 
 import java.util.List;

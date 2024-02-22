@@ -2,7 +2,7 @@ package it.unibo.sd.project.mastermind.presentation.deserializers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import it.unibo.sd.project.mastermind.model.user.LoginRequest;
+import it.unibo.sd.project.mastermind.model.request.LoginRequest;
 
 public class LoginRequestDeserializer extends AbstractJsonDeserializer<LoginRequest> {
     @Override

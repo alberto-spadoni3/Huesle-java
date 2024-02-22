@@ -1,6 +1,11 @@
 package it.unibo.sd.project.mastermind.presentation;
 
 import it.unibo.sd.project.mastermind.model.match.*;
+import it.unibo.sd.project.mastermind.model.request.*;
+import it.unibo.sd.project.mastermind.model.result.GuessOperationResult;
+import it.unibo.sd.project.mastermind.model.result.MatchOperationResult;
+import it.unibo.sd.project.mastermind.model.result.StatsOperationResult;
+import it.unibo.sd.project.mastermind.model.result.UserOperationResult;
 import it.unibo.sd.project.mastermind.model.user.*;
 import it.unibo.sd.project.mastermind.presentation.deserializers.*;
 import it.unibo.sd.project.mastermind.presentation.serializers.*;

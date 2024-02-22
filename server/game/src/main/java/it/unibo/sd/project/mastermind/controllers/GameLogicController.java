@@ -2,8 +2,11 @@ package it.unibo.sd.project.mastermind.controllers;
 
 import com.mongodb.client.MongoDatabase;
 import it.unibo.sd.project.mastermind.model.match.Attempt;
-import it.unibo.sd.project.mastermind.model.match.GuessOperationResult;
-import it.unibo.sd.project.mastermind.model.match.GuessRequest;
+import it.unibo.sd.project.mastermind.model.result.GuessOperationResult;
+import it.unibo.sd.project.mastermind.model.request.GuessRequest;
+import it.unibo.sd.project.mastermind.model.request.MatchRequest;
+import it.unibo.sd.project.mastermind.model.request.PendingMatchRequest;
+import it.unibo.sd.project.mastermind.model.result.MatchOperationResult;
 import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.match.*;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;

@@ -1,6 +1,4 @@
-package it.unibo.sd.project.mastermind.model.match;
-
-import it.unibo.sd.project.mastermind.model.OperationRequest;
+package it.unibo.sd.project.mastermind.model.request;
 
 public class MatchRequest extends OperationRequest {
     private boolean isMatchPrivate;

@@ -1,9 +1,9 @@
 package it.unibo.sd.project.mastermind.presentation;
 
 import it.unibo.sd.project.mastermind.model.user.AccessibilitySettings;
-import it.unibo.sd.project.mastermind.model.OperationResult;
+import it.unibo.sd.project.mastermind.model.result.OperationResult;
 import it.unibo.sd.project.mastermind.model.user.Player;
-import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
+import it.unibo.sd.project.mastermind.model.result.UserOperationResult;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

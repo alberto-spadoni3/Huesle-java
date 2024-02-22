@@ -5,7 +5,7 @@ import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchState;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.user.Player;
-import it.unibo.sd.project.mastermind.model.user.StatsOperationResult;
+import it.unibo.sd.project.mastermind.model.result.StatsOperationResult;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import org.bson.conversions.Bson;
 

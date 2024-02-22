@@ -11,11 +11,11 @@ import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchState;
 import it.unibo.sd.project.mastermind.model.match.MatchStatus;
-import it.unibo.sd.project.mastermind.model.match.PendingMatchRequest;
+import it.unibo.sd.project.mastermind.model.request.PendingMatchRequest;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
-import it.unibo.sd.project.mastermind.model.user.LoginRequest;
+import it.unibo.sd.project.mastermind.model.request.LoginRequest;
 import it.unibo.sd.project.mastermind.model.user.Player;
-import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
+import it.unibo.sd.project.mastermind.model.result.UserOperationResult;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import org.bson.conversions.Bson;
 

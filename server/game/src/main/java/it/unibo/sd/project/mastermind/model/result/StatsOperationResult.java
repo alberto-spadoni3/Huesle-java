@@ -1,6 +1,4 @@
-package it.unibo.sd.project.mastermind.model.user;
-
-import it.unibo.sd.project.mastermind.model.OperationResult;
+package it.unibo.sd.project.mastermind.model.result;
 
 public class StatsOperationResult extends OperationResult {
     private final int matchesWon;

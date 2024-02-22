@@ -1,6 +1,6 @@
 package it.unibo.sd.project.mastermind.presentation;
 
-import it.unibo.sd.project.mastermind.model.user.LoginRequest;
+import it.unibo.sd.project.mastermind.model.request.LoginRequest;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

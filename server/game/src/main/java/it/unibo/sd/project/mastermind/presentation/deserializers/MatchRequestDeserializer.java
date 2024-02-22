@@ -2,7 +2,7 @@ package it.unibo.sd.project.mastermind.presentation.deserializers;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import it.unibo.sd.project.mastermind.model.match.MatchRequest;
+import it.unibo.sd.project.mastermind.model.request.MatchRequest;
 
 public class MatchRequestDeserializer extends AbstractJsonDeserializer<MatchRequest> {
     @Override

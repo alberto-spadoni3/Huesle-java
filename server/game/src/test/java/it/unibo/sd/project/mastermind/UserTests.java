@@ -1,12 +1,11 @@
 package it.unibo.sd.project.mastermind;
 
 import com.mongodb.client.model.Filters;
-import it.unibo.sd.project.mastermind.model.OperationResult;
+import it.unibo.sd.project.mastermind.model.result.OperationResult;
 import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
-import it.unibo.sd.project.mastermind.model.UserManager;
-import it.unibo.sd.project.mastermind.model.user.UserOperationResult;
+import it.unibo.sd.project.mastermind.model.result.UserOperationResult;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import it.unibo.sd.project.mastermind.rabbit.MessageType;
 import it.unibo.sd.project.mastermind.rabbit.RPCClient;

@@ -1,4 +1,4 @@
-package it.unibo.sd.project.mastermind.model;
+package it.unibo.sd.project.mastermind.model.result;
 
 public class OperationResult {
     protected final short statusCode;

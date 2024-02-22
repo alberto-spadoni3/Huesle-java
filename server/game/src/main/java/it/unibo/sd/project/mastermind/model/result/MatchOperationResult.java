@@ -1,6 +1,6 @@
-package it.unibo.sd.project.mastermind.model.match;
+package it.unibo.sd.project.mastermind.model.result;
 
-import it.unibo.sd.project.mastermind.model.OperationResult;
+import it.unibo.sd.project.mastermind.model.match.Match;
 
 import java.util.List;
 

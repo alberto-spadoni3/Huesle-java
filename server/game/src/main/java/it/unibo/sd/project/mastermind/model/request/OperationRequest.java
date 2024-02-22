@@ -1,4 +1,4 @@
-package it.unibo.sd.project.mastermind.model;
+package it.unibo.sd.project.mastermind.model.request;
 
 public class OperationRequest {
     private final String requesterUsername;
