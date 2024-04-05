@@ -39,7 +39,7 @@ public class UserTests {
         // UserManager has started before tests execution
         Thread.sleep(50);
         client = new RPCClient();
-        var testDatabase = DBSingleton.getInstance().getTestDatabase();
+        var testDatabase = DBSingleton.getTestDatabase();
         // Drop the possible database to avoid conflicts
         testDatabase.drop();
         userDB = new DBManager<>(testDatabase, "users", "username", Player.class);

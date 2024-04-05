@@ -35,7 +35,7 @@ public class SettingsOperationsTests {
     public void setUpTests() throws Exception {
         new GameManager(true);
         client = new RPCClient();
-        MongoDatabase testDatabase = DBSingleton.getInstance().getTestDatabase();
+        MongoDatabase testDatabase = DBSingleton.getTestDatabase();
         // Drop the possible existing database to avoid conflicts
         testDatabase.drop();
 

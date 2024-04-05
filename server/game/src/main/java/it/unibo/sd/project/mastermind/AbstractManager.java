@@ -13,12 +13,12 @@ public abstract class AbstractManager implements Manager {
     protected MongoDatabase database;
 
     public void init() {
-        database = DBSingleton.getInstance().getDatabase();
+        database = DBSingleton.getDatabase();
         Executors.newSingleThreadExecutor().submit(new RPCServer(getManagementCallbacks(), this.getClass().getSimpleName()));
     }
 
     public void initForTesting() {
-        database = DBSingleton.getInstance().getTestDatabase();
+        database = DBSingleton.getTestDatabase();
         Executors.newSingleThreadExecutor().submit(new RPCServer(getManagementCallbacks(), this.getClass().getSimpleName()));
     }
 

@@ -15,7 +15,7 @@ public class DBSingleton {
         private static final DBSingleton INSTANCE = new DBSingleton();
     }
 
-    public static DBSingleton getInstance() {
+    private static DBSingleton getInstance() {
         return InstanceHolder.INSTANCE;
     }
 
@@ -26,11 +26,11 @@ public class DBSingleton {
         testDatabase = mongoClient.getDatabase(DATABASE_NAME + "-test");
     }
 
-    public MongoDatabase getDatabase() {
-        return database;
+    public static MongoDatabase getDatabase() {
+        return getInstance().database;
     }
 
-    public MongoDatabase getTestDatabase() {
-        return testDatabase;
+    public static MongoDatabase getTestDatabase() {
+        return getInstance().testDatabase;
     }
 }

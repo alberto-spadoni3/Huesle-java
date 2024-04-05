@@ -46,7 +46,7 @@ public class GameOperationsTests {
     public void setUpTests() throws Exception {
         new GameManager(true);
         client = new RPCClient();
-        MongoDatabase testDatabase = DBSingleton.getInstance().getTestDatabase();
+        MongoDatabase testDatabase = DBSingleton.getTestDatabase();
         // Drop the possible existing database to avoid conflicts
         testDatabase.drop();
 
@@ -138,7 +138,7 @@ public class GameOperationsTests {
         assertEquals(201, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
 
-        assertNotNull(operationResult.getMatches().get(0));
+        assertNotNull(operationResult.getMatches().getFirst());
         // check if there is a match in the database
         checkMatchOfPlayerInDB(player2);
     }
@@ -210,7 +210,7 @@ public class GameOperationsTests {
         assertEquals(201, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
 
-        assertNotNull(operationResult.getMatches().get(0));
+        assertNotNull(operationResult.getMatches().getFirst());
         // check if there is a match in the database
         checkMatchOfPlayerInDB(player3);
     }
@@ -276,7 +276,7 @@ public class GameOperationsTests {
     @Test
     @Order(10)
     void getMatchByID() throws Exception {
-        String matchID = matchesOfPlayer2.get(0).getMatchID().toString();
+        String matchID = matchesOfPlayer2.getFirst().getMatchID().toString();
         CompletableFuture<String> response = callAsync(
                 client,
                 MessageType.GET_MATCH,
@@ -286,7 +286,7 @@ public class GameOperationsTests {
         assertEquals(200, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
         assertEquals(1, operationResult.getMatches().size());
-        assertEquals(matchID, operationResult.getMatches().get(0).getMatchID().toString());
+        assertEquals(matchID, operationResult.getMatches().getFirst().getMatchID().toString());
     }
 
     @Test
@@ -367,7 +367,7 @@ public class GameOperationsTests {
         JsonObject request = new JsonObject();
 
         // the requesterUsername must correspond to the match's next player
-        Match match = matchesOfPlayer2.get(0);
+        Match match = matchesOfPlayer2.getFirst();
         String nextPlayer = match.getMatchStatus().getNextPlayer();
         // if the request has to fail, the requester must not correspond to the match's next player
         String requesterUsername = hasToFail ?
