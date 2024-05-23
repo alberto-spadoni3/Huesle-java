@@ -31,10 +31,6 @@ public class DBManager<T> {
         collection.replaceOne(Filters.eq(ID_FIELD, id), convertToDocument(elem));
     }
 
-    public void remove(String id) {
-        collection.deleteOne(Filters.eq(ID_FIELD, id));
-    }
-
     public void deleteByQuery(Bson query) {
         collection.deleteOne(query);
     }

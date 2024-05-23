@@ -11,13 +11,9 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 public class RPCClient implements AutoCloseable {
+    private static final String EXCHANGE_NAME = "Web";
     private static Connection connection;
     private static Channel channel;
-    private static final String EXCHANGE_NAME = "Web";
-
-    private static final class InstanceHolder {
-        private static final RPCClient INSTANCE = new RPCClient();
-    }
 
     private RPCClient() {
         ConnectionFactory factory = new ConnectionFactory();
@@ -47,9 +43,8 @@ public class RPCClient implements AutoCloseable {
                 channel.exchangeDeclare(EXCHANGE_NAME, "direct");
                 channel.basicPublish(EXCHANGE_NAME, messageType.getType(),
                     props, message.getBytes(StandardCharsets.UTF_8));
-                log("[x] Sent '" + messageType.getType() + "':'" + message + "'");
-                //channel.queuePurge(replyQueueName);
-                channel.basicQos(1); // accept only one unack-ed message at a time
+                System.out.println("[x] Sent '" + messageType.getType() + "':'" + message + "'");
+                channel.basicQos(1); // accept only one un-acked message at a time
                 channel.basicConsume(replyQueueName, false, (consumerTag, delivery) -> {
                     if (delivery.getProperties().getCorrelationId().equals(corrId)) {
                         responseConsumer.accept(new String(delivery.getBody(), StandardCharsets.UTF_8));
@@ -71,8 +66,7 @@ public class RPCClient implements AutoCloseable {
         connection.close();
     }
 
-    private void log(String message) {
-        boolean debugMode = false;
-        if (debugMode) System.out.println(message);
+    private static final class InstanceHolder {
+        private static final RPCClient INSTANCE = new RPCClient();
     }
 }
