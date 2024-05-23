@@ -23,6 +23,6 @@ public class ServicesLauncher extends AbstractVerticle {
                 verticleStart.complete();
             else System.out.println(res.cause().getMessage());
         });
-        DBSingleton.getInstance().getTestDatabase().drop();
+        DBSingleton.getTestDatabase().drop();
     }
 }

@@ -26,6 +26,7 @@ public class SettingsRoutesConfigurator extends RoutesConfigurator {
                         }
                 ).handle(routingContext)
         ));
+
         router.put("/profileSettings").blockingHandler(getRequestObject(
                 (routingContext, request) -> {
                     JsonObject body = routingContext.body().asJsonObject();
@@ -35,11 +36,7 @@ public class SettingsRoutesConfigurator extends RoutesConfigurator {
                     backendHandler(
                             MessageType.UPDATE_SETTINGS,
                             request.encode(),
-                            (context, backendResponse) -> {
-                                JsonObject result = new JsonObject()
-                                        .put("resultMessage", backendResponse.getString("resultMessage"));
-                                context.response().end(result.encode());
-                            }).handle(routingContext);
+                            respondWithMessage()).handle(routingContext);
                 }
         ));
 
@@ -51,11 +48,7 @@ public class SettingsRoutesConfigurator extends RoutesConfigurator {
                     backendHandler(
                             MessageType.UPDATE_PROFILE_PIC,
                             request.encode(),
-                            (context, backendResponse) -> {
-                                JsonObject result = new JsonObject()
-                                        .put("resultMessage", backendResponse.getString("resultMessage"));
-                                context.response().end(result.encode());
-                            }
+                            respondWithMessage()
                     ).handle(routingContext);
                 }
         ));

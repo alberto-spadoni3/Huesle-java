@@ -79,7 +79,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
 
         router.get("/getMatch").blockingHandler(extractUsername(
                 (routingContext, username) -> {
-                    String matchID = routingContext.queryParam("matchId").get(0);
+                    String matchID = routingContext.queryParam("matchId").getFirst();
                     backendHandler(
                             MessageType.GET_MATCH,
                             matchID,
