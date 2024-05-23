@@ -14,7 +14,7 @@ public class RPCServer implements Runnable {
     private final Map<MessageType, Function<String, String>> map;
     private final String className;
 
-    public RPCServer(Map<MessageType, Function<String,String>> map, String className) {
+    public RPCServer(Map<MessageType, Function<String, String>> map, String className) {
         this.map = map;
         this.className = className;
     }
@@ -43,10 +43,11 @@ public class RPCServer implements Runnable {
             callbacks.forEach((queue, callback) -> {
                 try {
                     channel.basicConsume(
-                            queue,
-                            false,
-                            getDeliverCallback(callback, channel, monitor),
-                            consumerTag -> { });
+                        queue,
+                        false,
+                        getDeliverCallback(callback, channel, monitor),
+                        consumerTag -> {
+                        });
                 } catch (IOException e) {
                     System.err.println("[" + className + "] " + e.getMessage());
                 }
@@ -65,9 +66,9 @@ public class RPCServer implements Runnable {
         }
     }
 
-    private Map<String, Function<String,String>> createCallbackMap(Channel channel) {
-        Map<String, Function<String,String>> callbackMap = new HashMap<>();
-        map.forEach((t,c)-> {
+    private Map<String, Function<String, String>> createCallbackMap(Channel channel) {
+        Map<String, Function<String, String>> callbackMap = new HashMap<>();
+        map.forEach((t, c) -> {
             try {
                 String queueName = channel.queueDeclare().getQueue();
                 channel.queueBind(queueName, EXCHANGE_NAME, t.getType());
@@ -79,12 +80,12 @@ public class RPCServer implements Runnable {
         return callbackMap;
     }
 
-    private DeliverCallback getDeliverCallback(Function<String,String> callback, Channel channel, Object monitor){
-       return  (consumerTag, delivery) -> {
+    private DeliverCallback getDeliverCallback(Function<String, String> callback, Channel channel, Object monitor) {
+        return (consumerTag, delivery) -> {
             AMQP.BasicProperties replyProps = new AMQP.BasicProperties
-                    .Builder()
-                    .correlationId(delivery.getProperties().getCorrelationId())
-                    .build();
+                .Builder()
+                .correlationId(delivery.getProperties().getCorrelationId())
+                .build();
 
             String response = "";
             try {
@@ -92,10 +93,12 @@ public class RPCServer implements Runnable {
             } catch (RuntimeException e) {
                 System.out.println("[" + className + "] " + e.getMessage());
             } finally {
-                System.out.println("[" + className + "] RPC server responding " + response + " in queue " + delivery.getProperties().getReplyTo());
+                System.out.println(
+                    "[" + className + "] RPC server responding " + response + " in queue " + delivery.getProperties()
+                        .getReplyTo());
                 channel.basicPublish(
-                        "", delivery.getProperties().getReplyTo(),
-                        replyProps, response.getBytes(
+                    "", delivery.getProperties().getReplyTo(),
+                    replyProps, response.getBytes(
                         StandardCharsets.UTF_8));
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 

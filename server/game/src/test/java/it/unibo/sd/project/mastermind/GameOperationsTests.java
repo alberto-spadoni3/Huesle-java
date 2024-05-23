@@ -5,15 +5,17 @@ import com.google.gson.JsonObject;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import it.unibo.sd.project.mastermind.controllers.UserController;
-import it.unibo.sd.project.mastermind.model.match.*;
+import it.unibo.sd.project.mastermind.model.match.Hints;
+import it.unibo.sd.project.mastermind.model.match.Match;
+import it.unibo.sd.project.mastermind.model.match.MatchState;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
 import it.unibo.sd.project.mastermind.model.request.PendingMatchRequest;
 import it.unibo.sd.project.mastermind.model.result.GuessOperationResult;
 import it.unibo.sd.project.mastermind.model.result.MatchOperationResult;
 import it.unibo.sd.project.mastermind.model.result.OperationResult;
-import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.result.UserOperationResult;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import it.unibo.sd.project.mastermind.rabbit.MessageType;
 import it.unibo.sd.project.mastermind.rabbit.RPCClient;
@@ -51,7 +53,8 @@ public class GameOperationsTests {
         testDatabase.drop();
 
         this.matchDB = new DBManager<>(testDatabase, "matches", "_id", Match.class);
-        this.pendingRequestDB = new DBManager<>(testDatabase, "pendingRequests", "requesterUsername", PendingMatchRequest.class);
+        this.pendingRequestDB = new DBManager<>(testDatabase, "pendingRequests", "requesterUsername",
+            PendingMatchRequest.class);
 
         // register at least three users so that two matches can be created
         registerUsers(testDatabase);
@@ -63,7 +66,7 @@ public class GameOperationsTests {
     }
 
     @AfterEach
-    public void stopExecutor(){
+    public void stopExecutor() {
         executorService.shutdown();
     }
 
@@ -71,9 +74,9 @@ public class GameOperationsTests {
     @Order(1)
     void initiallyEmpty() throws Exception {
         CompletableFuture<String> response = callAsync(
-                client,
-                MessageType.GET_MATCHES_OF_USER,
-                player1.getUsername());
+            client,
+            MessageType.GET_MATCHES_OF_USER,
+            player1.getUsername());
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         assertEquals(200, operationResult.getStatusCode());
@@ -86,9 +89,9 @@ public class GameOperationsTests {
     void searchPublicMatch() throws Exception {
         String request = getRequestForMatch(player1, false);
         CompletableFuture<String> response = callAsync(
-                client,
-                MessageType.SEARCH_MATCH,
-                request);
+            client,
+            MessageType.SEARCH_MATCH,
+            request);
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the searching process should succeed with statusCode 200, meaning that a pending request has been added
@@ -97,12 +100,12 @@ public class GameOperationsTests {
 
         // check if there is the supposed pending request
         Bson pendingReqQuery = Filters.and(
-                Filters.eq("requesterUsername", player1.getUsername()),
-                Filters.eq("matchAccessCode", null)
+            Filters.eq("requesterUsername", player1.getUsername()),
+            Filters.eq("matchAccessCode", null)
         );
 
         Optional<PendingMatchRequest> optionalPendingMatchRequest =
-                pendingRequestDB.getDocumentByQuery(pendingReqQuery);
+            pendingRequestDB.getDocumentByQuery(pendingReqQuery);
         optionalPendingMatchRequest.ifPresentOrElse(pendingReq -> {
             assertEquals(player1.getUsername(), pendingReq.getRequesterUsername());
 
@@ -115,23 +118,23 @@ public class GameOperationsTests {
     @Order(3)
     void duplicatePublicMatchRequest() throws Exception {
         CompletableFuture<String> response = callAsync(
-                client,
-                MessageType.SEARCH_MATCH,
-                getRequestForMatch(player1, false));
+            client,
+            MessageType.SEARCH_MATCH,
+            getRequestForMatch(player1, false));
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the searching process should fail with statusCode 400, meaning that a pending request of that user already exists
         assertEquals(400, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
     }
-    
+
     @Test
     @Order(4)
     void createPublicMatch() throws Exception {
         CompletableFuture<String> response = callAsync(
-                client,
-                MessageType.SEARCH_MATCH,
-                getRequestForMatch(player2, false));
+            client,
+            MessageType.SEARCH_MATCH,
+            getRequestForMatch(player2, false));
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the result should indicates that a public match between player1 and player2 has been created
@@ -147,9 +150,9 @@ public class GameOperationsTests {
     @Order(5)
     void searchPrivateMatch() throws Exception {
         CompletableFuture<String> response = callAsync(
-                client,
-                MessageType.SEARCH_MATCH,
-                getRequestForMatch(player2, true));
+            client,
+            MessageType.SEARCH_MATCH,
+            getRequestForMatch(player2, true));
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         assertEquals(200, operationResult.getStatusCode());
@@ -159,23 +162,23 @@ public class GameOperationsTests {
 
         // check if there is a pending request in the database
         Bson pendingReqQuery = Filters.and(
-                Filters.eq("requesterUsername", player2.getUsername()),
-                Filters.ne("matchAccessCode", null)
+            Filters.eq("requesterUsername", player2.getUsername()),
+            Filters.ne("matchAccessCode", null)
         );
 
         Optional<PendingMatchRequest> optionalMatch = pendingRequestDB.getDocumentByQuery(pendingReqQuery);
         optionalMatch.ifPresentOrElse(
-                pendingReq -> assertEquals(matchAccessCode, pendingReq.getMatchAccessCode()),
-                () -> fail("Pending request with matchAccessCode " + matchAccessCode + " not present in the database"));
+            pendingReq -> assertEquals(matchAccessCode, pendingReq.getMatchAccessCode()),
+            () -> fail("Pending request with matchAccessCode " + matchAccessCode + " not present in the database"));
     }
 
     @Test
     @Order(6)
     void duplicatePrivateMatchRequest() throws Exception {
         CompletableFuture<String> response = callAsync(
-                client,
-                MessageType.SEARCH_MATCH,
-                getRequestForMatch(player2, true));
+            client,
+            MessageType.SEARCH_MATCH,
+            getRequestForMatch(player2, true));
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the searching process should fail with statusCode 400, meaning that a pending request of that user already exists
@@ -187,9 +190,9 @@ public class GameOperationsTests {
     @Order(7)
     void joinPrivateMatchWithIncorrectCode() throws Exception {
         CompletableFuture<String> response = callAsync(
-                client,
-                MessageType.JOIN_PRIVATE_MATCH,
-                getRequestForMatch(player3, matchAccessCode + 1));
+            client,
+            MessageType.JOIN_PRIVATE_MATCH,
+            getRequestForMatch(player3, matchAccessCode + 1));
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the searching process should fail with statusCode 400, meaning that a pending request already exists
@@ -201,9 +204,9 @@ public class GameOperationsTests {
     @Order(8)
     void joinPrivateMatchWithCorrectCode() throws Exception {
         CompletableFuture<String> response = callAsync(
-                client,
-                MessageType.JOIN_PRIVATE_MATCH,
-                getRequestForMatch(player3, matchAccessCode));
+            client,
+            MessageType.JOIN_PRIVATE_MATCH,
+            getRequestForMatch(player3, matchAccessCode));
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the result should indicate that a public match between player2 and player3 has been created
@@ -219,9 +222,9 @@ public class GameOperationsTests {
     @Order(9)
     void getAllMatchesOfPlayer() throws Exception {
         CompletableFuture<String> response = callAsync(
-                client,
-                MessageType.GET_MATCHES_OF_USER,
-                player2.getUsername());
+            client,
+            MessageType.GET_MATCHES_OF_USER,
+            player2.getUsername());
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         assertEquals(200, operationResult.getStatusCode());
@@ -247,9 +250,9 @@ public class GameOperationsTests {
         JsonObject faultyRequest = getRequestForGuess(true);
 
         CompletableFuture<String> failedResponse = callAsync(
-                client,
-                MessageType.DO_GUESS,
-                faultyRequest.toString());
+            client,
+            MessageType.DO_GUESS,
+            faultyRequest.toString());
 
         OperationResult operationResult = Presentation.deserializeAs(failedResponse.get(), GuessOperationResult.class);
         // the request should fail and the guess should not be submitted
@@ -259,18 +262,20 @@ public class GameOperationsTests {
         // Now let's try again with a correct request
         JsonObject correctRequest = getRequestForGuess(false);
         CompletableFuture<String> successfulResponse = callAsync(
-                client,
-                MessageType.DO_GUESS,
-                correctRequest.toString());
+            client,
+            MessageType.DO_GUESS,
+            correctRequest.toString());
 
-        GuessOperationResult guessOperationResult = Presentation.deserializeAs(successfulResponse.get(), GuessOperationResult.class);
+        GuessOperationResult guessOperationResult = Presentation.deserializeAs(successfulResponse.get(),
+            GuessOperationResult.class);
         // the request should fail and the guess should not be submitted
         assertEquals(200, guessOperationResult.getStatusCode());
         System.out.println(guessOperationResult.getResultMessage());
         // check if the result contains the computed hints
         Hints submittedAttemptHints = guessOperationResult.getSubmittedAttemptHints();
         assertNotNull(submittedAttemptHints);
-        System.out.printf("rightPositions: %d, rightColours: %d%n", submittedAttemptHints.getRightPositions(), submittedAttemptHints.getRightColours());
+        System.out.printf("rightPositions: %d, rightColours: %d%n", submittedAttemptHints.getRightPositions(),
+            submittedAttemptHints.getRightColours());
     }
 
     @Test
@@ -278,9 +283,9 @@ public class GameOperationsTests {
     void getMatchByID() throws Exception {
         String matchID = matchesOfPlayer2.getFirst().getMatchID().toString();
         CompletableFuture<String> response = callAsync(
-                client,
-                MessageType.GET_MATCH,
-                matchID);
+            client,
+            MessageType.GET_MATCH,
+            matchID);
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         assertEquals(200, operationResult.getStatusCode());
@@ -297,9 +302,9 @@ public class GameOperationsTests {
         request.addProperty("requesterUsername", player2.getUsername());
         request.addProperty("matchID", matchID);
         CompletableFuture<String> response = callAsync(
-                client,
-                MessageType.LEAVE_MATCH,
-                request.toString());
+            client,
+            MessageType.LEAVE_MATCH,
+            request.toString());
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         assertEquals(200, operationResult.getStatusCode());
@@ -339,7 +344,8 @@ public class GameOperationsTests {
         player2 = new Player("alice", "alice@huesle.it", "password");
         player3 = new Player("sara", "sara@huesle.it", "password");
         for (Player player : List.of(player1, player2, player3)) {
-            String registrationResponse = userController.registerUser().apply(Presentation.serializerOf(Player.class).serialize(player));
+            String registrationResponse = userController.registerUser()
+                .apply(Presentation.serializerOf(Player.class).serialize(player));
             OperationResult opRes = Presentation.deserializeAs(registrationResponse, UserOperationResult.class);
             if (opRes.getStatusCode() >= 400)
                 throw new RuntimeException("Preliminary user registration had some problems...");
@@ -371,8 +377,8 @@ public class GameOperationsTests {
         String nextPlayer = match.getMatchStatus().getNextPlayer();
         // if the request has to fail, the requester must not correspond to the match's next player
         String requesterUsername = hasToFail ?
-                (player2.getUsername().equals(nextPlayer) ? player1.getUsername() : player2.getUsername()) :
-                (player2.getUsername().equals(nextPlayer) ? player2.getUsername() : player1.getUsername());
+            (player2.getUsername().equals(nextPlayer) ? player1.getUsername() : player2.getUsername()) :
+            (player2.getUsername().equals(nextPlayer) ? player2.getUsername() : player1.getUsername());
         request.addProperty("requesterUsername", requesterUsername);
 
         String matchID = match.getMatchID().toString();

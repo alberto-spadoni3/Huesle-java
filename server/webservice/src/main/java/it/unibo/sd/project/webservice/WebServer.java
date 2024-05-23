@@ -53,8 +53,7 @@ public class WebServer extends AbstractVerticle {
                         System.out.println(NotificationService.class.getSimpleName() + " is running!");
                         serverStart.complete();
                     });
-                }
-                else serverStart.fail(res.cause());
+                } else serverStart.fail(res.cause());
             });
     }
 
@@ -70,9 +69,9 @@ public class WebServer extends AbstractVerticle {
 
         // Protected routes
         router.route("/protected/*")
-                .handler(JWTAuthHandler.create(jwtAccessProvider))
-                .failureHandler(this::manageAuthFailures)
-                .subRouter(getProtectedRouter());
+            .handler(JWTAuthHandler.create(jwtAccessProvider))
+            .failureHandler(this::manageAuthFailures)
+            .subRouter(getProtectedRouter());
 
         return router;
     }
@@ -107,9 +106,9 @@ public class WebServer extends AbstractVerticle {
     private JWTAuth getJwtAuthProvider() {
         String symmetricKey = System.getenv("ACCESS_TOKEN_SECRET");
         JWTAuthOptions jwtAuthOptions = new JWTAuthOptions()
-                .addPubSecKey(new PubSecKeyOptions()
-                        .setAlgorithm("HS256")
-                        .setBuffer(symmetricKey));
+            .addPubSecKey(new PubSecKeyOptions()
+                .setAlgorithm("HS256")
+                .setBuffer(symmetricKey));
         return JWTAuth.create(vertx, jwtAuthOptions);
     }
 
@@ -119,18 +118,18 @@ public class WebServer extends AbstractVerticle {
         Set<HttpMethod> allowedMethods = Set.of(HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE);
 
         return CorsHandler.create()
-                .addOrigins(allowedOrigins)
-                .allowedHeaders(allowedHeaders)
-                .allowedMethods(allowedMethods)
-                .allowCredentials(true);
+            .addOrigins(allowedOrigins)
+            .allowedHeaders(allowedHeaders)
+            .allowedMethods(allowedMethods)
+            .allowCredentials(true);
     }
 
     private Router getEventBusRouter() {
         int pingTimeout = 10000;
         SockJSBridgeOptions options = new SockJSBridgeOptions()
-                .addInboundPermitted(new PermittedOptions().setAddressRegex(BASE_ADDRESS + "*"))
-                .addOutboundPermitted(new PermittedOptions().setAddressRegex(BASE_ADDRESS + "*"))
-                .setPingTimeout(pingTimeout);
+            .addInboundPermitted(new PermittedOptions().setAddressRegex(BASE_ADDRESS + "*"))
+            .addOutboundPermitted(new PermittedOptions().setAddressRegex(BASE_ADDRESS + "*"))
+            .setPingTimeout(pingTimeout);
 
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
         return sockJSHandler.bridge(options, event -> {
@@ -142,8 +141,8 @@ public class WebServer extends AbstractVerticle {
                 disconnectPlayer(event);
                 if (event.type() == BridgeEventType.SOCKET_IDLE)
                     System.out.println("The socket " + event.socket().uri() +
-                            " didn't send any ping message for more than " + pingTimeout +
-                            " seconds, so it's considered to be idle and will be closed.");
+                        " didn't send any ping message for more than " + pingTimeout +
+                        " seconds, so it's considered to be idle and will be closed.");
                 else
                     System.out.println("The socket " + event.socket().uri() + " was closed");
             }

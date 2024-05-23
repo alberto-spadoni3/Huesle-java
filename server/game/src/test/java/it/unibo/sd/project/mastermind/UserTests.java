@@ -1,11 +1,11 @@
 package it.unibo.sd.project.mastermind;
 
 import com.mongodb.client.model.Filters;
-import it.unibo.sd.project.mastermind.model.result.OperationResult;
-import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
+import it.unibo.sd.project.mastermind.model.result.OperationResult;
 import it.unibo.sd.project.mastermind.model.result.UserOperationResult;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import it.unibo.sd.project.mastermind.rabbit.MessageType;
 import it.unibo.sd.project.mastermind.rabbit.RPCClient;
@@ -55,7 +55,7 @@ public class UserTests {
     }
 
     @AfterEach
-    public void stopExecutor(){
+    public void stopExecutor() {
         executorService.shutdown();
     }
 
@@ -64,8 +64,8 @@ public class UserTests {
     @DisplayName("Test the correct registration process")
     void userRegistrationTest() throws Exception {
         OperationResult result = callAsync(
-                MessageType.REGISTER_USER,
-                getRegistrationJson(username, email, clearPassword));
+            MessageType.REGISTER_USER,
+            getRegistrationJson(username, email, clearPassword));
         short REGISTRATION_DONE_HTTP_CODE = 201;
         assertEquals(REGISTRATION_DONE_HTTP_CODE, result.getStatusCode());
     }
@@ -90,8 +90,8 @@ public class UserTests {
     @DisplayName("Try to register a user that is already been created")
     void duplicateUserTest() throws Exception {
         OperationResult result = callAsync(
-                MessageType.REGISTER_USER,
-                getRegistrationJson(username + "1", email, clearPassword));
+            MessageType.REGISTER_USER,
+            getRegistrationJson(username + "1", email, clearPassword));
 
         short VALUE_ALREADY_EXISTS_HTTP_CODE = 409;
         assertEquals(VALUE_ALREADY_EXISTS_HTTP_CODE, result.getStatusCode());
@@ -100,8 +100,8 @@ public class UserTests {
 
 
         result = callAsync(
-                MessageType.REGISTER_USER,
-                getRegistrationJson(username, "S" + email, clearPassword));
+            MessageType.REGISTER_USER,
+            getRegistrationJson(username, "S" + email, clearPassword));
 
         assertEquals(VALUE_ALREADY_EXISTS_HTTP_CODE, result.getStatusCode());
         String USERNAME_ALREADY_EXISTS_MESSAGE = "The username is already in use";
@@ -113,9 +113,9 @@ public class UserTests {
     @DisplayName("Trying to log in with incorrect credentials")
     void userIncorrectLoginTest() throws Exception {
         OperationResult result = callAsync(
-                MessageType.LOGIN_USER,
-                // wrong password, right username
-                getLoginJson(username, "password12!"));
+            MessageType.LOGIN_USER,
+            // wrong password, right username
+            getLoginJson(username, "password12!"));
 
         short UNAUTHORIZED_HTTP_CODE = 401;
         assertEquals(UNAUTHORIZED_HTTP_CODE, result.getStatusCode());
@@ -123,9 +123,9 @@ public class UserTests {
         assertEquals(UNAUTHORIZED_MESSAGE, result.getResultMessage());
 
         result = callAsync(
-                MessageType.LOGIN_USER,
-                // wrong username, right password
-                getLoginJson("crypto-" + username, clearPassword));
+            MessageType.LOGIN_USER,
+            // wrong username, right password
+            getLoginJson("crypto-" + username, clearPassword));
         assertEquals(UNAUTHORIZED_HTTP_CODE, result.getStatusCode());
         assertEquals(UNAUTHORIZED_MESSAGE, result.getResultMessage());
     }
@@ -135,8 +135,8 @@ public class UserTests {
     @DisplayName("Test the correct login process")
     void userCorrectLoginTest() throws Exception {
         UserOperationResult result = (UserOperationResult) callAsync(
-                MessageType.LOGIN_USER,
-                getLoginJson(username, clearPassword));
+            MessageType.LOGIN_USER,
+            getLoginJson(username, clearPassword));
 
         assertEquals(200, result.getStatusCode());
         // check if the result contains both the Player object and the accessToken
@@ -151,7 +151,7 @@ public class UserTests {
     @DisplayName("Test the accessToken refresh process")
     void refreshTokenTest() throws Exception {
         System.out.println(
-                "We have to wait for a while before requesting a token refresh. " +
+            "We have to wait for a while before requesting a token refresh. " +
                 "Otherwise we are going to obtain the same token as before. " +
                 "Vert.x web is responsible for this behaviour, since i use their JWT implementation."
         );
@@ -160,16 +160,16 @@ public class UserTests {
         optionalPlayer.ifPresentOrElse(player -> {
             try {
                 UserOperationResult result = (UserOperationResult) callAsync(
-                        MessageType.REFRESH_ACCESS_TOKEN,
-                        player.getRefreshToken());
+                    MessageType.REFRESH_ACCESS_TOKEN,
+                    player.getRefreshToken());
                 assertEquals(200, result.getStatusCode());
                 // check if the returned accessToken is really different from the previous one
                 assertNotEquals(accessToken, result.getAccessToken());
 
                 // Otherwise, if i provide a non-valid refreshToken, the process should fail
                 OperationResult failedResult = callAsync(
-                        MessageType.REFRESH_ACCESS_TOKEN,
-                        player.getPassword());
+                    MessageType.REFRESH_ACCESS_TOKEN,
+                    player.getPassword());
                 assertEquals(403, failedResult.getStatusCode());
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -186,15 +186,15 @@ public class UserTests {
         optionalPlayer.ifPresentOrElse(player -> {
             try {
                 OperationResult result = callAsync(
-                        MessageType.LOGOUT_USER,
-                        player.getRefreshToken());
+                    MessageType.LOGOUT_USER,
+                    player.getRefreshToken());
                 assertEquals(200, result.getStatusCode());
                 // check if the user was really logged out by verifying
                 // that his refreshToken was removed from the database
                 Optional<Player> optionalLoggedOutPlayer = userDB.getDocumentByQuery(userQuery);
                 optionalLoggedOutPlayer.ifPresentOrElse(
-                        loggedOutPlayer -> assertNull(loggedOutPlayer.getRefreshToken()),
-                        () -> fail("The logged out user is not present in the database."));
+                    loggedOutPlayer -> assertNull(loggedOutPlayer.getRefreshToken()),
+                    () -> fail("The logged out user is not present in the database."));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -207,16 +207,16 @@ public class UserTests {
     void deleteUserTest() throws Exception {
         // First of all we need to log back in
         UserOperationResult loginResult = (UserOperationResult) callAsync(
-                MessageType.LOGIN_USER,
-                getLoginJson(username, clearPassword));
+            MessageType.LOGIN_USER,
+            getLoginJson(username, clearPassword));
 
         assertEquals(200, loginResult.getStatusCode());
 
         // then, we test the deletion process
         Player relatedUser = loginResult.getRelatedUser();
         OperationResult result = callAsync(
-                MessageType.DELETE_USER,
-                relatedUser.getUsername());
+            MessageType.DELETE_USER,
+            relatedUser.getUsername());
         assertEquals(200, result.getStatusCode());
 
         // make sure that the user in the database reflects the changes
@@ -228,20 +228,20 @@ public class UserTests {
 
         // after the deletion process, we shouldn't be able to log the user in again
         OperationResult loginErrorResult = callAsync(
-                MessageType.LOGIN_USER,
-                getLoginJson(username, clearPassword));
+            MessageType.LOGIN_USER,
+            getLoginJson(username, clearPassword));
         assertEquals(401, loginErrorResult.getStatusCode());
     }
 
     private String getRegistrationJson(String username, String email, String clearPassword) {
         return "{\"username\":" + username + "," +
-                "\"email\":" + email + "," +
-                "\"password\":" + clearPassword + "}";
+            "\"email\":" + email + "," +
+            "\"password\":" + clearPassword + "}";
     }
 
     private String getLoginJson(String username, String clearPassword) {
         return "{\"username\":" + username + "," +
-                "\"password\":" + clearPassword + "}";
+            "\"password\":" + clearPassword + "}";
     }
 
     private OperationResult callAsync(MessageType messageType, String requestBody) throws Exception {

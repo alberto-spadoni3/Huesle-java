@@ -3,7 +3,9 @@ package it.unibo.sd.project.mastermind.presentation.serializers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import it.unibo.sd.project.mastermind.model.match.*;
+import it.unibo.sd.project.mastermind.model.match.Hints;
+import it.unibo.sd.project.mastermind.model.match.Match;
+import it.unibo.sd.project.mastermind.model.match.MatchStatus;
 import it.unibo.sd.project.mastermind.model.result.*;
 import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
@@ -48,7 +50,7 @@ public class OperationResultSerializer extends AbstractJsonSerializer<OperationR
                     jsonOpResult.add("updatedStatus", jsonState);
                     Hints submittedAttemptHints = guessOperationResult.getSubmittedAttemptHints();
                     JsonElement jsonSubmittedAttemptHints = Presentation.serializerOf(Hints.class)
-                            .getJsonElement(submittedAttemptHints);
+                        .getJsonElement(submittedAttemptHints);
                     jsonOpResult.add("submittedAttemptHints", jsonSubmittedAttemptHints);
                 }
             }

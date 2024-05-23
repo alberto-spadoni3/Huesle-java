@@ -1,4 +1,5 @@
 package it.unibo.sd.project.mastermind.rabbit;
+
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -30,13 +31,13 @@ public class RPCClient implements AutoCloseable {
         try {
             replyQueueName = channel.queueDeclare().getQueue();
             AMQP.BasicProperties props = new AMQP.BasicProperties
-                    .Builder()
-                    .correlationId(corrId)
-                    .replyTo(replyQueueName)
-                    .build();
+                .Builder()
+                .correlationId(corrId)
+                .replyTo(replyQueueName)
+                .build();
             channel.exchangeDeclare(EXCHANGE_NAME, "direct");
-            channel.basicPublish(EXCHANGE_NAME,messageType.getType(),
-                    props, message.getBytes(StandardCharsets.UTF_8));
+            channel.basicPublish(EXCHANGE_NAME, messageType.getType(),
+                props, message.getBytes(StandardCharsets.UTF_8));
             System.out.println("[x] Sent '" + messageType.getType() + "':'" + message + "'");
             channel.queuePurge(replyQueueName);
             channel.basicQos(1);
@@ -44,7 +45,8 @@ public class RPCClient implements AutoCloseable {
                 if (delivery.getProperties().getCorrelationId().equals(corrId)) {
                     responseConsumer.accept(new String(delivery.getBody(), StandardCharsets.UTF_8));
                 }
-            }, consumerTag -> {});
+            }, consumerTag -> {
+            });
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }

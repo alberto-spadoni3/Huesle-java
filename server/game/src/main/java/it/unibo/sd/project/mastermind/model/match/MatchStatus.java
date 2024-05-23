@@ -64,7 +64,9 @@ public class MatchStatus {
     public void changeTurn() {
         Optional<Player> player = this.players.stream().filter((p) -> !p.getUsername().equals(nextPlayer)).findFirst();
         player.ifPresentOrElse(
-                p -> this.nextPlayer = p.getUsername(),
-                () -> { throw new RuntimeException("Problems in changing the player for the next turn"); });
+            p -> this.nextPlayer = p.getUsername(),
+            () -> {
+                throw new RuntimeException("Problems in changing the player for the next turn");
+            });
     }
 }

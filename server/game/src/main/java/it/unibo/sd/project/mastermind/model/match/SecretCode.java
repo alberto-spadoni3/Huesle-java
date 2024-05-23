@@ -7,11 +7,11 @@ import java.util.Random;
 public class SecretCode {
     public static final int COLOR_SEQUENCE_LENGTH = 4;
     private final List<String> possibleColours = List.of("crimson",
-                                                         "coral",
-                                                         "gold",
-                                                         "forestgreen",
-                                                         "mediumblue",
-                                                         "rebeccapurple");
+        "coral",
+        "gold",
+        "forestgreen",
+        "mediumblue",
+        "rebeccapurple");
     private final ArrayList<String> colorCode;
 
     public SecretCode() {

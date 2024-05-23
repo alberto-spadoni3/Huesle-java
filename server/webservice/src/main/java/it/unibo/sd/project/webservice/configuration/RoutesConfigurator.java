@@ -24,7 +24,8 @@ public abstract class RoutesConfigurator {
     public abstract Router configure();
 
     protected Handler<RoutingContext> backendHandler(MessageType messageType, BiConsumer<RoutingContext, JsonObject> consumer) {
-        return routingContext -> backendHandler(messageType, routingContext.body().asString(), consumer).handle(routingContext);
+        return routingContext -> backendHandler(messageType, routingContext.body().asString(), consumer).handle(
+            routingContext);
     }
 
     protected Handler<RoutingContext> backendHandler(MessageType messageType, String message,
@@ -33,9 +34,9 @@ public abstract class RoutesConfigurator {
             JsonObject backendResponse = new JsonObject(res);
             int statusCode = backendResponse.getInteger("statusCode");
             routingContext
-                    .response()
-                    .putHeader("Content-Type", "application/json")
-                    .setStatusCode(statusCode);
+                .response()
+                .putHeader("Content-Type", "application/json")
+                .setStatusCode(statusCode);
             if (statusCode >= 200 && statusCode <= 204)
                 consumer.accept(routingContext, backendResponse);
             else
@@ -55,18 +56,18 @@ public abstract class RoutesConfigurator {
 
     protected Handler<RoutingContext> getRequestObject(BiConsumer<RoutingContext, JsonObject> consumer) {
         return routingContext -> extractUsername(
-                (context, username) ->
-                    consumer.accept(
-                        routingContext,
-                        new JsonObject().put("requesterUsername", username))
+            (context, username) ->
+                consumer.accept(
+                    routingContext,
+                    new JsonObject().put("requesterUsername", username))
         ).handle(routingContext);
     }
 
     protected BiConsumer<RoutingContext, JsonObject> respondWithMessage() {
         return (routingContext, backendResponse) ->
-                routingContext.response().end(
+            routingContext.response().end(
                 new JsonObject()
-                        .put("resultMessage", backendResponse.getString("resultMessage"))
-                        .encode());
+                    .put("resultMessage", backendResponse.getString("resultMessage"))
+                    .encode());
     }
 }

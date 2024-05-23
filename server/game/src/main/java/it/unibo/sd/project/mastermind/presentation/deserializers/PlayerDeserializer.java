@@ -31,25 +31,24 @@ public class PlayerDeserializer extends AbstractJsonDeserializer<Player> {
                     String possibleToken = jsonPlayer.get("refreshToken").getAsString();
                     String email = jsonPlayer.get("email").getAsString();
                     return new Player(
-                            jsonPlayer.get("username").getAsString(),
-                            email.isBlank() ? null : email,
-                            hashedPassword,
-                            possibleToken.isBlank() ? null : possibleToken,
-                            jsonPlayer.get("profilePictureID").getAsByte(),
-                            settings,
-                            jsonPlayer.get("disabled").getAsBoolean()
+                        jsonPlayer.get("username").getAsString(),
+                        email.isBlank() ? null : email,
+                        hashedPassword,
+                        possibleToken.isBlank() ? null : possibleToken,
+                        jsonPlayer.get("profilePictureID").getAsByte(),
+                        settings,
+                        jsonPlayer.get("disabled").getAsBoolean()
                     );
                 } else {
                     // create a new Player
                     String clearPassword = jsonPlayer.get("password").getAsString();
                     return new Player(
-                            jsonPlayer.get("username").getAsString(),
-                            jsonPlayer.get("email").getAsString(),
-                            clearPassword
+                        jsonPlayer.get("username").getAsString(),
+                        jsonPlayer.get("email").getAsString(),
+                        clearPassword
                     );
                 }
-            }
-            else
+            } else
                 throw new RuntimeException("Cannot deserialize as " + Player.class.getName() + " for missing fields");
         } else
             throw new RuntimeException("Cannot deserialize as " + Player.class.getName());

@@ -12,12 +12,12 @@ public class StatsRoutesConfigurator extends RoutesConfigurator {
     @Override
     public Router configure() {
         router.get("/userStats").blockingHandler(extractUsername(
-                (routingContext, username) -> backendHandler(
-                        MessageType.GET_USER_STATS,
-                        username,
-                        (context, backendResponse) ->
-                                context.response().end(backendResponse.getJsonObject("userStats").encode())
-                ).handle(routingContext)
+            (routingContext, username) -> backendHandler(
+                MessageType.GET_USER_STATS,
+                username,
+                (context, backendResponse) ->
+                    context.response().end(backendResponse.getJsonObject("userStats").encode())
+            ).handle(routingContext)
         ));
 
         return router;

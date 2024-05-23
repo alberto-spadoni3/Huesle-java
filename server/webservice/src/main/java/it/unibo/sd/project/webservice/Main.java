@@ -9,6 +9,6 @@ public class Main {
 
         var future = vertx.deployVerticle(new WebServer(listeningPort));
         future.andThen(e ->
-                System.out.println(WebServer.class.getSimpleName() + " is running and listening on port " + listeningPort));
+            System.out.println(WebServer.class.getSimpleName() + " is running and listening on port " + listeningPort));
     }
 }

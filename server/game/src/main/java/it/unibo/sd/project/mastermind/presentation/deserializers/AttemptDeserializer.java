@@ -10,10 +10,10 @@ import it.unibo.sd.project.mastermind.presentation.Presentation;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AttemptDeserializer extends AbstractJsonDeserializer<Attempt>{
+public class AttemptDeserializer extends AbstractJsonDeserializer<Attempt> {
     @Override
     protected Attempt deserializeJson(JsonElement jsonElement) {
-        if(jsonElement.isJsonObject()){
+        if (jsonElement.isJsonObject()) {
             JsonObject result = (JsonObject) jsonElement;
             List<String> colorSequence = new ArrayList<>();
             JsonArray jsonColorSequence = result.getAsJsonArray("colorSequence");

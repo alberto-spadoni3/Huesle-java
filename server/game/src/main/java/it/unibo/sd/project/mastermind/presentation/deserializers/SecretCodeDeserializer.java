@@ -12,7 +12,7 @@ public class SecretCodeDeserializer extends AbstractJsonDeserializer<SecretCode>
         if (jsonElement.isJsonArray()) {
             JsonArray result = (JsonArray) jsonElement;
             ArrayList<String> sequence = new ArrayList<>();
-            for(JsonElement e : result){
+            for (JsonElement e : result) {
                 sequence.add(e.getAsString());
             }
             return new SecretCode(sequence);

@@ -7,13 +7,13 @@ import it.unibo.sd.project.mastermind.model.match.Attempt;
 import it.unibo.sd.project.mastermind.model.match.Hints;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 
-public class AttemptSerializer extends AbstractJsonSerializer<Attempt>{
+public class AttemptSerializer extends AbstractJsonSerializer<Attempt> {
     @Override
     protected JsonElement toJsonElement(Attempt attempt) {
         JsonObject jsonAttempt = new JsonObject();
 
         JsonArray jsonColorSequence = new JsonArray();
-        for(String s: attempt.getColorSequence()){
+        for (String s : attempt.getColorSequence()) {
             jsonColorSequence.add(s);
         }
         jsonAttempt.add("colorSequence", jsonColorSequence);

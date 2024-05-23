@@ -1,6 +1,7 @@
 package it.unibo.sd.project.mastermind.model.user;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
+
 import java.util.Objects;
 
 public class Player {
@@ -106,8 +107,8 @@ public class Player {
 
     public boolean verifyPassword(String clearPassword) {
         return BCrypt.verifyer()
-                .verify(clearPassword.toCharArray(), this.password)
-                .verified;
+            .verify(clearPassword.toCharArray(), this.password)
+            .verified;
     }
 
     @Override

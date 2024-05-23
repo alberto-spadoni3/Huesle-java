@@ -4,8 +4,8 @@ import com.mongodb.client.MongoDatabase;
 import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchState;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
-import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.result.StatsOperationResult;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import org.bson.conversions.Bson;
 
@@ -32,21 +32,21 @@ public class StatsController {
                     String nextPlayer = "matchStatus.nextPlayer";
                     String matchState = "matchStatus.matchState";
                     Bson countMatchesWon = and(
-                            eq(nextPlayer, username),
-                            eq(matchState, MatchState.VICTORY));
+                        eq(nextPlayer, username),
+                        eq(matchState, MatchState.VICTORY));
                     int matchesWon = getMatchesQuery(username, countMatchesWon);
 
                     Bson countMatchesLost = and(
-                            ne(nextPlayer, username),
-                            eq(matchState, MatchState.VICTORY));
+                        ne(nextPlayer, username),
+                        eq(matchState, MatchState.VICTORY));
                     int matchesLost = getMatchesQuery(username, countMatchesLost);
 
                     Bson countMatchesDrawn = eq(matchState, MatchState.DRAW);
                     int matchesDrawn = getMatchesQuery(username, countMatchesDrawn);
 
                     statsOperationResult = new StatsOperationResult(
-                            (short) 200, "Returning user statistics",
-                            matchesWon, matchesLost, matchesDrawn
+                        (short) 200, "Returning user statistics",
+                        matchesWon, matchesLost, matchesDrawn
                     );
                 }
             } catch (Exception e) {
@@ -54,7 +54,7 @@ public class StatsController {
             } finally {
                 if (statsOperationResult == null)
                     statsOperationResult = new StatsOperationResult(
-                            (short) 400, "Something went wrong. Please retry");
+                        (short) 400, "Something went wrong. Please retry");
             }
             return Presentation.serializerOf(StatsOperationResult.class).serialize(statsOperationResult);
         };
@@ -63,8 +63,8 @@ public class StatsController {
     private int getMatchesQuery(String username, Bson countCriteria) throws Exception {
         Bson userIsAPlayer = elemMatch("matchStatus.players", eq("username", username));
         Bson matchesQuery = and(
-                userIsAPlayer,
-                countCriteria
+            userIsAPlayer,
+            countCriteria
         );
         Optional<List<Match>> matches = matchDB.getDocumentsByQuery(matchesQuery);
         return matches.orElse(List.of()).size();

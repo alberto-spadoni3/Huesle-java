@@ -6,7 +6,8 @@ import it.unibo.sd.project.mastermind.model.result.GuessOperationResult;
 import it.unibo.sd.project.mastermind.model.result.MatchOperationResult;
 import it.unibo.sd.project.mastermind.model.result.StatsOperationResult;
 import it.unibo.sd.project.mastermind.model.result.UserOperationResult;
-import it.unibo.sd.project.mastermind.model.user.*;
+import it.unibo.sd.project.mastermind.model.user.AccessibilitySettings;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.presentation.deserializers.*;
 import it.unibo.sd.project.mastermind.presentation.serializers.*;
 
@@ -64,11 +65,12 @@ public class Presentation {
     public static <T> Serializer<T> serializerOf(Class<T> klass) {
         if (!serializers.containsKey(klass)) {
             serializers.keySet().stream()
-                    .filter(key -> key.isAssignableFrom(klass))
-                    .map(serializers::get)
-                    .findAny()
-                    .map(klass::cast)
-                    .orElseThrow(() -> new IllegalArgumentException("No available serializer for class: " + klass.getName()));
+                .filter(key -> key.isAssignableFrom(klass))
+                .map(serializers::get)
+                .findAny()
+                .map(klass::cast)
+                .orElseThrow(
+                    () -> new IllegalArgumentException("No available serializer for class: " + klass.getName()));
         }
         return (Serializer<T>) serializers.get(klass);
     }
@@ -76,11 +78,12 @@ public class Presentation {
     public static <T> Deserializer<T> deserializerOf(Class<T> klass) {
         if (!deserializers.containsKey(klass)) {
             deserializers.keySet().stream()
-                    .filter(key -> key.isAssignableFrom(klass))
-                    .map(deserializers::get)
-                    .findAny()
-                    .map(klass::cast)
-                    .orElseThrow(() -> new IllegalArgumentException("No available deserializer for class: " + klass.getName()));
+                .filter(key -> key.isAssignableFrom(klass))
+                .map(deserializers::get)
+                .findAny()
+                .map(klass::cast)
+                .orElseThrow(
+                    () -> new IllegalArgumentException("No available deserializer for class: " + klass.getName()));
         }
         return (Deserializer<T>) deserializers.get(klass);
     }

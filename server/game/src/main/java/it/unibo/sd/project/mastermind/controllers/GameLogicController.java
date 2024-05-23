@@ -2,14 +2,16 @@ package it.unibo.sd.project.mastermind.controllers;
 
 import com.mongodb.client.MongoDatabase;
 import it.unibo.sd.project.mastermind.model.match.Attempt;
-import it.unibo.sd.project.mastermind.model.result.GuessOperationResult;
+import it.unibo.sd.project.mastermind.model.match.Match;
+import it.unibo.sd.project.mastermind.model.match.MatchState;
+import it.unibo.sd.project.mastermind.model.match.MatchStatus;
+import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.request.GuessRequest;
 import it.unibo.sd.project.mastermind.model.request.MatchRequest;
 import it.unibo.sd.project.mastermind.model.request.PendingMatchRequest;
+import it.unibo.sd.project.mastermind.model.result.GuessOperationResult;
 import it.unibo.sd.project.mastermind.model.result.MatchOperationResult;
 import it.unibo.sd.project.mastermind.model.user.Player;
-import it.unibo.sd.project.mastermind.model.match.*;
-import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import org.bson.conversions.Bson;
 
@@ -41,32 +43,36 @@ public class GameLogicController {
 
                 // check if there is a pendingRequest made by the current user
                 Bson pendingReqOfCurrentPlayer =
-                        and(
-                                eq("requesterUsername", requesterUsername),
-                                request.isMatchPrivate() ?
-                                        ne("matchAccessCode", null) :
-                                        eq("matchAccessCode", null));
-                Optional<PendingMatchRequest> optionalPending = pendingMatchDB.getDocumentByQuery(pendingReqOfCurrentPlayer);
+                    and(
+                        eq("requesterUsername", requesterUsername),
+                        request.isMatchPrivate() ?
+                            ne("matchAccessCode", null) :
+                            eq("matchAccessCode", null));
+                Optional<PendingMatchRequest> optionalPending = pendingMatchDB.getDocumentByQuery(
+                    pendingReqOfCurrentPlayer);
 
                 if (optionalPending.isEmpty()) {
                     // there aren't any pending request made by the current user.
                     // let's check if there is one made by another player
                     if (!request.isMatchPrivate()) {
                         Bson pendingReqOfAnotherPlayer =
-                                and(
-                                        ne("requesterUsername", requesterUsername),
-                                        eq("matchAccessCode", null));
-                        Optional<PendingMatchRequest> possiblePublicMatch = pendingMatchDB.getDocumentByQuery(pendingReqOfAnotherPlayer);
+                            and(
+                                ne("requesterUsername", requesterUsername),
+                                eq("matchAccessCode", null));
+                        Optional<PendingMatchRequest> possiblePublicMatch = pendingMatchDB.getDocumentByQuery(
+                            pendingReqOfAnotherPlayer);
                         if (possiblePublicMatch.isPresent()) {
                             // pending request found: we can now create a public match
-                            Match newMatch = createMatch(requesterUsername, possiblePublicMatch.get().getRequesterUsername());
+                            Match newMatch = createMatch(requesterUsername,
+                                possiblePublicMatch.get().getRequesterUsername());
                             // delete the pending request just fulfilled
                             pendingMatchDB.deleteByQuery(pendingReqOfAnotherPlayer);
 
                             matchOperationResult =
-                                    new MatchOperationResult((short) 201, "Public match created");
+                                new MatchOperationResult((short) 201, "Public match created");
                             matchOperationResult.setMatches(List.of(newMatch));
-                            return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
+                            return Presentation.serializerOf(MatchOperationResult.class)
+                                .serialize(matchOperationResult);
                         }
                     }
 
@@ -80,10 +86,10 @@ public class GameLogicController {
                     pendingMatchDB.insert(pendingMatchRequest);
 
                     matchOperationResult =
-                            new MatchOperationResult(
-                                    (short) 200,
-                                    "Searching another player...",
-                                    pendingMatchRequest.getMatchAccessCode());
+                        new MatchOperationResult(
+                            (short) 200,
+                            "Searching another player...",
+                            pendingMatchRequest.getMatchAccessCode());
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -104,15 +110,16 @@ public class GameLogicController {
 
                 // check if there is a pending request with the same access code
                 Bson pendingReqWithSpecificCode =
-                        and(
-                                ne("requesterUsername", requesterUsername),
-                                eq("matchAccessCode", request.getMatchAccessCode()));
-                Optional<PendingMatchRequest> possiblePrivateMatch = pendingMatchDB.getDocumentByQuery(pendingReqWithSpecificCode);
+                    and(
+                        ne("requesterUsername", requesterUsername),
+                        eq("matchAccessCode", request.getMatchAccessCode()));
+                Optional<PendingMatchRequest> possiblePrivateMatch = pendingMatchDB.getDocumentByQuery(
+                    pendingReqWithSpecificCode);
                 if (possiblePrivateMatch.isPresent()) {
                     Match newMatch = createMatch(requesterUsername, possiblePrivateMatch.get().getRequesterUsername());
                     pendingMatchDB.deleteByQuery(pendingReqWithSpecificCode);
                     matchOperationResult =
-                            new MatchOperationResult((short) 201, "Private match created");
+                        new MatchOperationResult((short) 201, "Private match created");
                     matchOperationResult.setMatches(List.of(newMatch));
                 }
             } catch (Exception e) {
@@ -120,7 +127,7 @@ public class GameLogicController {
             } finally {
                 if (matchOperationResult == null) // no pending request found with that access code
                     matchOperationResult =
-                            new MatchOperationResult((short) 404, "No match found with that access code");
+                        new MatchOperationResult((short) 404, "No match found with that access code");
             }
             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
         };
@@ -131,23 +138,24 @@ public class GameLogicController {
             AtomicReference<MatchOperationResult> matchOperationResult = new AtomicReference<>();
             try {
                 Bson pendingReqOfUserQuery = and(
-                        eq("requesterUsername", username),
-                        ne("matchAccessCode", null)
+                    eq("requesterUsername", username),
+                    ne("matchAccessCode", null)
                 );
-                Optional<PendingMatchRequest> optionalPendingReq = pendingMatchDB.getDocumentByQuery(pendingReqOfUserQuery);
+                Optional<PendingMatchRequest> optionalPendingReq = pendingMatchDB.getDocumentByQuery(
+                    pendingReqOfUserQuery);
                 optionalPendingReq.ifPresent(pendingReq -> {
                     pendingMatchDB.deleteByQuery(pendingReqOfUserQuery);
                     matchOperationResult.set(new MatchOperationResult(
-                            (short) 200,
-                            "Private match request cancelled."));
+                        (short) 200,
+                        "Private match request cancelled."));
                 });
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             } finally {
                 if (matchOperationResult.get() == null)
                     matchOperationResult.set(new MatchOperationResult(
-                            (short) 400,
-                            "The cancellation request went wrong."));
+                        (short) 400,
+                        "The cancellation request went wrong."));
             }
             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult.get());
         };
@@ -164,28 +172,29 @@ public class GameLogicController {
                     AtomicReference<List<Match>> matchesOfUser = new AtomicReference<>();
                     Optional<List<Match>> optionalMatches = matchDB.getDocumentsByQuery(matchesOfUserQuery);
                     optionalMatches.ifPresentOrElse(
-                            matches -> matchesOfUser.set(updateMatches(matches)),
-                            () -> matchesOfUser.set(new ArrayList<>()));
+                        matches -> matchesOfUser.set(updateMatches(matches)),
+                        () -> matchesOfUser.set(new ArrayList<>()));
 
                     // check if there is a pending request the user has created
                     Bson pendingReqOfCurrentPlayer = eq("requesterUsername", username);
                     AtomicBoolean pendingReqPresent = new AtomicBoolean(false);
-                    Optional<PendingMatchRequest> optionalPendingReq = pendingMatchDB.getDocumentByQuery(pendingReqOfCurrentPlayer);
+                    Optional<PendingMatchRequest> optionalPendingReq = pendingMatchDB.getDocumentByQuery(
+                        pendingReqOfCurrentPlayer);
                     optionalPendingReq.ifPresent(pendingReq -> pendingReqPresent.set(true));
 
                     // compose the results
                     matchOperationResult =
-                            new MatchOperationResult(
-                                    (short) 200,
-                                    "Returning " + matchesOfUser.get().size() + " matches",
-                                    matchesOfUser.get(), pendingReqPresent.get());
+                        new MatchOperationResult(
+                            (short) 200,
+                            "Returning " + matchesOfUser.get().size() + " matches",
+                            matchesOfUser.get(), pendingReqPresent.get());
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
                 if (matchOperationResult == null)
                     matchOperationResult = new MatchOperationResult(
-                            (short) 400, "The player " + username + " not found.");
+                        (short) 400, "The player " + username + " not found.");
             }
             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
         };
@@ -197,16 +206,16 @@ public class GameLogicController {
             try {
                 Optional<Match> optionalMatch = matchDB.getDocumentByField("_id", matchID);
                 optionalMatch.ifPresent(match -> matchOperationResult.set(
-                        new MatchOperationResult(
-                            (short) 200,
-                            "Returning the match with ID " + matchID,
-                            updateMatches(List.of(match)), false)));
+                    new MatchOperationResult(
+                        (short) 200,
+                        "Returning the match with ID " + matchID,
+                        updateMatches(List.of(match)), false)));
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             } finally {
                 if (matchOperationResult.get() == null)
                     matchOperationResult.set(new MatchOperationResult(
-                            (short) 400, "Match not found for the ID " + matchID
+                        (short) 400, "Match not found for the ID " + matchID
                     ));
             }
             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult.get());
@@ -220,8 +229,8 @@ public class GameLogicController {
                 MatchRequest matchRequest = Presentation.deserializeAs(message, MatchRequest.class);
                 String requesterUsername = matchRequest.getRequesterUsername();
                 Bson matchToLeaveQuery = and(
-                        eq(matchRequest.getMatchID()),
-                        elemMatch("matchStatus.players", eq("username", requesterUsername)));
+                    eq(matchRequest.getMatchID()),
+                    elemMatch("matchStatus.players", eq("username", requesterUsername)));
                 Optional<Match> optionalMatch = matchDB.getDocumentByQuery(matchToLeaveQuery);
                 if (optionalMatch.isPresent()) {
                     Match matchToLeave = optionalMatch.get();
@@ -229,16 +238,16 @@ public class GameLogicController {
                         MatchStatus matchStatus = matchToLeave.getMatchStatus();
                         matchStatus.setState(MatchState.VICTORY);
                         Stream<Player> otherPlayer = matchToLeave
-                                .getMatchStatus()
-                                .getPlayers()
-                                .stream()
-                                .filter(player -> !Objects.equals(player.getUsername(), requesterUsername));
+                            .getMatchStatus()
+                            .getPlayers()
+                            .stream()
+                            .filter(player -> !Objects.equals(player.getUsername(), requesterUsername));
                         otherPlayer.findFirst().ifPresent(p -> matchStatus.changeNextPlayer(p.getUsername()));
                         matchStatus.setAbandoned();
                         matchDB.update(matchRequest.getMatchID(), matchToLeave);
                         matchOperationResult = new MatchOperationResult(
-                                (short) 200,
-                                "Match with ID " + matchToLeave.getMatchID() + " left by " + requesterUsername);
+                            (short) 200,
+                            "Match with ID " + matchToLeave.getMatchID() + " left by " + requesterUsername);
                     }
                 }
             } catch (Exception e) {
@@ -246,8 +255,8 @@ public class GameLogicController {
             } finally {
                 if (matchOperationResult == null)
                     matchOperationResult = new MatchOperationResult(
-                            (short) 400,
-                            "Invalid match selected");
+                        (short) 400,
+                        "Invalid match selected");
             }
             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
         };
@@ -260,20 +269,21 @@ public class GameLogicController {
                 GuessRequest guessRequest = Presentation.deserializeAs(message, GuessRequest.class);
                 String requesterUsername = guessRequest.getRequesterUsername();
                 Bson matchToPlayQuery = and(
-                        eq(guessRequest.getMatchID()),
-                        elemMatch("matchStatus.players", eq("username", requesterUsername)));
+                    eq(guessRequest.getMatchID()),
+                    elemMatch("matchStatus.players", eq("username", requesterUsername)));
                 Optional<Match> optionalMatch = matchDB.getDocumentByQuery(matchToPlayQuery);
                 Attempt attempt = guessRequest.getAttempt();
-                if (optionalMatch.isPresent() && optionalMatch.get().isNotOver() && optionalMatch.get().isPlayerTurn(requesterUsername)) {
+                if (optionalMatch.isPresent() && optionalMatch.get().isNotOver() && optionalMatch.get()
+                    .isPlayerTurn(requesterUsername)) {
                     Match match = optionalMatch.get();
                     match.tryToGuess(attempt);
                     matchDB.update(match.getMatchID().toString(), match);
                     guessOperationResult = new GuessOperationResult(
-                            (short) 200, "Guess made succesfully",
-                            match.getMatchStatus(),
-                            attempt.getHints());
+                        (short) 200, "Guess made succesfully",
+                        match.getMatchStatus(),
+                        attempt.getHints());
                 }
-            } catch (Exception e ) {
+            } catch (Exception e) {
                 System.out.println(e.getMessage());
             } finally {
                 if (guessOperationResult == null)
@@ -321,7 +331,8 @@ public class GameLogicController {
         StringBuilder secretCode;
         do {
             secretCode = new StringBuilder(String.valueOf(new Random().nextInt(100000)));
-            pendingReqWithDuplicateCode = pendingMatchDB.getDocumentByQuery(eq("matchAccessCode", secretCode.toString()));
+            pendingReqWithDuplicateCode = pendingMatchDB.getDocumentByQuery(
+                eq("matchAccessCode", secretCode.toString()));
         } while (pendingReqWithDuplicateCode.isPresent());
 
         while (secretCode.length() < 5) {

@@ -15,147 +15,147 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
     @Override
     public Router configure() {
         router.post("/searchMatch").blockingHandler(getRequestObject(
-                (routingContext, matchRequest) -> {
-                    JsonObject body = routingContext.body().asJsonObject();
-                    boolean isMatchPrivate = body.getBoolean("secret");
-                    matchRequest
-                            .put("isPrivateMatch", isMatchPrivate);
+            (routingContext, matchRequest) -> {
+                JsonObject body = routingContext.body().asJsonObject();
+                boolean isMatchPrivate = body.getBoolean("secret");
+                matchRequest
+                    .put("isPrivateMatch", isMatchPrivate);
 
-                    backendHandler(MessageType.SEARCH_MATCH, matchRequest.encode(),
-                            (context, backendResponse) -> {
-                                JsonObject responseBody = new JsonObject();
-                                responseBody
-                                        .put("resultMessage", backendResponse.getString("resultMessage"))
-                                        .put("matchAccessCode", backendResponse.getString("matchAccessCode"));
-                                context.response().end(responseBody.encode());
-                                notifyNewMatch(
-                                        matchRequest.getString("requesterUsername"),
-                                        context.response().getStatusCode(),
-                                        backendResponse.getJsonArray("matches"));
-                            }).handle(routingContext);
-                }
+                backendHandler(MessageType.SEARCH_MATCH, matchRequest.encode(),
+                    (context, backendResponse) -> {
+                        JsonObject responseBody = new JsonObject();
+                        responseBody
+                            .put("resultMessage", backendResponse.getString("resultMessage"))
+                            .put("matchAccessCode", backendResponse.getString("matchAccessCode"));
+                        context.response().end(responseBody.encode());
+                        notifyNewMatch(
+                            matchRequest.getString("requesterUsername"),
+                            context.response().getStatusCode(),
+                            backendResponse.getJsonArray("matches"));
+                    }).handle(routingContext);
+            }
         ));
 
         router.delete("/searchMatch").blockingHandler(extractUsername(
-                (routingContext, username) -> backendHandler(MessageType.CANCEL_MATCH_SEARCH, username,
-                        respondWithMessage()).handle(routingContext)
+            (routingContext, username) -> backendHandler(MessageType.CANCEL_MATCH_SEARCH, username,
+                respondWithMessage()).handle(routingContext)
         ));
 
         router.post("/joinPrivateMatch").blockingHandler(getRequestObject(
-                (routingContext, matchRequest) -> {
-                    String matchAccessCode = routingContext.body().asJsonObject().getString("matchAccessCode");
-                    matchRequest
-                            .put("matchAccessCode", matchAccessCode);
+            (routingContext, matchRequest) -> {
+                String matchAccessCode = routingContext.body().asJsonObject().getString("matchAccessCode");
+                matchRequest
+                    .put("matchAccessCode", matchAccessCode);
 
-                    backendHandler(MessageType.JOIN_PRIVATE_MATCH, matchRequest.encode(),
-                            (context, backendResponse) -> {
-                                context.response().end(backendResponse.getString("resultMessage"));
-                                notifyNewMatch(
-                                        matchRequest.getString("requesterUsername"),
-                                        context.response().getStatusCode(),
-                                        backendResponse.getJsonArray("matches"));
-                            }).handle(routingContext);
-                }
+                backendHandler(MessageType.JOIN_PRIVATE_MATCH, matchRequest.encode(),
+                    (context, backendResponse) -> {
+                        context.response().end(backendResponse.getString("resultMessage"));
+                        notifyNewMatch(
+                            matchRequest.getString("requesterUsername"),
+                            context.response().getStatusCode(),
+                            backendResponse.getJsonArray("matches"));
+                    }).handle(routingContext);
+            }
         ));
 
         router.get("/getMatches").blockingHandler(extractUsername(
-                (routingContext, username) -> backendHandler(
-                        MessageType.GET_MATCHES_OF_USER,
-                        username,
-                        (context, backendResponse) -> {
-                            JsonObject responseBody = new JsonObject();
-                            JsonArray matches = backendResponse.getJsonArray("matches");
-                            responseBody
-                                    .put("matches", matches)
-                                    .put("pending", backendResponse.getBoolean("pending"));
-                            context.response().end(responseBody.encode());
+            (routingContext, username) -> backendHandler(
+                MessageType.GET_MATCHES_OF_USER,
+                username,
+                (context, backendResponse) -> {
+                    JsonObject responseBody = new JsonObject();
+                    JsonArray matches = backendResponse.getJsonArray("matches");
+                    responseBody
+                        .put("matches", matches)
+                        .put("pending", backendResponse.getBoolean("pending"));
+                    context.response().end(responseBody.encode());
 
-                            // since this method is always executed each time a client creates
-                            // a match, reloads the page, search for a match, here is a good place
-                            // to create a websocket room for every existing active matches
-                            createCommunicationRoom(matches);
-                        }).handle(routingContext)
+                    // since this method is always executed each time a client creates
+                    // a match, reloads the page, search for a match, here is a good place
+                    // to create a websocket room for every existing active matches
+                    createCommunicationRoom(matches);
+                }).handle(routingContext)
         ));
 
         router.get("/getMatch").blockingHandler(extractUsername(
-                (routingContext, username) -> {
-                    String matchID = routingContext.queryParam("matchId").getFirst();
-                    backendHandler(
-                            MessageType.GET_MATCH,
-                            matchID,
-                            (context, backendResponse) -> {
-                                JsonArray matches = backendResponse.getJsonArray("matches");
-                                // create an object containing the profilePicture of each player
-                                // in order to satisfy client's needs
-                                JsonArray players = matches
-                                        .getJsonObject(0)
-                                        .getJsonObject("matchStatus")
-                                        .getJsonArray("players");
+            (routingContext, username) -> {
+                String matchID = routingContext.queryParam("matchId").getFirst();
+                backendHandler(
+                    MessageType.GET_MATCH,
+                    matchID,
+                    (context, backendResponse) -> {
+                        JsonArray matches = backendResponse.getJsonArray("matches");
+                        // create an object containing the profilePicture of each player
+                        // in order to satisfy client's needs
+                        JsonArray players = matches
+                            .getJsonObject(0)
+                            .getJsonObject("matchStatus")
+                            .getJsonArray("players");
 
-                                JsonArray profilePics = new JsonArray();
-                                for (int i = 0; i < players.getList().size(); i++)
-                                    profilePics.add(new JsonObject()
-                                            .put("username", players.getJsonObject(i).getString("username"))
-                                            .put("picId", players.getJsonObject(i).getInteger("profilePictureID")));
+                        JsonArray profilePics = new JsonArray();
+                        for (int i = 0; i < players.getList().size(); i++)
+                            profilePics.add(new JsonObject()
+                                .put("username", players.getJsonObject(i).getString("username"))
+                                .put("picId", players.getJsonObject(i).getInteger("profilePictureID")));
 
-                                JsonObject responseBody = new JsonObject();
-                                responseBody
-                                        .put("matches", matches)
-                                        .put("profile_pics", profilePics);
-                                context.response().end(responseBody.encode());
-                            }).handle(routingContext);
-                }
+                        JsonObject responseBody = new JsonObject();
+                        responseBody
+                            .put("matches", matches)
+                            .put("profile_pics", profilePics);
+                        context.response().end(responseBody.encode());
+                    }).handle(routingContext);
+            }
         ));
 
         router.put("/leaveMatch").blockingHandler(extractUsername(
-                (routingContext, username) -> {
-                    String matchID = routingContext.body().asJsonObject().getString("matchId");
-                    JsonObject request = new JsonObject()
-                            .put("requesterUsername", username)
-                            .put("matchID", matchID);
+            (routingContext, username) -> {
+                String matchID = routingContext.body().asJsonObject().getString("matchId");
+                JsonObject request = new JsonObject()
+                    .put("requesterUsername", username)
+                    .put("matchID", matchID);
 
-                    backendHandler(
-                            MessageType.LEAVE_MATCH,
-                            request.encode(),
-                            (context, backendResponse) -> {
-                                context.response().end(backendResponse.getString("resultMessage"));
+                backendHandler(
+                    MessageType.LEAVE_MATCH,
+                    request.encode(),
+                    (context, backendResponse) -> {
+                        context.response().end(backendResponse.getString("resultMessage"));
 
-                                sendRoomNotification(MessageType.MATCH_OVER, matchID, username);
-                            }).handle(routingContext);
-                }
+                        sendRoomNotification(MessageType.MATCH_OVER, matchID, username);
+                    }).handle(routingContext);
+            }
         ));
 
         router.put("/doGuess").blockingHandler(extractUsername(
-                (routingContext, username) -> {
-                    JsonObject body = routingContext.body().asJsonObject();
-                    String matchID = body.getString("matchId");
-                    JsonArray sequence = body.getJsonArray("sequence");
-                    JsonObject request = new JsonObject()
-                            .put("requesterUsername", username)
-                            .put("matchID", matchID)
-                            .put("colorSequence", sequence);
+            (routingContext, username) -> {
+                JsonObject body = routingContext.body().asJsonObject();
+                String matchID = body.getString("matchId");
+                JsonArray sequence = body.getJsonArray("sequence");
+                JsonObject request = new JsonObject()
+                    .put("requesterUsername", username)
+                    .put("matchID", matchID)
+                    .put("colorSequence", sequence);
 
-                    backendHandler(
-                            MessageType.DO_GUESS,
-                            request.encode(),
-                            (context, backendResponse) -> {
-                                JsonObject updatedStatus = backendResponse.getJsonObject("updatedStatus");
-                                JsonObject submittedAttemptHints = backendResponse.getJsonObject("submittedAttemptHints");
-                                JsonObject jsonResponse = new JsonObject()
-                                        .put("rightP", submittedAttemptHints.getInteger("rightPositions"))
-                                        .put("rightC", submittedAttemptHints.getInteger("rightColours"))
-                                        .put("status", updatedStatus);
-                                context.response().end(jsonResponse.encode());
+                backendHandler(
+                    MessageType.DO_GUESS,
+                    request.encode(),
+                    (context, backendResponse) -> {
+                        JsonObject updatedStatus = backendResponse.getJsonObject("updatedStatus");
+                        JsonObject submittedAttemptHints = backendResponse.getJsonObject("submittedAttemptHints");
+                        JsonObject jsonResponse = new JsonObject()
+                            .put("rightP", submittedAttemptHints.getInteger("rightPositions"))
+                            .put("rightC", submittedAttemptHints.getInteger("rightColours"))
+                            .put("status", updatedStatus);
+                        context.response().end(jsonResponse.encode());
 
-                                boolean isMatchOver = !updatedStatus
-                                        .getString("matchState")
-                                        .equals("PLAYING");
-                                sendRoomNotification(
-                                        isMatchOver ? MessageType.MATCH_OVER : MessageType.NEW_MOVE,
-                                        matchID, username);
-                            }
-                    ).handle(routingContext);
-                }
+                        boolean isMatchOver = !updatedStatus
+                            .getString("matchState")
+                            .equals("PLAYING");
+                        sendRoomNotification(
+                            isMatchOver ? MessageType.MATCH_OVER : MessageType.NEW_MOVE,
+                            matchID, username);
+                    }
+                ).handle(routingContext);
+            }
         ));
 
         return router;
@@ -165,9 +165,9 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
         if (statusCode == 201) {
             createCommunicationRoom(createdMatch);
             String createdMatchID = createdMatch.stream()
-                    .map(JsonObject.class::cast)
-                    .map(match -> match.getString("_id"))
-                    .findFirst().orElse("invalid ID");
+                .map(JsonObject.class::cast)
+                .map(match -> match.getString("_id"))
+                .findFirst().orElse("invalid ID");
             sendRoomNotification(MessageType.NEW_MATCH, createdMatchID, originPlayer);
         }
     }
@@ -180,15 +180,15 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
 
     private void sendRoomNotification(MessageType notificationType, String matchID, String originPlayer) {
         JsonObject notificationData = new JsonObject()
-                .put("matchID", matchID)
-                .put("originPlayer", originPlayer);
+            .put("matchID", matchID)
+            .put("originPlayer", originPlayer);
         JsonObject notification = getNotificationRequest(notificationType, notificationData);
         vertx.eventBus().send(NotificationService.WS_EVENTS_ADDRESS, notification);
     }
 
     private static JsonObject getNotificationRequest(MessageType notificationType, JsonObject data) {
         return new JsonObject()
-                .put("notificationType", notificationType)
-                .put("data", data);
+            .put("notificationType", notificationType)
+            .put("data", data);
     }
 }

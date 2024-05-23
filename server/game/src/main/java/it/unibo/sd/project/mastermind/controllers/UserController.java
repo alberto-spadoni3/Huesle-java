@@ -11,11 +11,11 @@ import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchState;
 import it.unibo.sd.project.mastermind.model.match.MatchStatus;
-import it.unibo.sd.project.mastermind.model.request.PendingMatchRequest;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.request.LoginRequest;
-import it.unibo.sd.project.mastermind.model.user.Player;
+import it.unibo.sd.project.mastermind.model.request.PendingMatchRequest;
 import it.unibo.sd.project.mastermind.model.result.UserOperationResult;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import org.bson.conversions.Bson;
 
@@ -48,7 +48,8 @@ public class UserController {
     public UserController(MongoDatabase database) {
         this.userDB = new DBManager<>(database, "users", "username", Player.class);
         this.matchDB = new DBManager<>(database, "matches", "_id", Match.class);
-        this.pendingMatchDB = new DBManager<>(database, "pendingRequests", "requesterUsername", PendingMatchRequest.class);
+        this.pendingMatchDB = new DBManager<>(database, "pendingRequests", "requesterUsername",
+            PendingMatchRequest.class);
     }
 
     public Function<String, String> registerUser() {
@@ -58,17 +59,17 @@ public class UserController {
                 Player newUser = Presentation.deserializeAs(message, Player.class);
                 if (userDB.isPresentByField("email", newUser.getEmail()))
                     registrationResult =
-                            new UserOperationResult(CONFLICT_HTTP_CODE, EMAIL_ALREADY_EXISTS_MESSAGE);
+                        new UserOperationResult(CONFLICT_HTTP_CODE, EMAIL_ALREADY_EXISTS_MESSAGE);
                 else if (userDB.isPresentByField("username", newUser.getUsername()))
                     registrationResult =
-                            new UserOperationResult(CONFLICT_HTTP_CODE, USERNAME_ALREADY_EXISTS_MESSAGE);
+                        new UserOperationResult(CONFLICT_HTTP_CODE, USERNAME_ALREADY_EXISTS_MESSAGE);
 
                 if (registrationResult == null) {
                     // The registration process can go on without problems
                     userDB.insert(newUser);
                     registrationResult = new UserOperationResult(
-                            REGISTRATION_DONE_HTTP_CODE,
-                            String.format("User %s created successfully", newUser.getUsername()));
+                        REGISTRATION_DONE_HTTP_CODE,
+                        String.format("User %s created successfully", newUser.getUsername()));
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
@@ -83,14 +84,13 @@ public class UserController {
             try {
                 LoginRequest loginRequest = Presentation.deserializeAs(message, LoginRequest.class);
                 Optional<Player> userToLogin =
-                        userDB.getDocumentByField(
-                                "username",
-                                loginRequest.getRequesterUsername()
-                        );
+                    userDB.getDocumentByField(
+                        "username",
+                        loginRequest.getRequesterUsername()
+                    );
                 if (userToLogin.isPresent() &&
-                        !userToLogin.get().isDisabled() &&
-                        userToLogin.get().verifyPassword(loginRequest.getClearPassword()))
-                {
+                    !userToLogin.get().isDisabled() &&
+                    userToLogin.get().verifyPassword(loginRequest.getClearPassword())) {
                     Player user = userToLogin.get();
 
                     // generate access and refresh tokens
@@ -102,9 +102,9 @@ public class UserController {
                     userDB.update(user.getUsername(), user);
 
                     loginResult = new UserOperationResult(
-                            SUCCESS_HTTP_CODE,
-                            String.format("User %s logged in", userToLogin.get().getUsername()),
-                            user, accessToken);
+                        SUCCESS_HTTP_CODE,
+                        String.format("User %s logged in", userToLogin.get().getUsername()),
+                        user, accessToken);
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
@@ -124,7 +124,7 @@ public class UserController {
             UserOperationResult result = null;
             try {
                 Optional<Player> optionalPlayer =
-                        userDB.getDocumentByField("refreshToken", refreshToken);
+                    userDB.getDocumentByField("refreshToken", refreshToken);
                 if (optionalPlayer.isPresent()) {
                     Player player = optionalPlayer.get();
                     // remove the refreshToken from the database
@@ -132,16 +132,16 @@ public class UserController {
                     userDB.update(player.getUsername(), player);
 
                     result = new UserOperationResult(
-                            SUCCESS_HTTP_CODE,
-                            "The user " + player.getUsername() + " is successfully logged out");
+                        SUCCESS_HTTP_CODE,
+                        "The user " + player.getUsername() + " is successfully logged out");
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             } finally {
                 if (result == null)
                     result = new UserOperationResult(
-                            NO_CONTENT_HTTP_CODE,
-                            "The user was already logged out");
+                        NO_CONTENT_HTTP_CODE,
+                        "The user was already logged out");
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(result);
         };
@@ -153,7 +153,7 @@ public class UserController {
             TokenCredentials credentials = new TokenCredentials(refreshToken);
             try {
                 Optional<Player> optionalPlayer =
-                        userDB.getDocumentByField("refreshToken", credentials.getToken());
+                    userDB.getDocumentByField("refreshToken", credentials.getToken());
                 if (optionalPlayer.isPresent()) {
                     Player player = optionalPlayer.get();
                     // check the signature and expiration of the refreshToken
@@ -161,9 +161,9 @@ public class UserController {
                         if (user.succeeded() && user.result().subject().equals(player.getUsername())) {
                             String newAccessToken = generateToken(TokenType.ACCESS, player.getUsername());
                             result.set(new UserOperationResult(
-                                    SUCCESS_HTTP_CODE,
-                                    "Access token refreshed successfully",
-                                    player, newAccessToken));
+                                SUCCESS_HTTP_CODE,
+                                "Access token refreshed successfully",
+                                player, newAccessToken));
                         }
                     });
                 }
@@ -193,10 +193,11 @@ public class UserController {
                                     MatchStatus matchStatus = playingMatch.getMatchStatus();
                                     matchStatus.setState(MatchState.VICTORY);
                                     Stream<Player> otherPlayer = matchStatus
-                                            .getPlayers()
-                                            .stream()
-                                            .filter(player -> !player.getUsername().equals(username));
-                                    otherPlayer.findFirst().ifPresent(p -> matchStatus.changeNextPlayer(p.getUsername()));
+                                        .getPlayers()
+                                        .stream()
+                                        .filter(player -> !player.getUsername().equals(username));
+                                    otherPlayer.findFirst()
+                                        .ifPresent(p -> matchStatus.changeNextPlayer(p.getUsername()));
                                     matchStatus.setAbandoned();
                                     matchDB.update(playingMatch.getMatchID().toString(), playingMatch);
                                 })
@@ -205,14 +206,14 @@ public class UserController {
                     // delete possible pending request the user has created
                     Bson pendingReqOfCurrentPlayer = eq("requesterUsername", username);
                     pendingMatchDB.getDocumentByQuery(pendingReqOfCurrentPlayer)
-                            .ifPresent(pendingMatchRequest -> pendingMatchDB.deleteByQuery(pendingReqOfCurrentPlayer));
+                        .ifPresent(pendingMatchRequest -> pendingMatchDB.deleteByQuery(pendingReqOfCurrentPlayer));
 
                     // disable the user account
                     Player deletedUser = optionalPlayer.get();
                     deletedUser.disable();
                     userDB.update(username, deletedUser);
                     result = new UserOperationResult(
-                            (short) 200, "User " + username + " deleted successfully!"
+                        (short) 200, "User " + username + " deleted successfully!"
                     );
                 }
             } catch (Exception e) {
@@ -220,7 +221,7 @@ public class UserController {
             } finally {
                 if (result == null)
                     result = new UserOperationResult(
-                            (short) 400, "Problems in deleting the user " + username
+                        (short) 400, "Problems in deleting the user " + username
                     );
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(result);
@@ -229,9 +230,9 @@ public class UserController {
 
     private String generateToken(TokenType tokenType, String username) {
         int TOKEN_EXPIRATION_IN_MINUTES =
-                tokenType.equals(TokenType.REFRESH) ?
-                        Integer.parseInt(System.getenv("REFRESH_TOKEN_EXPIRATION")) :
-                        Integer.parseInt(System.getenv("ACCESS_TOKEN_EXPIRATION"));
+            tokenType.equals(TokenType.REFRESH) ?
+                Integer.parseInt(System.getenv("REFRESH_TOKEN_EXPIRATION")) :
+                Integer.parseInt(System.getenv("ACCESS_TOKEN_EXPIRATION"));
         JWTOptions jwtOptions = new JWTOptions().setExpiresInMinutes(TOKEN_EXPIRATION_IN_MINUTES);
         JsonObject tokenData = new JsonObject().put("sub", username);
         JWTAuth jwtAuth = getJwtAuthProvider(tokenType);
@@ -240,13 +241,13 @@ public class UserController {
 
     private JWTAuth getJwtAuthProvider(TokenType tokenType) {
         JWTAuthOptions jwtAuthOptions = new JWTAuthOptions()
-                .addPubSecKey(new PubSecKeyOptions()
-                        .setAlgorithm("HS256")
-                        .setBuffer(
-                            tokenType.equals(TokenType.ACCESS) ?
-                                    System.getenv("ACCESS_TOKEN_SECRET") :
-                                    System.getenv("REFRESH_TOKEN_SECRET")
-                        ));
+            .addPubSecKey(new PubSecKeyOptions()
+                .setAlgorithm("HS256")
+                .setBuffer(
+                    tokenType.equals(TokenType.ACCESS) ?
+                        System.getenv("ACCESS_TOKEN_SECRET") :
+                        System.getenv("REFRESH_TOKEN_SECRET")
+                ));
         return JWTAuth.create(Vertx.vertx(), jwtAuthOptions);
     }
 }

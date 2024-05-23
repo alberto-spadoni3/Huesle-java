@@ -3,9 +3,9 @@ package it.unibo.sd.project.mastermind.presentation.deserializers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.match.MatchState;
 import it.unibo.sd.project.mastermind.model.match.MatchStatus;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 
 import java.util.ArrayList;
@@ -20,10 +20,10 @@ public class MatchStatusDeserializer extends AbstractJsonDeserializer<MatchStatu
 
             List<Player> players = new ArrayList<>();
             JsonArray jsonPlayers = result.getAsJsonArray("players");
-            for(JsonElement elem : jsonPlayers){
+            for (JsonElement elem : jsonPlayers) {
                 try {
                     players.add(Presentation.deserializeAs(elem.toString(), Player.class));
-                } catch (Exception e){
+                } catch (Exception e) {
                     throw new RuntimeException("Cannot deserialize " + elem + " as Player " + e.getMessage());
                 }
             }

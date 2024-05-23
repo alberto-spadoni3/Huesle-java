@@ -35,8 +35,8 @@ public class WebServiceTests {
         this.username = "Aldo";
         this.clearPassword = "NasaIsCool123!";
         HttpClientOptions options = new HttpClientOptions()
-                .setDefaultHost("localhost")
-                .setDefaultPort(listeningPort);
+            .setDefaultHost("localhost")
+            .setDefaultPort(listeningPort);
         client = vertx.createHttpClient(options);
     }
 
@@ -55,23 +55,22 @@ public class WebServiceTests {
         Checkpoint responseSucceeded = testContext.checkpoint();
         Checkpoint responseBodyProcessed = testContext.checkpoint();
         JsonObject requestBody = new JsonObject()
-                .put("username", username)
-                .put("password", clearPassword);
+            .put("username", username)
+            .put("password", clearPassword);
 
         client
             .request(HttpMethod.POST, "/api/user/login")
             .compose(request -> request.send(requestBody.encode())
-            .compose(response -> {
-                assertEquals(200, response.statusCode());
-                if (response.statusCode() == 200) {
-                    responseSucceeded.flag();
-                    this.refreshTokenCookie = checkRefreshTokenCookiePresence(response.cookies());
-                    // check the refreshToken cookie presence
-                    assertNotNull(refreshTokenCookie);
-                    return response.body();
-                }
-                else return getFailedFuture(response);
-            }))
+                .compose(response -> {
+                    assertEquals(200, response.statusCode());
+                    if (response.statusCode() == 200) {
+                        responseSucceeded.flag();
+                        this.refreshTokenCookie = checkRefreshTokenCookiePresence(response.cookies());
+                        // check the refreshToken cookie presence
+                        assertNotNull(refreshTokenCookie);
+                        return response.body();
+                    } else return getFailedFuture(response);
+                }))
             .onSuccess(responseBody -> testContext.verify(() -> {
                 // save the accessToken for future requests that require authentication
                 accessToken = responseBody.toJsonObject().getString("accessToken");
@@ -106,27 +105,26 @@ public class WebServiceTests {
         Checkpoint responseBodyProcessed = testContext.checkpoint();
 
         client
-                .request(HttpMethod.GET, "/api/user/logout")
-                .compose(request -> request.putHeader(
-                        "Cookie",
-                        refreshTokenCookie.getName() + "=" + refreshTokenCookie.getValue()).send())
-                .compose(response -> {
-                    int statusCode = response.statusCode();
-                    if (statusCode <= 204) {
-                        Cookie refreshTokenCookie = checkRefreshTokenCookiePresence(response.cookies());
-                        assertNull(refreshTokenCookie);
-                        cookiePresenceVerified.flag();
-                        return response.body();
-                    }
-                    else return getFailedFuture(response);
-                }).onSuccess(responseBody -> {
-                    if (!responseBody.toString().isEmpty()) {
-                        // check that the response body is coherent
-                        String resultMessage = responseBody.toJsonObject().getString("resultMessage");
-                        assertTrue(resultMessage.contains(this.username));
-                    }
-                    responseBodyProcessed.flag();
-                }).onFailure(error -> testContext.failNow(error.getMessage()));
+            .request(HttpMethod.GET, "/api/user/logout")
+            .compose(request -> request.putHeader(
+                "Cookie",
+                refreshTokenCookie.getName() + "=" + refreshTokenCookie.getValue()).send())
+            .compose(response -> {
+                int statusCode = response.statusCode();
+                if (statusCode <= 204) {
+                    Cookie refreshTokenCookie = checkRefreshTokenCookiePresence(response.cookies());
+                    assertNull(refreshTokenCookie);
+                    cookiePresenceVerified.flag();
+                    return response.body();
+                } else return getFailedFuture(response);
+            }).onSuccess(responseBody -> {
+                if (!responseBody.toString().isEmpty()) {
+                    // check that the response body is coherent
+                    String resultMessage = responseBody.toJsonObject().getString("resultMessage");
+                    assertTrue(resultMessage.contains(this.username));
+                }
+                responseBodyProcessed.flag();
+            }).onFailure(error -> testContext.failNow(error.getMessage()));
     }
 
     private static Future<Buffer> getFailedFuture(HttpClientResponse response) {
@@ -136,10 +134,10 @@ public class WebServiceTests {
     private void registerUser(Handler<AsyncResult<Void>> handler) {
         String email = "aldo@nasa.gov.us";
         JsonObject requestBody = new JsonObject()
-                .put("username", username)
-                .put("email", email)
-                .put("password", clearPassword);
-        UserController userController = new UserController(DBSingleton.getInstance().getTestDatabase());
+            .put("username", username)
+            .put("email", email)
+            .put("password", clearPassword);
+        UserController userController = new UserController(DBSingleton.getTestDatabase());
         JsonObject response = new JsonObject(userController.registerUser().apply(requestBody.encode()));
         if (response.getInteger("statusCode") == 201)
             handler.handle(Future.succeededFuture());

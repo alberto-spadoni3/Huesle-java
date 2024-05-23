@@ -23,61 +23,61 @@ public class UserRoutesConfigurator extends RoutesConfigurator {
     @Override
     public Router configure() {
         router.post("/register").blockingHandler(backendHandler(
-                MessageType.REGISTER_USER, respondWithMessage()));
+            MessageType.REGISTER_USER, respondWithMessage()));
 
         router.post("/login").blockingHandler(backendHandler(
-                MessageType.LOGIN_USER,
-                (routingContext, backendResponse) -> {
-                    JsonObject user = backendResponse.getJsonObject("relatedUser");
-                    String accessToken = backendResponse.getString("accessToken");
-                    String refreshToken = user.getString("refreshToken");
+            MessageType.LOGIN_USER,
+            (routingContext, backendResponse) -> {
+                JsonObject user = backendResponse.getJsonObject("relatedUser");
+                String accessToken = backendResponse.getString("accessToken");
+                String refreshToken = user.getString("refreshToken");
 
-                    long maxAge = 24 * 60 * 60; // one day expressed in seconds
-                    Cookie cookie = Cookie.cookie("jwtRefreshToken", refreshToken)
-                            .setMaxAge(maxAge)
-                            .setHttpOnly(true);
+                long maxAge = 24 * 60 * 60; // one day expressed in seconds
+                Cookie cookie = Cookie.cookie("jwtRefreshToken", refreshToken)
+                    .setMaxAge(maxAge)
+                    .setHttpOnly(true);
 
-                    JsonObject responseBody = new JsonObject();
-                    responseBody
-                            .put("accessToken", accessToken)
-                            .put("profilePicID", user.getInteger("profilePictureID"))
-                            .put("email", user.getString("email"));
-                    routingContext.response().addCookie(cookie).end(responseBody.encode());
-                }));
+                JsonObject responseBody = new JsonObject();
+                responseBody
+                    .put("accessToken", accessToken)
+                    .put("profilePicID", user.getInteger("profilePictureID"))
+                    .put("email", user.getString("email"));
+                routingContext.response().addCookie(cookie).end(responseBody.encode());
+            }));
 
         router.get("/refreshToken").blockingHandler(checkRefreshTokenCookiePresence(
-                MessageType.REFRESH_ACCESS_TOKEN,
-                (context, backendResponse) -> {
-                    JsonObject user = backendResponse.getJsonObject("relatedUser");
-                    String accessToken = backendResponse.getString("accessToken");
-                    JsonObject responseBody = new JsonObject();
-                    responseBody
-                            .put("username", user.getString("username"))
-                            .put("newAccessToken", accessToken)
-                            .put("profilePicID", user.getInteger("profilePictureID"))
-                            .put("email", user.getString("email"));
-                    context.response().end(responseBody.encode());
-                }));
+            MessageType.REFRESH_ACCESS_TOKEN,
+            (context, backendResponse) -> {
+                JsonObject user = backendResponse.getJsonObject("relatedUser");
+                String accessToken = backendResponse.getString("accessToken");
+                JsonObject responseBody = new JsonObject();
+                responseBody
+                    .put("username", user.getString("username"))
+                    .put("newAccessToken", accessToken)
+                    .put("profilePicID", user.getInteger("profilePictureID"))
+                    .put("email", user.getString("email"));
+                context.response().end(responseBody.encode());
+            }));
 
         router.get("/logout").blockingHandler(checkRefreshTokenCookiePresence(
-                MessageType.LOGOUT_USER,
-                (context, backendResponse) -> {
-                    context.response().removeCookies("jwtRefreshToken");
-                    respondWithMessage().accept(context, backendResponse);
-                }
+            MessageType.LOGOUT_USER,
+            (context, backendResponse) -> {
+                context.response().removeCookies("jwtRefreshToken");
+                respondWithMessage().accept(context, backendResponse);
+            }
         ));
 
         router.delete("/delete")
-                // since this router belongs to a non-protected-route,
-                // we first need to authenticate the user using JWT
-                .blockingHandler(JWTAuthHandler.create(jwtAccessProvider))
-                .blockingHandler(extractUsername(
-                        (routingContext, username) -> backendHandler(
-                                MessageType.DELETE_USER,
-                                username,
-                                respondWithMessage()
-                        ).handle(routingContext)
-                ));
+            // since this router belongs to a non-protected-route,
+            // we first need to authenticate the user using JWT
+            .blockingHandler(JWTAuthHandler.create(jwtAccessProvider))
+            .blockingHandler(extractUsername(
+                (routingContext, username) -> backendHandler(
+                    MessageType.DELETE_USER,
+                    username,
+                    respondWithMessage()
+                ).handle(routingContext)
+            ));
 
         return router;
     }
@@ -90,13 +90,12 @@ public class UserRoutesConfigurator extends RoutesConfigurator {
             if (cookie != null) {
                 String refreshToken = cookie.getValue();
                 backendHandler(messageType, refreshToken, consumer).handle(routingContext);
-            }
-            else {
+            } else {
                 int statusCode = messageType.getType().equals(MessageType.LOGOUT_USER.getType()) ? 204 : 401;
                 routingContext
-                        .response()
-                        .setStatusCode(statusCode)
-                        .end();
+                    .response()
+                    .setStatusCode(statusCode)
+                    .end();
             }
         };
     }

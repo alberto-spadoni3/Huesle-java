@@ -10,8 +10,8 @@ public class MatchRequestDeserializer extends AbstractJsonDeserializer<MatchRequ
         if (jsonElement.isJsonObject()) {
             JsonObject jsonObject = (JsonObject) jsonElement;
             String requesterUsername = jsonObject.get("requesterUsername").getAsString(),
-                   matchAccessCode = null,
-                   matchID = null;
+                matchAccessCode = null,
+                matchID = null;
             boolean isMatchPrivate = false;
             if (jsonObject.has("isPrivateMatch"))
                 isMatchPrivate = jsonObject.get("isPrivateMatch").getAsBoolean();
@@ -21,9 +21,9 @@ public class MatchRequestDeserializer extends AbstractJsonDeserializer<MatchRequ
                 matchID = jsonObject.get("matchID").getAsString();
 
             return new MatchRequest(requesterUsername)
-                    .setMatchPrivate(isMatchPrivate)
-                    .setMatchAccessCode(matchAccessCode)
-                    .setMatchID(matchID);
+                .setMatchPrivate(isMatchPrivate)
+                .setMatchAccessCode(matchAccessCode)
+                .setMatchID(matchID);
         } else {
             throw new RuntimeException("Cannot deserialize " + jsonElement + " as SearchRequest");
         }

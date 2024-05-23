@@ -8,7 +8,7 @@ public class SecretCodeSerializer extends AbstractJsonSerializer<SecretCode> {
     @Override
     protected JsonElement toJsonElement(SecretCode secretCode) {
         JsonArray jsonColorCode = new JsonArray();
-        for(String s : secretCode.getCode()){
+        for (String s : secretCode.getCode()) {
             jsonColorCode.add(s);
         }
         return jsonColorCode;

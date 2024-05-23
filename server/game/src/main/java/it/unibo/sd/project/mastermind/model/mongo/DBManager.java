@@ -23,15 +23,15 @@ public class DBManager<T> {
         this.klass = klass;
     }
 
-    public void insert(T elem){
+    public void insert(T elem) {
         collection.insertOne(convertToDocument(elem));
     }
 
-    public void update(String id, T elem){
-        collection.replaceOne(Filters.eq(ID_FIELD, id),convertToDocument(elem));
+    public void update(String id, T elem) {
+        collection.replaceOne(Filters.eq(ID_FIELD, id), convertToDocument(elem));
     }
 
-    public void remove(String id){
+    public void remove(String id) {
         collection.deleteOne(Filters.eq(ID_FIELD, id));
     }
 
@@ -39,11 +39,11 @@ public class DBManager<T> {
         collection.deleteOne(query);
     }
 
-    public boolean isPresentByID(String id){
+    public boolean isPresentByID(String id) {
         return collection.countDocuments(Filters.eq(ID_FIELD, id)) > 0;
     }
 
-    public boolean isPresentByField(String fieldName, String fieldValue){
+    public boolean isPresentByField(String fieldName, String fieldValue) {
         return collection.countDocuments(Filters.eq(fieldName, fieldValue)) > 0;
     }
 
@@ -60,7 +60,7 @@ public class DBManager<T> {
 
     public Optional<List<T>> getDocumentsByQuery(Bson query) throws Exception {
         List<T> foundDocuments = new ArrayList<>();
-        try(MongoCursor<Document> cursor = collection.find(query).iterator()) {
+        try (MongoCursor<Document> cursor = collection.find(query).iterator()) {
             if (!cursor.hasNext())
                 return Optional.empty();
             while (cursor.hasNext())
@@ -69,7 +69,7 @@ public class DBManager<T> {
         return Optional.of(foundDocuments);
     }
 
-    private Document convertToDocument(T elem){
+    private Document convertToDocument(T elem) {
         return Document.parse(Presentation.serializerOf(klass).serialize(elem));
     }
 

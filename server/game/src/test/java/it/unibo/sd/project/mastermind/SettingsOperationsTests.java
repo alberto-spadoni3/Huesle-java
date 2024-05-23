@@ -5,12 +5,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mongodb.client.MongoDatabase;
 import it.unibo.sd.project.mastermind.controllers.UserController;
-import it.unibo.sd.project.mastermind.model.user.AccessibilitySettings;
-import it.unibo.sd.project.mastermind.model.result.OperationResult;
-import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
+import it.unibo.sd.project.mastermind.model.result.OperationResult;
 import it.unibo.sd.project.mastermind.model.result.UserOperationResult;
+import it.unibo.sd.project.mastermind.model.user.AccessibilitySettings;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 import it.unibo.sd.project.mastermind.rabbit.MessageType;
 import it.unibo.sd.project.mastermind.rabbit.RPCClient;
@@ -51,7 +51,7 @@ public class SettingsOperationsTests {
     }
 
     @AfterEach
-    public void stopExecutor(){
+    public void stopExecutor() {
         executorService.shutdown();
     }
 
@@ -92,8 +92,8 @@ public class SettingsOperationsTests {
         assertEquals(200, result.getStatusCode());
         // now we should see some changes in the DB
         Player updatedPlayer = userDB
-                .getDocumentByField("username", player1.getUsername())
-                .orElseThrow();
+            .getDocumentByField("username", player1.getUsername())
+            .orElseThrow();
         assertEquals(newProfilePic, updatedPlayer.getProfilePictureID());
         System.out.println(result.getResultMessage());
     }
@@ -116,8 +116,8 @@ public class SettingsOperationsTests {
         assertEquals(200, result.getStatusCode());
         // now we should see some changes in the DB
         Player updatedPlayer = userDB
-                .getDocumentByField("username", player1.getUsername())
-                .orElseThrow();
+            .getDocumentByField("username", player1.getUsername())
+            .orElseThrow();
         assertEquals(newSettings, updatedPlayer.getSettings());
         System.out.println(result.getResultMessage());
     }
@@ -140,8 +140,8 @@ public class SettingsOperationsTests {
         assertEquals(200, result.getStatusCode());
         // now we should see some changes in the DB
         Player updatedPlayer = userDB
-                .getDocumentByField("username", player1.getUsername())
-                .orElseThrow();
+            .getDocumentByField("username", player1.getUsername())
+            .orElseThrow();
         assertEquals(newEmail.getAsString(), updatedPlayer.getEmail());
         System.out.println(result.getResultMessage());
     }
@@ -169,8 +169,8 @@ public class SettingsOperationsTests {
         assertEquals(200, result.getStatusCode());
         // now we should see some changes in the DB
         Player updatedPlayer = userDB
-                .getDocumentByField("username", player1.getUsername())
-                .orElseThrow();
+            .getDocumentByField("username", player1.getUsername())
+            .orElseThrow();
         assertNotEquals(player1.getPassword(), updatedPlayer.getPassword());
         System.out.println(result.getResultMessage());
     }
@@ -192,8 +192,8 @@ public class SettingsOperationsTests {
         UserController userController = new UserController(database);
         player1 = new Player("bob", "bob@huesle.it", "password");
         String registrationResponse = userController
-                .registerUser()
-                .apply(Presentation.serializerOf(Player.class).serialize(player1));
+            .registerUser()
+            .apply(Presentation.serializerOf(Player.class).serialize(player1));
         OperationResult opRes = Presentation.deserializeAs(registrationResponse, UserOperationResult.class);
         if (opRes.getStatusCode() >= 400)
             throw new RuntimeException("Preliminary user registration had some problems...");

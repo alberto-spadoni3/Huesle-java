@@ -1,9 +1,9 @@
 package it.unibo.sd.project.mastermind.presentation;
 
-import it.unibo.sd.project.mastermind.model.user.AccessibilitySettings;
 import it.unibo.sd.project.mastermind.model.result.OperationResult;
-import it.unibo.sd.project.mastermind.model.user.Player;
 import it.unibo.sd.project.mastermind.model.result.UserOperationResult;
+import it.unibo.sd.project.mastermind.model.user.AccessibilitySettings;
+import it.unibo.sd.project.mastermind.model.user.Player;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,13 +32,13 @@ public class UserOperationResultTests {
         boolean darkMode = true;
         boolean colorblindMode = true;
 
-        Player player = new Player(username,email, hashedPassword, refreshToken,
-                                   profilePictureID, new AccessibilitySettings(darkMode, colorblindMode), false);
+        Player player = new Player(username, email, hashedPassword, refreshToken,
+            profilePictureID, new AccessibilitySettings(darkMode, colorblindMode), false);
         UserOperationResult operationResult = new UserOperationResult(statusCode, resultMessage, player, accessToken);
         String serializerOpResult = Presentation.serializerOf(UserOperationResult.class).serialize(operationResult);
 
         String jsonPlayer = getCustomPlayerAsJson(username, email, hashedPassword, refreshToken,
-                profilePictureID, darkMode, colorblindMode);
+            profilePictureID, darkMode, colorblindMode);
         String expectedResult = getSuccessOperationResultAsJson(statusCode, resultMessage, jsonPlayer, accessToken);
         assertEquals(expectedResult, serializerOpResult);
     }
@@ -49,8 +49,8 @@ public class UserOperationResultTests {
         String resultMessage = "error";
 
         OperationResult deserialized = Presentation.deserializeAs(
-                getFailedOperationResultAsJson(statusCode, resultMessage),
-                UserOperationResult.class
+            getFailedOperationResultAsJson(statusCode, resultMessage),
+            UserOperationResult.class
         );
 
         assertEquals(statusCode, deserialized.getStatusCode());
@@ -71,10 +71,10 @@ public class UserOperationResultTests {
         boolean colorblindMode = true;
 
         String jsonPlayer = getCustomPlayerAsJson(username, email, hashedPassword, refreshToken,
-                profilePictureID, darkMode, colorblindMode);
+            profilePictureID, darkMode, colorblindMode);
         UserOperationResult deserialized = Presentation.deserializeAs(
-                getSuccessOperationResultAsJson(statusCode, resultMessage, jsonPlayer, accessToken),
-                UserOperationResult.class
+            getSuccessOperationResultAsJson(statusCode, resultMessage, jsonPlayer, accessToken),
+            UserOperationResult.class
         );
         assertEquals(statusCode, deserialized.getStatusCode());
         assertEquals(resultMessage, deserialized.getResultMessage());
@@ -87,28 +87,28 @@ public class UserOperationResultTests {
 
     private String getFailedOperationResultAsJson(short statusCode, String resultMessage) {
         return "{\"statusCode\":" + statusCode + "," +
-                "\"resultMessage\":\"" + resultMessage + "\"}";
+            "\"resultMessage\":\"" + resultMessage + "\"}";
     }
 
     private String getSuccessOperationResultAsJson(short statusCode, String resultMessage, String player, String accessToken) {
         return "{\"statusCode\":" + statusCode + "," +
-                "\"resultMessage\":\"" + resultMessage + "\"," +
-                "\"relatedUser\":" + player + "," +
-                "\"accessToken\":\"" + accessToken + "\"}";
+            "\"resultMessage\":\"" + resultMessage + "\"," +
+            "\"relatedUser\":" + player + "," +
+            "\"accessToken\":\"" + accessToken + "\"}";
     }
 
     private String getCustomPlayerAsJson(String username, String email,
                                          String hashedPassword, String refreshToken, byte profilePictureID,
                                          boolean darkMode, boolean colorblindMode) {
         return "{" +
-                "\"username\":\"" + username + "\"," +
-                "\"email\":\"" + email + "\"," +
-                "\"password\":\"" + hashedPassword + "\"," +
-                "\"refreshToken\":\"" + (refreshToken == null ? "" : refreshToken) + "\"," +
-                "\"profilePictureID\":" + profilePictureID + "," +
-                "\"disabled\":false," +
-                "\"accessibilitySettings\":{" +
-                "\"darkMode\":" + darkMode + "," +
-                "\"colorblindMode\":" + colorblindMode + "}}";
+            "\"username\":\"" + username + "\"," +
+            "\"email\":\"" + email + "\"," +
+            "\"password\":\"" + hashedPassword + "\"," +
+            "\"refreshToken\":\"" + (refreshToken == null ? "" : refreshToken) + "\"," +
+            "\"profilePictureID\":" + profilePictureID + "," +
+            "\"disabled\":false," +
+            "\"accessibilitySettings\":{" +
+            "\"darkMode\":" + darkMode + "," +
+            "\"colorblindMode\":" + colorblindMode + "}}";
     }
 }

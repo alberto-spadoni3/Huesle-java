@@ -16,7 +16,8 @@ public class SettingsRequestDeserializer extends AbstractJsonDeserializer<Settin
             try {
                 if (jsonObject.has("accessibilitySettings")) {
                     JsonObject jsonSettings = jsonObject.get("accessibilitySettings").getAsJsonObject();
-                    AccessibilitySettings settings = Presentation.deserializeAs(jsonSettings.toString(), AccessibilitySettings.class);
+                    AccessibilitySettings settings = Presentation.deserializeAs(jsonSettings.toString(),
+                        AccessibilitySettings.class);
                     settingsRequest.setAccessibilitySettings(settings);
                 } else if (jsonObject.has("profilePictureID"))
                     settingsRequest.setProfilePictureID(jsonObject.get("profilePictureID").getAsByte());
@@ -24,8 +25,8 @@ public class SettingsRequestDeserializer extends AbstractJsonDeserializer<Settin
                     settingsRequest.setNewEmail(jsonObject.get("newEmail").getAsString());
                 else if (jsonObject.has("oldPassword") && jsonObject.has("newPassword"))
                     settingsRequest.setPasswords(
-                            jsonObject.get("oldPassword").getAsString(),
-                            jsonObject.get("newPassword").getAsString());
+                        jsonObject.get("oldPassword").getAsString(),
+                        jsonObject.get("newPassword").getAsString());
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }

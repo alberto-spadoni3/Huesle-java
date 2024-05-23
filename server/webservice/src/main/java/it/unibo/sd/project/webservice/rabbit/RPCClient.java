@@ -37,16 +37,16 @@ public class RPCClient implements AutoCloseable {
     public void call(MessageType messageType, String message, Consumer<String> responseConsumer) {
         final String corrId = UUID.randomUUID().toString();
         try {
-            if(channel.isOpen()) {
+            if (channel.isOpen()) {
                 String replyQueueName = channel.queueDeclare().getQueue();
                 AMQP.BasicProperties props = new AMQP.BasicProperties
-                        .Builder()
-                        .correlationId(corrId)
-                        .replyTo(replyQueueName)
-                        .build();
+                    .Builder()
+                    .correlationId(corrId)
+                    .replyTo(replyQueueName)
+                    .build();
                 channel.exchangeDeclare(EXCHANGE_NAME, "direct");
                 channel.basicPublish(EXCHANGE_NAME, messageType.getType(),
-                        props, message.getBytes(StandardCharsets.UTF_8));
+                    props, message.getBytes(StandardCharsets.UTF_8));
                 log("[x] Sent '" + messageType.getType() + "':'" + message + "'");
                 //channel.queuePurge(replyQueueName);
                 channel.basicQos(1); // accept only one unack-ed message at a time
@@ -55,10 +55,11 @@ public class RPCClient implements AutoCloseable {
                         responseConsumer.accept(new String(delivery.getBody(), StandardCharsets.UTF_8));
                         channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                     }
-                }, consumerTag -> { });
-            }else{
+                }, consumerTag -> {
+                });
+            } else {
                 channel = connection.createChannel();
-                call(messageType,message,responseConsumer);
+                call(messageType, message, responseConsumer);
             }
 
         } catch (Exception e) {

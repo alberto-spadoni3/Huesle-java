@@ -1,11 +1,7 @@
 package it.unibo.sd.project.mastermind;
 
-import it.unibo.sd.project.mastermind.model.match.Attempt;
+import it.unibo.sd.project.mastermind.model.match.*;
 import it.unibo.sd.project.mastermind.model.user.Player;
-import it.unibo.sd.project.mastermind.model.match.SecretCode;
-import it.unibo.sd.project.mastermind.model.match.Match;
-import it.unibo.sd.project.mastermind.model.match.MatchState;
-import it.unibo.sd.project.mastermind.model.match.MatchStatus;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -18,7 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class GameLogicTests {
     private final Player player1 = new Player("fabio", "fabiofazio@huesle.it", "password");
     private final Player player2 = new Player("Anna", "anna@huesle.it", "password");
-    private final ArrayList<String> secretCode = new ArrayList<>(List.of("gold", "crimson", "mediumblue", "rebeccapurple"));
+    private final ArrayList<String> secretCode = new ArrayList<>(
+        List.of("gold", "crimson", "mediumblue", "rebeccapurple"));
     private final Match match = getMatch();
 
     @Test
@@ -33,7 +30,8 @@ public class GameLogicTests {
 
     @Test
     void testHintsComputation() {
-        Attempt attempt1 = new Attempt(List.of("crimson", "gold", "coral", "coral"), match.getMatchStatus().getNextPlayer());
+        Attempt attempt1 = new Attempt(List.of("crimson", "gold", "coral", "coral"),
+            match.getMatchStatus().getNextPlayer());
         match.tryToGuess(attempt1);
         assertEquals(1, match.getMadeAttempts().size());
 
@@ -41,7 +39,8 @@ public class GameLogicTests {
         assertEquals(0, attempt1.getHints().getRightPositions());
         assertEquals(2, attempt1.getHints().getRightColours());
 
-        Attempt attempt2 = new Attempt(List.of("gold", "coral", "rebeccapurple", "forestgreen"), match.getMatchStatus().getNextPlayer());
+        Attempt attempt2 = new Attempt(List.of("gold", "coral", "rebeccapurple", "forestgreen"),
+            match.getMatchStatus().getNextPlayer());
         match.tryToGuess(attempt2);
         assertEquals(2, match.getMadeAttempts().size());
 
@@ -98,9 +97,9 @@ public class GameLogicTests {
 
     private Match getMatch() {
         return new Match(
-                UUID.randomUUID(),
-                new MatchStatus(List.of(player1, player2)),
-                new ArrayList<>(),
-                new SecretCode(secretCode));
+            UUID.randomUUID(),
+            new MatchStatus(List.of(player1, player2)),
+            new ArrayList<>(),
+            new SecretCode(secretCode));
     }
 }

@@ -4,9 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import it.unibo.sd.project.mastermind.model.match.Attempt;
-import it.unibo.sd.project.mastermind.model.match.SecretCode;
 import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchStatus;
+import it.unibo.sd.project.mastermind.model.match.SecretCode;
 import it.unibo.sd.project.mastermind.presentation.Presentation;
 
 import java.util.ArrayList;
@@ -23,16 +23,17 @@ public class MatchDeserializer extends AbstractJsonDeserializer<Match> {
             MatchStatus matchStatus;
             try {
                 matchStatus = Presentation.deserializeAs(result.get("matchStatus").toString(), MatchStatus.class);
-            } catch (Exception e){
-                throw new RuntimeException("Cannot deserialize " + result.get("matchStatus") + " as MatchStatus " + e.getMessage());
+            } catch (Exception e) {
+                throw new RuntimeException(
+                    "Cannot deserialize " + result.get("matchStatus") + " as MatchStatus " + e.getMessage());
             }
 
             List<Attempt> attempts = new ArrayList<>();
             JsonArray jsonAttempts = result.getAsJsonArray(("attempts"));
-            for(JsonElement elem : jsonAttempts) {
+            for (JsonElement elem : jsonAttempts) {
                 try {
                     attempts.add(Presentation.deserializeAs(elem.toString(), Attempt.class));
-                } catch (Exception e){
+                } catch (Exception e) {
                     throw new RuntimeException("Cannot deserialize " + elem + " as Attempt " + e.getMessage());
                 }
             }
@@ -41,7 +42,8 @@ public class MatchDeserializer extends AbstractJsonDeserializer<Match> {
             try {
                 secretCode = Presentation.deserializeAs(result.get("secretCode").toString(), SecretCode.class);
             } catch (Exception e) {
-                throw new RuntimeException("Cannot deserialize " + result.get("secretCode") + " as SecretCode " + e.getMessage());
+                throw new RuntimeException(
+                    "Cannot deserialize " + result.get("secretCode") + " as SecretCode " + e.getMessage());
             }
             return new Match(matchUUID, matchStatus, attempts, secretCode);
         } else {

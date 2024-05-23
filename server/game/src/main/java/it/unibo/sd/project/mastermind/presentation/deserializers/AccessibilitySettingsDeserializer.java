@@ -13,7 +13,7 @@ public class AccessibilitySettingsDeserializer extends AbstractJsonDeserializer<
             boolean colorblindMode = result.get("colorblindMode").getAsBoolean();
             return new AccessibilitySettings(darkMode, colorblindMode);
         } else {
-        throw new RuntimeException("Cannot deserialize " + jsonElement + " as AccessibilitySettings");
+            throw new RuntimeException("Cannot deserialize " + jsonElement + " as AccessibilitySettings");
         }
     }
 }

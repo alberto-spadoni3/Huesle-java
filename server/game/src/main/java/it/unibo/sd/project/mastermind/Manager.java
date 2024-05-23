@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 public interface Manager {
     void init();
+
     void initForTesting();
 
     Map<MessageType, Function<String, String>> getManagementCallbacks();
