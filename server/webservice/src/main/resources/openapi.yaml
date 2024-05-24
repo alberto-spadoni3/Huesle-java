@@ -1,0 +1,136 @@
+openapi: 3.1.0
+info:
+  title: Huesle API
+  summary: The REST API for the Huesle application.
+  contact:
+    name: Alberto Spadoni
+    email: alberto.spadoni3@studio.unibo.it
+  version: 1.0.1
+servers:
+  - url: http://localhost:8080/api
+    description: Huesle web service
+paths:
+  /user/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        description: User registration data
+        content:
+          'application/json':
+            schema:
+              type: object
+              required:
+              - email
+              - username
+              - password
+              properties:
+                email:
+                  type: string
+                username:
+                  type: string
+                password:
+                  type: password
+        required: true
+      responses:
+        '201':
+          description: Successful registration message
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User created successfully
+        '409':
+          description: Username or email already in use
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Conflict
+  /user/login:
+    post:
+      summary: Log in a user
+      requestBody:
+        description: User login data
+        content:
+          'application/json':
+            schema:
+              type: object
+              required:
+              - username
+              - password
+              properties:
+                username:
+                  type: string
+                password:
+                  type: password
+        required: true
+      responses:
+        '200':
+          description: User authentication data and profile picture ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  profilePicID:
+                    type: integer
+                  email:
+                    type: string
+                    format: email
+        '401':
+          description: Invalid credentials or user disabled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Unauthorized
+  /user/logout:
+    get:
+      summary: Log out a user
+      parameters:
+        - name: jwtRefreshToken
+          in: cookie
+          required: true
+          schema:
+              type: string
+      responses:
+        '200':
+          description: The user was successfully logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User logged out successfully
+        '204':
+          description: The user was already logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: The user was already logged out
+  /user/delete:
+    delete:
+      summary: Delete a user
+      responses:
+  /user/refreshToken:
+    get:
+      summary: Refresh the user's accessToken
+      responses:
+  
