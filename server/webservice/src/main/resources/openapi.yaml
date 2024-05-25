@@ -20,38 +20,27 @@ paths:
             schema:
               type: object
               required:
-              - email
-              - username
-              - password
+                - email
+                - username
+                - password
               properties:
                 email:
                   type: string
                 username:
                   type: string
                 password:
-                  type: password
+                  type: string
+                  format: password
         required: true
       responses:
         '201':
-          description: Successful registration message
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: User created successfully
+          $ref: '#/components/responses/SuccessResponse'
         '409':
           description: Username or email already in use
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Conflict
+                $ref: '#/components/schemas/SimpleSchema'
   /user/login:
     post:
       summary: Log in a user
@@ -62,17 +51,23 @@ paths:
             schema:
               type: object
               required:
-              - username
-              - password
+                - username
+                - password
               properties:
                 username:
                   type: string
                 password:
-                  type: password
+                  type: string
+                  format: password
         required: true
       responses:
         '200':
           description: User authentication data and profile picture ID
+          headers:
+            Set-Cookie:
+              description: Cookie HttpOnly containing the JWT refresh token
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -90,20 +85,16 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Unauthorized
+                $ref: '#/components/schemas/SimpleSchema'
   /user/logout:
     get:
       summary: Log out a user
       parameters:
         - name: jwtRefreshToken
           in: cookie
-          required: true
+          required: false
           schema:
-              type: string
+            type: string
       responses:
         '200':
           description: The user was successfully logged out
@@ -120,17 +111,484 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: The user was already logged out
+                $ref: '#/components/schemas/SimpleSchema'
   /user/delete:
     delete:
       summary: Delete a user
+      security:
+        - jwtAuth: [ ]
       responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+        '400':
+          description: Problems in deleting the user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
   /user/refreshToken:
     get:
       summary: Refresh the user's accessToken
+      parameters:
+        - name: jwtRefreshToken
+          in: cookie
+          required: true
+          schema:
+            type: string
       responses:
-  
+        '200':
+          description: The user's accessToken was successfully refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username:
+                    type: string
+                  newAccessToken:
+                    type: string
+                  profilePicID:
+                    type: integer
+                  email:
+                    type: string
+                    format: email
+        '403':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+  /protected/game/searchMatch:
+    summary: Search for a match
+    security:
+      - jwtAuth: [ ]
+    post:
+      requestBody:
+        description: Whether or not the user wants to search for a private match
+        content:
+          'application/json':
+            schema:
+              type: object
+              required:
+                - secret
+              properties:
+                secret:
+                  type: boolean
+      responses:
+        '200':
+          description: Searching for an opponent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+        '201':
+          description: A new public match was created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+        '400':
+          description: The user is already searching for a match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+    delete:
+      summary: Stop searching for a private match
+      security:
+        - jwtAuth: [ ]
+      responses:
+        '200':
+          description: The user stopped searching for a match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+        '400':
+          description: The user is not searching for a match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+  /protected/game/joinPrivateMatch:
+    summary: Join a private match
+    security:
+      - jwtAuth: [ ]
+    post:
+      requestBody:
+        description: The access code of the private match to join
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - matchAccessCode
+              properties:
+                matchAccessCode:
+                  type: integer
+      responses:
+        '201':
+          description: Private match created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+        '404':
+          description: No match with the given access code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+  /protected/game/leaveMatch:
+    summary: Leave the current match
+    security:
+      - jwtAuth: [ ]
+    post:
+      requestBody:
+        description: The ID of the match to leave
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - matchID
+              properties:
+                matchID:
+                  type: integer
+      responses:
+        '200':
+          description: The user left the match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+        '400':
+          description: The user is not in a match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+  /protected/game/getMatch:
+    summary: Get the match with the given ID
+    security:
+      - jwtAuth: [ ]
+    get:
+      parameters:
+        - name: matchId
+          in: query
+          required: true
+          description: The identifier of the match to retrieve
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The match was found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+        '404':
+          description: No match with the given ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+  /protected/game/getMatches:
+    summary: Get all matches the user is in, including if he was pending for one
+    description: The username is extracted from the JWT token
+    security:
+      - jwtAuth: [ ]
+    get:
+      responses:
+        '200':
+          description: Some matches were found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  matches:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Match'
+                  pending:
+                    type: boolean
+        '404':
+          description: No matches returned because the user was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+  /protected/game/doGuess:
+    summary: Make a guess in the current match
+    security:
+      - jwtAuth: [ ]
+    put:
+      requestBody:
+        description: The guess to make and the match ID
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - matchId
+                - sequence
+              properties:
+                matchId:
+                  type: string
+                  format: uuid
+                sequence:
+                  description: The sequence of colors to guess
+                  $ref: '#/components/schemas/Attempt'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+        '400':
+          description: Problems with the selected match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+  /protected/settings/updatePassword:
+    summary: Update the user's password
+    description: The username is extracted from the JWT token
+    security:
+      - jwtAuth: [ ]
+    post:
+      requestBody:
+        description: The old and new password
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - oldPassword
+                - newPassword
+              properties:
+                oldPassword:
+                  type: string
+                  format: password
+                newPassword:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+        '401':
+          description: The old password is incorrect
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+        '404':
+          description: Problems with the password update - user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+  /protected/settings/updateEmail:
+    summary: Update the user's email
+    description: The username is extracted from the JWT token
+    security:
+      - jwtAuth: [ ]
+    post:
+      requestBody:
+        description: The new email address
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - newEmail
+              properties:
+                newEmail:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+        '409':
+          description: The new email address is already in use
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+        '404':
+          description: Problems with the email update - user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+  /protected/settings/profilePicture:
+    summary: Update the user's profile picture
+    description: The username is extracted from the JWT token
+    security:
+      - jwtAuth: [ ]
+    put:
+      requestBody:
+        description: The ID of the user's new profile picture
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - profilePicID
+              properties:
+                profilePicID:
+                  type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+        '404':
+          description: Problems with the profile picture update - user not found
+          content:
+            application/json:
+              schema:
+              $ref: '#/components/schemas/SimpleSchema'
+  /protected/settings/profileSettings:
+    summary: Retrieve or update the user's profile settings
+    description: The username is extracted from the JWT token
+    security:
+      - jwtAuth: [ ]
+    get:
+      summary: Get the user's profile settings
+      responses:
+        '200':
+          description: The user object, from which the accessibility settings can be extracted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Problems with the profile settings retrieval - user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+    put:
+      requestBody:
+        description: The new profile settings
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessibilitySettings'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+        '404':
+          description: Problems with the profile settings update - user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+components:
+  responses:
+    SuccessResponse:
+      description: The operation was completed successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+  schemas:
+    SimpleSchema:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    Hint:
+      type: object
+      properties:
+        rightPositions:
+          type: integer
+          description: Number of colors in the correct position
+        rightColours:
+          type: integer
+          description: Number of correct colors in the wrong position
+    Attempt:
+      type: object
+      properties:
+        colorSequence:
+          type: array
+          items:
+            type: string
+            enum: [ crimson, forestgreen, coral, mediumblue, rebeccapurple, gold ]
+        hints:
+          $ref: '#/components/schemas/Hint'
+        madeBy:
+          type: string
+          description: Username of the player who made the attempt
+    AccessibilitySettings:
+      type: object
+      properties:
+        darkMode:
+          type: boolean
+          description: Indicates if dark mode is enabled
+        colorblindMode:
+          type: boolean
+          description: Indicates if colorblind mode is enabled
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Username of the user
+        email:
+          type: string
+          format: email
+          description: Email address of the user
+        password:
+          type: string
+          format: password
+          description: Encrypted password of the user
+        refreshToken:
+          type: string
+          description: Refresh token for the user session
+        profilePictureID:
+          type: integer
+          description: ID of the user's profile picture
+        disabled:
+          type: boolean
+          description: Indicates if the user's account is disabled
+        accessibilitySettings:
+          $ref: '#/components/schemas/AccessibilitySettings'
+    Match:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: uuid
+        matchStatus:
+          type: object
+          properties:
+            matchState:
+              type: string
+              enum: [ PLAYING, VICTORY, DRAW ]
+            players:
+              type: array
+              items:
+                type: object
+                $ref: '#/components/schemas/User'
+            nextPlayer:
+              type: string
+            abandoned:
+              type: boolean
+        attempts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attempt'
+        secretCode:
+          type: array
+          items:
+            type: string
+            enum: [ crimson, forestgreen, coral, mediumblue, rebeccapurple, gold ]
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
