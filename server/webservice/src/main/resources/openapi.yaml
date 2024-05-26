@@ -1,7 +1,12 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
   title: Huesle API
-  summary: The REST API for the Huesle application.
+  description:
+    This API, titled "Huesle API", serves as the backend for the Huesle application.
+    It provides a set of endpoints for managing user accounts, including registration, login, logout, and profile settings updates.
+    It also includes endpoints for game management, such as searching for matches, joining private matches, leaving current matches, and making guesses in a match.
+    Additionally, it provides endpoints for retrieving user statistics and match details.
+    The API uses JWT for authentication.
   contact:
     name: Alberto Spadoni
     email: alberto.spadoni3@studio.unibo.it
@@ -9,9 +14,20 @@ info:
 servers:
   - url: http://localhost:8080/api
     description: Huesle web service
+tags:
+  - name: user
+    description: Endpoints for user operations
+  - name: game
+    description: Endpoints for game operations
+  - name: settings
+    description: Endpoints for user settings
+  - name: stats
+    description: Endpoints for user statistics
 paths:
   /user/register:
     post:
+      tags:
+        - user
       summary: Register a new user
       requestBody:
         description: User registration data
@@ -43,6 +59,8 @@ paths:
                 $ref: '#/components/schemas/SimpleSchema'
   /user/login:
     post:
+      tags:
+        - user
       summary: Log in a user
       requestBody:
         description: User login data
@@ -88,6 +106,8 @@ paths:
                 $ref: '#/components/schemas/SimpleSchema'
   /user/logout:
     get:
+      tags:
+        - user
       summary: Log out a user
       parameters:
         - name: jwtRefreshToken
@@ -97,15 +117,7 @@ paths:
             type: string
       responses:
         '200':
-          description: The user was successfully logged out
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: User logged out successfully
+          $ref: '#/components/responses/SuccessResponse'
         '204':
           description: The user was already logged out
           content:
@@ -114,6 +126,8 @@ paths:
                 $ref: '#/components/schemas/SimpleSchema'
   /user/delete:
     delete:
+      tags:
+        - user
       summary: Delete a user
       security:
         - jwtAuth: [ ]
@@ -128,6 +142,8 @@ paths:
                 $ref: '#/components/schemas/SimpleSchema'
   /user/refreshToken:
     get:
+      tags:
+        - user
       summary: Refresh the user's accessToken
       parameters:
         - name: jwtRefreshToken
@@ -160,9 +176,11 @@ paths:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/game/searchMatch:
     summary: Search for a match
-    security:
-      - jwtAuth: [ ]
     post:
+      tags:
+        - game
+      security:
+        - jwtAuth: [ ]
       requestBody:
         description: Whether or not the user wants to search for a private match
         content:
@@ -194,6 +212,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleSchema'
     delete:
+      tags:
+        - game
       summary: Stop searching for a private match
       security:
         - jwtAuth: [ ]
@@ -212,9 +232,11 @@ paths:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/game/joinPrivateMatch:
     summary: Join a private match
-    security:
-      - jwtAuth: [ ]
     post:
+      tags:
+        - game
+      security:
+        - jwtAuth: [ ]
       requestBody:
         description: The access code of the private match to join
         content:
@@ -241,9 +263,11 @@ paths:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/game/leaveMatch:
     summary: Leave the current match
-    security:
-      - jwtAuth: [ ]
     post:
+      tags:
+        - game
+      security:
+        - jwtAuth: [ ]
       requestBody:
         description: The ID of the match to leave
         content:
@@ -270,9 +294,11 @@ paths:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/game/getMatch:
     summary: Get the match with the given ID
-    security:
-      - jwtAuth: [ ]
     get:
+      tags:
+        - game
+      security:
+        - jwtAuth: [ ]
       parameters:
         - name: matchId
           in: query
@@ -297,9 +323,11 @@ paths:
   /protected/game/getMatches:
     summary: Get all matches the user is in, including if he was pending for one
     description: The username is extracted from the JWT token
-    security:
-      - jwtAuth: [ ]
     get:
+      tags:
+        - game
+      security:
+        - jwtAuth: [ ]
       responses:
         '200':
           description: Some matches were found
@@ -322,9 +350,11 @@ paths:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/game/doGuess:
     summary: Make a guess in the current match
-    security:
-      - jwtAuth: [ ]
     put:
+      tags:
+        - game
+      security:
+        - jwtAuth: [ ]
       requestBody:
         description: The guess to make and the match ID
         content:
@@ -339,7 +369,6 @@ paths:
                   type: string
                   format: uuid
                 sequence:
-                  description: The sequence of colors to guess
                   $ref: '#/components/schemas/Attempt'
       responses:
         '200':
@@ -353,9 +382,11 @@ paths:
   /protected/settings/updatePassword:
     summary: Update the user's password
     description: The username is extracted from the JWT token
-    security:
-      - jwtAuth: [ ]
     post:
+      tags:
+        - settings
+      security:
+        - jwtAuth: [ ]
       requestBody:
         description: The old and new password
         content:
@@ -390,9 +421,11 @@ paths:
   /protected/settings/updateEmail:
     summary: Update the user's email
     description: The username is extracted from the JWT token
-    security:
-      - jwtAuth: [ ]
     post:
+      tags:
+        - settings
+      security:
+        - jwtAuth: [ ]
       requestBody:
         description: The new email address
         content:
@@ -423,9 +456,11 @@ paths:
   /protected/settings/profilePicture:
     summary: Update the user's profile picture
     description: The username is extracted from the JWT token
-    security:
-      - jwtAuth: [ ]
     put:
+      tags:
+        - settings
+      security:
+        - jwtAuth: [ ]
       requestBody:
         description: The ID of the user's new profile picture
         content:
@@ -445,13 +480,15 @@ paths:
           content:
             application/json:
               schema:
-              $ref: '#/components/schemas/SimpleSchema'
+                $ref: '#/components/schemas/SimpleSchema'
   /protected/settings/profileSettings:
     summary: Retrieve or update the user's profile settings
     description: The username is extracted from the JWT token
-    security:
-      - jwtAuth: [ ]
     get:
+      tags:
+        - settings
+      security:
+        - jwtAuth: [ ]
       summary: Get the user's profile settings
       responses:
         '200':
@@ -467,6 +504,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleSchema'
     put:
+      tags:
+        - settings
+      security:
+        - jwtAuth: [ ]
       requestBody:
         description: The new profile settings
         content:
@@ -478,6 +519,27 @@ paths:
           $ref: '#/components/responses/SuccessResponse'
         '404':
           description: Problems with the profile settings update - user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+  /protected/stats/userStats:
+    summary: Get the user's statistics
+    description: The username is extracted from the JWT token
+    get:
+      tags:
+        - stats
+      security:
+        - jwtAuth: [ ]
+      responses:
+        '200':
+          description: The user's statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStats'
+        '400':
+          description: Problems with the statistics retrieval
           content:
             application/json:
               schema:
@@ -496,17 +558,17 @@ components:
   schemas:
     SimpleSchema:
       type: object
+      required:
+        - message
       properties:
         message:
           type: string
-      required:
-        - message
     Hint:
       type: object
       properties:
         rightPositions:
           type: integer
-          description: Number of colors in the correct position
+          description: Number of correct colors in the correct position
         rightColours:
           type: integer
           description: Number of correct colors in the wrong position
@@ -557,6 +619,18 @@ components:
           description: Indicates if the user's account is disabled
         accessibilitySettings:
           $ref: '#/components/schemas/AccessibilitySettings'
+    UserStats:
+      type: object
+      properties:
+        matches_won:
+          type: integer
+          description: Number of matches won
+        matches_lost:
+          type: integer
+          description: Number of matches lost
+        matches_drawn:
+          type: integer
+          description: Number of matches drawn
     Match:
       type: object
       properties:
@@ -572,7 +646,6 @@ components:
             players:
               type: array
               items:
-                type: object
                 $ref: '#/components/schemas/User'
             nextPlayer:
               type: string
