@@ -33,7 +33,7 @@ public class SettingsController {
             } finally {
                 if (userOperationResult.get() == null)
                     userOperationResult.set(new UserOperationResult(
-                        (short) 401,
+                        (short) 404,
                         "No data available: player not found"));
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(userOperationResult.get());
@@ -61,7 +61,7 @@ public class SettingsController {
             } finally {
                 if (userOperationResult.get() == null)
                     userOperationResult.set(new UserOperationResult(
-                        (short) 401,
+                        (short) 404,
                         "Update not possible: player not found"));
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(userOperationResult.get());
@@ -89,7 +89,7 @@ public class SettingsController {
             } finally {
                 if (userOperationResult.get() == null)
                     userOperationResult.set(new UserOperationResult(
-                        (short) 401,
+                        (short) 404,
                         "Update not possible: player not found"));
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(userOperationResult.get());
@@ -123,7 +123,7 @@ public class SettingsController {
             } finally {
                 if (userOperationResult.get() == null)
                     userOperationResult.set(new UserOperationResult(
-                        (short) 401,
+                        (short) 404,
                         "Update not possible: player not found"));
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(userOperationResult.get());
@@ -149,7 +149,7 @@ public class SettingsController {
                             "Password updated successfully!"));
                     } else
                         userOperationResult.set(new UserOperationResult(
-                            (short) 400,
+                            (short) 401,
                             "The old password is not correct."));
                 });
             } catch (Exception e) {
@@ -157,7 +157,7 @@ public class SettingsController {
             } finally {
                 if (userOperationResult.get() == null)
                     userOperationResult.set(new UserOperationResult(
-                        (short) 401,
+                        (short) 404,
                         "Update not possible: player not found"));
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(userOperationResult.get());

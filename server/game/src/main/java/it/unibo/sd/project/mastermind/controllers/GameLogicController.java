@@ -194,7 +194,7 @@ public class GameLogicController {
             } finally {
                 if (matchOperationResult == null)
                     matchOperationResult = new MatchOperationResult(
-                        (short) 400, "The player " + username + " not found.");
+                        (short) 404, "The player " + username + " was not found.");
             }
             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
         };
