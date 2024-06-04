@@ -61,7 +61,7 @@ public class SettingsOperationsTests {
         OperationResult error = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         // since we provided a username that doesn't exists in the database,
         // the request should have returned with an error
-        assertEquals(401, error.getStatusCode());
+        assertEquals(404, error.getStatusCode());
         System.out.println(error.getResultMessage());
 
         response = callAsync(MessageType.GET_SETTINGS, player1.getUsername());
@@ -83,7 +83,7 @@ public class SettingsOperationsTests {
         OperationResult error = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         // since we provided a username that doesn't exists in the database,
         // the request should have returned with an error
-        assertEquals(401, error.getStatusCode());
+        assertEquals(404, error.getStatusCode());
         System.out.println(error.getResultMessage());
 
         requestBody = getRequest(player1.getUsername(), "profilePictureID", profilePicPrimitive);
@@ -107,7 +107,7 @@ public class SettingsOperationsTests {
         OperationResult error = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         // since we provided a username that doesn't exists in the database, the request should
         // have returned with an error
-        assertEquals(401, error.getStatusCode());
+        assertEquals(404, error.getStatusCode());
         System.out.println(error.getResultMessage());
 
         request = getRequest(player1.getUsername(), "accessibilitySettings", jsonSettings);
@@ -159,7 +159,7 @@ public class SettingsOperationsTests {
         OperationResult error = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         // since we provided a wrong old password,
         // the request should have returned with an error
-        assertEquals(400, error.getStatusCode());
+        assertEquals(401, error.getStatusCode());
         System.out.println(error.getResultMessage());
 
         request.remove("oldPassword");
