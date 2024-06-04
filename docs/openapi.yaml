@@ -124,22 +124,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleSchema'
-  /user/delete:
-    delete:
-      tags:
-        - user
-      summary: Delete a user
-      security:
-        - jwtAuth: [ ]
-      responses:
-        '200':
-          $ref: '#/components/responses/SuccessResponse'
-        '400':
-          description: Problems in deleting the user
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleSchema'
   /user/refreshToken:
     get:
       summary: Refresh the user's accessToken
@@ -170,6 +154,77 @@ paths:
                     format: email
         '403':
           description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+  /user/delete:
+    delete:
+      tags:
+        - user
+      summary: Delete a user
+      security:
+        - jwtAuth: [ ]
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResponse'
+        '400':
+          description: Problems in deleting the user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+  /protected/game/getMatch:
+    get:
+      summary: Get the match with the given ID
+      tags:
+        - game
+      security:
+        - jwtAuth: [ ]
+      parameters:
+        - name: matchId
+          in: query
+          required: true
+          description: The identifier of the match to retrieve
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: The found match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Match'
+        '404':
+          description: No match with the given ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleSchema'
+  /protected/game/getMatches:
+    get:
+      summary: Get all matches the user is in, including if he was pending for one
+      tags:
+        - game
+      security:
+        - jwtAuth: [ ]
+      responses:
+        '200':
+          description: The found matches
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  matches:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Match'
+                  pending:
+                    type: boolean
+        '404':
+          description: No matches returned because the user was not found
           content:
             application/json:
               schema:
@@ -293,61 +348,6 @@ paths:
                 $ref: '#/components/schemas/SimpleSchema'
         '400':
           description: The user is not in a match
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleSchema'
-  /protected/game/getMatch:
-    get:
-      summary: Get the match with the given ID
-      tags:
-        - game
-      security:
-        - jwtAuth: [ ]
-      parameters:
-        - name: matchId
-          in: query
-          required: true
-          description: The identifier of the match to retrieve
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: The found match
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Match'
-        '404':
-          description: No match with the given ID
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleSchema'
-  /protected/game/getMatches:
-    get:
-      summary: Get all matches the user is in, including if he was pending for one
-      tags:
-        - game
-      security:
-        - jwtAuth: [ ]
-      responses:
-        '200':
-          description: The found matches
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  matches:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Match'
-                  pending:
-                    type: boolean
-        '404':
-          description: No matches returned because the user was not found
           content:
             application/json:
               schema:
