@@ -142,9 +142,9 @@ paths:
                 $ref: '#/components/schemas/SimpleSchema'
   /user/refreshToken:
     get:
+      summary: Refresh the user's accessToken
       tags:
         - user
-      summary: Refresh the user's accessToken
       parameters:
         - name: jwtRefreshToken
           in: cookie
@@ -175,8 +175,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/game/searchMatch:
-    summary: Search for a match
     post:
+      summary: Search for a match or create a new one
       tags:
         - game
       security:
@@ -192,6 +192,7 @@ paths:
               properties:
                 secret:
                   type: boolean
+        required: true
       responses:
         '200':
           description: Searching for an opponent
@@ -219,7 +220,7 @@ paths:
         - jwtAuth: [ ]
       responses:
         '200':
-          description: The user stopped searching for a match
+          description: The user successfully stopped searching for a match
           content:
             application/json:
               schema:
@@ -231,8 +232,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/game/joinPrivateMatch:
-    summary: Join a private match
     post:
+      summary: Join a private match
       tags:
         - game
       security:
@@ -248,6 +249,8 @@ paths:
               properties:
                 matchAccessCode:
                   type: integer
+                  example: 34217
+        required: true
       responses:
         '201':
           description: Private match created
@@ -262,23 +265,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/game/leaveMatch:
-    summary: Leave the current match
     post:
+      summary: Leave the current match
       tags:
         - game
       security:
         - jwtAuth: [ ]
       requestBody:
+        required: true
         description: The ID of the match to leave
         content:
           application/json:
             schema:
               type: object
               required:
-                - matchID
+                - matchId
               properties:
-                matchID:
-                  type: integer
+                matchId:
+                  type: string
+                  format: uuid
       responses:
         '200':
           description: The user left the match
@@ -293,8 +298,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/game/getMatch:
-    summary: Get the match with the given ID
     get:
+      summary: Get the match with the given ID
       tags:
         - game
       security:
@@ -309,11 +314,11 @@ paths:
             format: uuid
       responses:
         '200':
-          description: The match was found
+          description: The found match
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimpleSchema'
+                $ref: '#/components/schemas/Match'
         '404':
           description: No match with the given ID
           content:
@@ -321,16 +326,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/game/getMatches:
-    summary: Get all matches the user is in, including if he was pending for one
-    description: The username is extracted from the JWT token
     get:
+      summary: Get all matches the user is in, including if he was pending for one
       tags:
         - game
       security:
         - jwtAuth: [ ]
       responses:
         '200':
-          description: Some matches were found
+          description: The found matches
           content:
             application/json:
               schema:
@@ -349,14 +353,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/game/doGuess:
-    summary: Make a guess in the current match
     put:
+      summary: Make a guess in the current match
       tags:
         - game
       security:
         - jwtAuth: [ ]
       requestBody:
-        description: The guess to make and the match ID
+        required: true
+        description: The guess to make and the ID of the related match
         content:
           application/json:
             schema:
@@ -369,10 +374,23 @@ paths:
                   type: string
                   format: uuid
                 sequence:
-                  $ref: '#/components/schemas/Attempt'
+                  $ref: '#/components/schemas/ColorSequence'
       responses:
         '200':
-          $ref: '#/components/responses/SuccessResponse'
+          description: Guess made successfully. Returns the hints and the new match status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rightP:
+                    type: integer
+                    description: Number of correct colors in the correct position
+                  rightC:
+                    type: integer
+                    description: Number of correct colors in the wrong position
+                  status:
+                    $ref: '#/components/schemas/MatchStatus'
         '400':
           description: Problems with the selected match
           content:
@@ -380,14 +398,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/settings/updatePassword:
-    summary: Update the user's password
-    description: The username is extracted from the JWT token
     post:
+      summary: Update the user's password
       tags:
         - settings
       security:
         - jwtAuth: [ ]
       requestBody:
+        required: true
         description: The old and new password
         content:
           application/json:
@@ -419,14 +437,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/settings/updateEmail:
-    summary: Update the user's email
-    description: The username is extracted from the JWT token
     post:
+      summary: Update the user's email
       tags:
         - settings
       security:
         - jwtAuth: [ ]
       requestBody:
+        required: true
         description: The new email address
         content:
           application/json:
@@ -454,14 +472,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/settings/profilePicture:
-    summary: Update the user's profile picture
-    description: The username is extracted from the JWT token
     put:
+      summary: Update the user's profile picture
       tags:
         - settings
       security:
         - jwtAuth: [ ]
       requestBody:
+        required: true
         description: The ID of the user's new profile picture
         content:
           application/json:
@@ -482,17 +500,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/settings/profileSettings:
-    summary: Retrieve or update the user's profile settings
-    description: The username is extracted from the JWT token
     get:
+      summary: Retrieve the user's profile settings
       tags:
         - settings
       security:
         - jwtAuth: [ ]
-      summary: Get the user's profile settings
       responses:
         '200':
-          description: The user object, from which the accessibility settings can be extracted
+          description: The user object, from which the profile settings can be extracted
           content:
             application/json:
               schema:
@@ -504,11 +520,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleSchema'
     put:
+      summary: Update the user's profile settings
       tags:
         - settings
       security:
         - jwtAuth: [ ]
       requestBody:
+        required: true
         description: The new profile settings
         content:
           application/json:
@@ -524,9 +542,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimpleSchema'
   /protected/stats/userStats:
-    summary: Get the user's statistics
-    description: The username is extracted from the JWT token
     get:
+      summary: Get the user's statistics
       tags:
         - stats
       security:
@@ -572,14 +589,17 @@ components:
         rightColours:
           type: integer
           description: Number of correct colors in the wrong position
+    ColorSequence:
+      type: array
+      items:
+        type: string
+        enum: [ crimson, forestgreen, coral, mediumblue, rebeccapurple, gold ]
+      example: [ "crimson", "forestgreen", "coral", "mediumblue" ]
     Attempt:
       type: object
       properties:
         colorSequence:
-          type: array
-          items:
-            type: string
-            enum: [ crimson, forestgreen, coral, mediumblue, rebeccapurple, gold ]
+          $ref: '#/components/schemas/ColorSequence'
         hints:
           $ref: '#/components/schemas/Hint'
         madeBy:
@@ -631,6 +651,20 @@ components:
         matches_drawn:
           type: integer
           description: Number of matches drawn
+    MatchStatus:
+      type: object
+      properties:
+        matchState:
+          type: string
+          enum: [ PLAYING, VICTORY, DRAW ]
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        nextPlayer:
+          type: string
+        abandoned:
+          type: boolean
     Match:
       type: object
       properties:
@@ -638,28 +672,13 @@ components:
           type: string
           format: uuid
         matchStatus:
-          type: object
-          properties:
-            matchState:
-              type: string
-              enum: [ PLAYING, VICTORY, DRAW ]
-            players:
-              type: array
-              items:
-                $ref: '#/components/schemas/User'
-            nextPlayer:
-              type: string
-            abandoned:
-              type: boolean
+          $ref: '#/components/schemas/MatchStatus'
         attempts:
           type: array
           items:
             $ref: '#/components/schemas/Attempt'
         secretCode:
-          type: array
-          items:
-            type: string
-            enum: [ crimson, forestgreen, coral, mediumblue, rebeccapurple, gold ]
+          $ref: '#/components/schemas/ColorSequence'
   securitySchemes:
     jwtAuth:
       type: http
