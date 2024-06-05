@@ -28,16 +28,23 @@ public class WebServiceTests {
     private final String username;
     private final String clearPassword;
     private String accessToken;
+    private final String expiredAccessToken;
     private Cookie refreshTokenCookie;
 
     public WebServiceTests(Vertx vertx) {
         this.listeningPort = (short) 8080;
+        this.expiredAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJTYXJldHRhIiwiaWF0IjoxNzE3NjAyNjIz" +
+            "LCJleHAiOjE3MTc2MDM4MjN9.4sqEFWZz_dGuqjN7V6FBc0ZMb32BGjMqHAqnFGigqts";
         this.username = "Aldo";
         this.clearPassword = "NasaIsCool123!";
         HttpClientOptions options = new HttpClientOptions()
             .setDefaultHost("localhost")
             .setDefaultPort(listeningPort);
         client = vertx.createHttpClient(options);
+    }
+
+    private static Future<Buffer> getFailedFuture(HttpClientResponse response) {
+        return Future.failedFuture(new RuntimeException("[" + response.statusCode() + "] " + response.statusMessage()));
     }
 
     @BeforeAll
@@ -65,7 +72,7 @@ public class WebServiceTests {
                     assertEquals(200, response.statusCode());
                     if (response.statusCode() == 200) {
                         responseSucceeded.flag();
-                        this.refreshTokenCookie = checkRefreshTokenCookiePresence(response.cookies());
+                        this.refreshTokenCookie = getRefreshTokenCookie(response.cookies());
                         // check the refreshToken cookie presence
                         assertNotNull(refreshTokenCookie);
                         return response.body();
@@ -100,6 +107,42 @@ public class WebServiceTests {
 
     @Test
     @Order(3)
+    void requestProtectedRouteWithoutAuthorization(VertxTestContext testContext) {
+        client
+            .request(HttpMethod.GET, "/api/protected/game/getMatches")
+            .compose(HttpClientRequest::send)
+            .compose(response -> {
+                assertEquals(500, response.statusCode());
+                if (response.statusCode() == 500)
+                    return response.body();
+                else return getFailedFuture(response);
+            }).onSuccess(responseBody -> {
+                // just check if the response body is present and has the supposed fields
+                assertFalse(responseBody.toString().isEmpty());
+                testContext.completeNow();
+            }).onFailure(error -> testContext.failNow(error.getMessage()));
+    }
+
+    @Test
+    @Order(4)
+    void requestProtectedRouteWithExpiredToken(VertxTestContext testContext) {
+        client
+            .request(HttpMethod.GET, "/api/protected/game/getMatches")
+            .compose(request -> request.putHeader("Authorization", "Bearer " + expiredAccessToken).send())
+            .compose(response -> {
+                assertEquals(403, response.statusCode());
+                if (response.statusCode() == 403)
+                    return response.body();
+                else return getFailedFuture(response);
+            }).onSuccess(responseBody -> {
+                // just check if the response body is present and has the supposed result
+                assertEquals("JWT token expired", responseBody.toString());
+                testContext.completeNow();
+            }).onFailure(error -> testContext.failNow(error.getMessage()));
+    }
+
+    @Test
+    @Order(4)
     void logoutUser(VertxTestContext testContext) {
         Checkpoint cookiePresenceVerified = testContext.checkpoint();
         Checkpoint responseBodyProcessed = testContext.checkpoint();
@@ -112,7 +155,7 @@ public class WebServiceTests {
             .compose(response -> {
                 int statusCode = response.statusCode();
                 if (statusCode <= 204) {
-                    Cookie refreshTokenCookie = checkRefreshTokenCookiePresence(response.cookies());
+                    Cookie refreshTokenCookie = getRefreshTokenCookie(response.cookies());
                     assertNull(refreshTokenCookie);
                     cookiePresenceVerified.flag();
                     return response.body();
@@ -125,10 +168,6 @@ public class WebServiceTests {
                 }
                 responseBodyProcessed.flag();
             }).onFailure(error -> testContext.failNow(error.getMessage()));
-    }
-
-    private static Future<Buffer> getFailedFuture(HttpClientResponse response) {
-        return Future.failedFuture(new RuntimeException("[" + response.statusCode() + "] " + response.statusMessage()));
     }
 
     private void registerUser(Handler<AsyncResult<Void>> handler) {
@@ -147,7 +186,7 @@ public class WebServiceTests {
         }
     }
 
-    private Cookie checkRefreshTokenCookiePresence(List<String> cookies) {
+    private Cookie getRefreshTokenCookie(List<String> cookies) {
         for (String cookie : cookies)
             if (cookie.startsWith("jwtRefreshToken")) {
                 String refreshCookie = cookie.split(";")[0];
