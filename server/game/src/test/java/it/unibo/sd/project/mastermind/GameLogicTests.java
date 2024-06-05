@@ -8,8 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GameLogicTests {
     private final Player player1 = new Player("fabio", "fabiofazio@huesle.it", "password");
@@ -81,6 +80,49 @@ public class GameLogicTests {
         // we simulated 10 guesses, the last of which is the correct one.
         // The match should be ended with a winner
         assertEquals(MatchState.VICTORY, matchStatus.getState());
+    }
+
+    @Test
+    void testTurnSwitching() {
+        MatchStatus matchStatus = match.getMatchStatus();
+        String firstPlayer = matchStatus.getNextPlayer();
+
+        Attempt attempt = new Attempt(List.of("gold", "coral", "rebeccapurple", "forestgreen"), firstPlayer);
+        match.tryToGuess(attempt);
+
+        // After the first player makes an attempt, the next player should be the second player
+        assertNotEquals(firstPlayer, matchStatus.getNextPlayer());
+    }
+
+    @Test
+    void testTurnRestriction() {
+        MatchStatus matchStatus = match.getMatchStatus();
+        String firstPlayer = matchStatus.getNextPlayer();
+        String secondPlayer = firstPlayer.equals(player1.getUsername()) ? player2.getUsername() : player1.getUsername();
+
+        // Create an attempt by the second player when it's the first player's turn
+        Attempt attempt = new Attempt(List.of("gold", "coral", "rebeccapurple", "forestgreen"), secondPlayer);
+
+        // Expect an exception to be thrown
+        assertThrows(RuntimeException.class, () -> match.tryToGuess(attempt));
+
+        // Verify that the turn has not changed
+        assertEquals(firstPlayer, matchStatus.getNextPlayer());
+    }
+
+    @Test
+    void testSecretCodeValidity() {
+        SecretCode secretCode = new SecretCode();
+        List<String> code = secretCode.getCode();
+
+        // Check that the secret code has the correct length
+        assertEquals(4, code.size());
+
+        // Check that all colors in the secret code are valid
+        List<String> validColors = List.of("gold", "crimson", "mediumblue", "rebeccapurple", "coral", "forestgreen");
+        for (String color : code) {
+            assertTrue(validColors.contains(color));
+        }
     }
 
     private List<String> getRandomCode() {
