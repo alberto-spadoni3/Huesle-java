@@ -27,14 +27,14 @@ public class WebServiceTests {
     private final short listeningPort;
     private final String username;
     private final String clearPassword;
+    private final String protectedRoute = "/api/protected/game/getMatches";
+    private final String expiredAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJTYXJldHRhI" +
+        "iwiaWF0IjoxNzE3NjAyNjIzLCJleHAiOjE3MTc2MDM4MjN9.4sqEFWZz_dGuqjN7V6FBc0ZMb32BGjMqHAqnFGigqts";
     private String accessToken;
-    private final String expiredAccessToken;
     private Cookie refreshTokenCookie;
 
     public WebServiceTests(Vertx vertx) {
         this.listeningPort = (short) 8080;
-        this.expiredAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJTYXJldHRhIiwiaWF0IjoxNzE3NjAyNjIz" +
-            "LCJleHAiOjE3MTc2MDM4MjN9.4sqEFWZz_dGuqjN7V6FBc0ZMb32BGjMqHAqnFGigqts";
         this.username = "Aldo";
         this.clearPassword = "NasaIsCool123!";
         HttpClientOptions options = new HttpClientOptions()
@@ -91,9 +91,10 @@ public class WebServiceTests {
     @Order(2)
     void requestProtectedRoute(VertxTestContext testContext) {
         client
-            .request(HttpMethod.GET, "/api/protected/game/getMatches")
+            .request(HttpMethod.GET, protectedRoute)
             .compose(request -> request.putHeader("Authorization", "Bearer " + accessToken).send())
             .compose(response -> {
+                assertEquals(200, response.statusCode());
                 if (response.statusCode() == 200)
                     return response.body();
                 else return getFailedFuture(response);
@@ -107,27 +108,9 @@ public class WebServiceTests {
 
     @Test
     @Order(3)
-    void requestProtectedRouteWithoutAuthorization(VertxTestContext testContext) {
-        client
-            .request(HttpMethod.GET, "/api/protected/game/getMatches")
-            .compose(HttpClientRequest::send)
-            .compose(response -> {
-                assertEquals(500, response.statusCode());
-                if (response.statusCode() == 500)
-                    return response.body();
-                else return getFailedFuture(response);
-            }).onSuccess(responseBody -> {
-                // just check if the response body is present and has the supposed fields
-                assertFalse(responseBody.toString().isEmpty());
-                testContext.completeNow();
-            }).onFailure(error -> testContext.failNow(error.getMessage()));
-    }
-
-    @Test
-    @Order(4)
     void requestProtectedRouteWithExpiredToken(VertxTestContext testContext) {
         client
-            .request(HttpMethod.GET, "/api/protected/game/getMatches")
+            .request(HttpMethod.GET, protectedRoute)
             .compose(request -> request.putHeader("Authorization", "Bearer " + expiredAccessToken).send())
             .compose(response -> {
                 assertEquals(403, response.statusCode());
@@ -143,6 +126,24 @@ public class WebServiceTests {
 
     @Test
     @Order(4)
+    void requestProtectedRouteWithoutAuthorization(VertxTestContext testContext) {
+        client
+            .request(HttpMethod.GET, protectedRoute)
+            .compose(HttpClientRequest::send)
+            .compose(response -> {
+                assertEquals(500, response.statusCode());
+                if (response.statusCode() == 500)
+                    return response.body();
+                else return getFailedFuture(response);
+            }).onSuccess(responseBody -> {
+                // just check if the response body is present and has the supposed fields
+                assertFalse(responseBody.toString().isEmpty());
+                testContext.completeNow();
+            }).onFailure(error -> testContext.failNow(error.getMessage()));
+    }
+
+    @Test
+    @Order(5)
     void logoutUser(VertxTestContext testContext) {
         Checkpoint cookiePresenceVerified = testContext.checkpoint();
         Checkpoint responseBodyProcessed = testContext.checkpoint();
@@ -187,6 +188,7 @@ public class WebServiceTests {
     }
 
     private Cookie getRefreshTokenCookie(List<String> cookies) {
+        Cookie refreshTokenCookie = null;
         for (String cookie : cookies)
             if (cookie.startsWith("jwtRefreshToken")) {
                 String refreshCookie = cookie.split(";")[0];
@@ -194,9 +196,9 @@ public class WebServiceTests {
                 if (cookieParts.length == 2) {
                     String refreshCookieName = cookieParts[0];
                     String refreshCookieValue = cookieParts[1];
-                    return Cookie.cookie(refreshCookieName, refreshCookieValue);
+                    refreshTokenCookie = Cookie.cookie(refreshCookieName, refreshCookieValue);
                 }
             }
-        return null;
+        return refreshTokenCookie;
     }
 }

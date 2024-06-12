@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class UserTests {
+public class UserOperationsTests {
     private ExecutorService executorService;
     private RPCClient client;
     private DBManager<Player> userDB;
@@ -189,16 +189,17 @@ public class UserTests {
                     MessageType.LOGOUT_USER,
                     player.getRefreshToken());
                 assertEquals(200, result.getStatusCode());
-                // check if the user was really logged out by verifying
-                // that his refreshToken was removed from the database
-                Optional<Player> optionalLoggedOutPlayer = userDB.getDocumentByQuery(userQuery);
-                optionalLoggedOutPlayer.ifPresentOrElse(
-                    loggedOutPlayer -> assertNull(loggedOutPlayer.getRefreshToken()),
-                    () -> fail("The logged out user is not present in the database."));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }, () -> fail("The user is not present in the database. Logout process not possible."));
+
+        // check if the user was really logged out by verifying
+        // that his refreshToken was removed from the database
+        Optional<Player> optionalLoggedOutPlayer = userDB.getDocumentByQuery(userQuery);
+        optionalLoggedOutPlayer.ifPresentOrElse(
+            loggedOutPlayer -> assertNull(loggedOutPlayer.getRefreshToken()),
+            () -> fail("The logged out user is not present in the database."));
     }
 
     @Test
