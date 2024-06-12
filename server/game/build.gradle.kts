@@ -1,5 +1,6 @@
 plugins {
     java
+    jacoco
 }
 
 repositories {
@@ -36,4 +37,19 @@ task("game", JavaExec::class) {
 tasks.named<Test>("test") {
     environment = environmentVariables
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+    reportsDirectory = layout.buildDirectory.dir("jacocoReports")
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test) // tests are required to run before generating the report
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
 }
