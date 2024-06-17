@@ -1,5 +1,6 @@
 package it.unibo.sd.project.mastermind.presentation;
 
+import it.unibo.sd.project.mastermind.controllers.utils.HttpStatusCodes;
 import it.unibo.sd.project.mastermind.model.result.OperationResult;
 import it.unibo.sd.project.mastermind.model.result.UserOperationResult;
 import it.unibo.sd.project.mastermind.model.user.AccessibilitySettings;
@@ -11,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class UserOperationResultTests {
     @Test
     void failedOperationResultSerialization() {
-        short statusCode = 400;
+        short statusCode = HttpStatusCodes.BAD_REQUEST;
         String resultMessage = "error";
         UserOperationResult operationResult = new UserOperationResult(statusCode, resultMessage);
         String serializerOpResult = Presentation.serializerOf(UserOperationResult.class).serialize(operationResult);
@@ -21,7 +22,7 @@ public class UserOperationResultTests {
 
     @Test
     void successOperationResultSerialization() {
-        short statusCode = 200;
+        short statusCode = HttpStatusCodes.OK;
         String resultMessage = "success";
         String accessToken = "an.access.token";
         String username = "mariello";
@@ -45,7 +46,7 @@ public class UserOperationResultTests {
 
     @Test
     void failedOperationResultDeserialization() throws Exception {
-        short statusCode = 400;
+        short statusCode = HttpStatusCodes.BAD_REQUEST;
         String resultMessage = "error";
 
         OperationResult deserialized = Presentation.deserializeAs(
@@ -59,7 +60,7 @@ public class UserOperationResultTests {
 
     @Test
     void successOperationResultDeserialization() throws Exception {
-        short statusCode = 200;
+        short statusCode = HttpStatusCodes.OK;
         String resultMessage = "success";
         String accessToken = "an.access.token";
         String username = "mariello";

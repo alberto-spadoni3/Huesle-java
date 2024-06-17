@@ -1,6 +1,7 @@
 package it.unibo.sd.project.mastermind;
 
 import com.mongodb.client.model.Filters;
+import it.unibo.sd.project.mastermind.controllers.utils.HttpStatusCodes;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
 import it.unibo.sd.project.mastermind.model.result.OperationResult;
@@ -66,8 +67,7 @@ public class UserOperationsTests {
         OperationResult result = callAsync(
             MessageType.REGISTER_USER,
             getRegistrationJson(username, email, clearPassword));
-        short REGISTRATION_DONE_HTTP_CODE = 201;
-        assertEquals(REGISTRATION_DONE_HTTP_CODE, result.getStatusCode());
+        assertEquals(HttpStatusCodes.CREATED, result.getStatusCode());
     }
 
     @Test
@@ -93,8 +93,7 @@ public class UserOperationsTests {
             MessageType.REGISTER_USER,
             getRegistrationJson(username + "1", email, clearPassword));
 
-        short VALUE_ALREADY_EXISTS_HTTP_CODE = 409;
-        assertEquals(VALUE_ALREADY_EXISTS_HTTP_CODE, result.getStatusCode());
+        assertEquals(HttpStatusCodes.CONFLICT, result.getStatusCode());
         String EMAIL_ALREADY_EXISTS_MESSAGE = "The email address is already in use";
         assertEquals(EMAIL_ALREADY_EXISTS_MESSAGE, result.getResultMessage());
 
@@ -103,7 +102,7 @@ public class UserOperationsTests {
             MessageType.REGISTER_USER,
             getRegistrationJson(username, "S" + email, clearPassword));
 
-        assertEquals(VALUE_ALREADY_EXISTS_HTTP_CODE, result.getStatusCode());
+        assertEquals(HttpStatusCodes.CONFLICT, result.getStatusCode());
         String USERNAME_ALREADY_EXISTS_MESSAGE = "The username is already in use";
         assertEquals(USERNAME_ALREADY_EXISTS_MESSAGE, result.getResultMessage());
     }
@@ -117,7 +116,7 @@ public class UserOperationsTests {
             // wrong password, right username
             getLoginJson(username, "password12!"));
 
-        short UNAUTHORIZED_HTTP_CODE = 401;
+        short UNAUTHORIZED_HTTP_CODE = HttpStatusCodes.UNAUTHORIZED;
         assertEquals(UNAUTHORIZED_HTTP_CODE, result.getStatusCode());
         String UNAUTHORIZED_MESSAGE = "Unauthorized";
         assertEquals(UNAUTHORIZED_MESSAGE, result.getResultMessage());
@@ -138,7 +137,7 @@ public class UserOperationsTests {
             MessageType.LOGIN_USER,
             getLoginJson(username, clearPassword));
 
-        assertEquals(200, result.getStatusCode());
+        assertEquals(HttpStatusCodes.OK, result.getStatusCode());
         // check if the result contains both the Player object and the accessToken
         Player relatedUser = result.getRelatedUser();
         assertEquals(username, relatedUser.getUsername());
@@ -162,7 +161,7 @@ public class UserOperationsTests {
                 UserOperationResult result = (UserOperationResult) callAsync(
                     MessageType.REFRESH_ACCESS_TOKEN,
                     player.getRefreshToken());
-                assertEquals(200, result.getStatusCode());
+                assertEquals(HttpStatusCodes.OK, result.getStatusCode());
                 // check if the returned accessToken is really different from the previous one
                 assertNotEquals(accessToken, result.getAccessToken());
 
@@ -170,7 +169,7 @@ public class UserOperationsTests {
                 OperationResult failedResult = callAsync(
                     MessageType.REFRESH_ACCESS_TOKEN,
                     player.getPassword());
-                assertEquals(403, failedResult.getStatusCode());
+                assertEquals(HttpStatusCodes.FORBIDDEN, failedResult.getStatusCode());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -188,7 +187,7 @@ public class UserOperationsTests {
                 OperationResult result = callAsync(
                     MessageType.LOGOUT_USER,
                     player.getRefreshToken());
-                assertEquals(200, result.getStatusCode());
+                assertEquals(HttpStatusCodes.OK, result.getStatusCode());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -211,14 +210,14 @@ public class UserOperationsTests {
             MessageType.LOGIN_USER,
             getLoginJson(username, clearPassword));
 
-        assertEquals(200, loginResult.getStatusCode());
+        assertEquals(HttpStatusCodes.OK, loginResult.getStatusCode());
 
         // then, we test the deletion process
         Player relatedUser = loginResult.getRelatedUser();
         OperationResult result = callAsync(
             MessageType.DELETE_USER,
             relatedUser.getUsername());
-        assertEquals(200, result.getStatusCode());
+        assertEquals(HttpStatusCodes.OK, result.getStatusCode());
 
         // make sure that the user in the database reflects the changes
         Optional<Player> optionalPlayer = userDB.getDocumentByField("username", relatedUser.getUsername());
@@ -231,7 +230,7 @@ public class UserOperationsTests {
         OperationResult loginErrorResult = callAsync(
             MessageType.LOGIN_USER,
             getLoginJson(username, clearPassword));
-        assertEquals(401, loginErrorResult.getStatusCode());
+        assertEquals(HttpStatusCodes.UNAUTHORIZED, loginErrorResult.getStatusCode());
     }
 
     private String getRegistrationJson(String username, String email, String clearPassword) {

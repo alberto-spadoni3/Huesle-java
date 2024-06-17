@@ -1,6 +1,7 @@
 package it.unibo.sd.project.mastermind.controllers;
 
 import com.mongodb.client.MongoDatabase;
+import it.unibo.sd.project.mastermind.controllers.utils.HttpStatusCodes;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.request.SettingsRequest;
 import it.unibo.sd.project.mastermind.model.result.UserOperationResult;
@@ -25,7 +26,7 @@ public class SettingsController {
                 Optional<Player> playerOptional = userDB.getDocumentByField("username", username);
                 playerOptional.ifPresent(player -> userOperationResult.set(
                     new UserOperationResult(
-                        (short) 200,
+                        HttpStatusCodes.OK,
                         "Returning requested settings...",
                         player)));
             } catch (Exception e) {
@@ -33,7 +34,7 @@ public class SettingsController {
             } finally {
                 if (userOperationResult.get() == null)
                     userOperationResult.set(new UserOperationResult(
-                        (short) 404,
+                        HttpStatusCodes.NOT_FOUND,
                         "No data available: player not found"));
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(userOperationResult.get());
@@ -53,7 +54,7 @@ public class SettingsController {
                     player.setAccessibilitySettings(settingsRequest.getAccessibilitySettings());
                     userDB.update(requesterUsername, player);
                     userOperationResult.set(new UserOperationResult(
-                        (short) 200,
+                        HttpStatusCodes.OK,
                         "Accessibility settings updated successfully!"));
                 });
             } catch (Exception e) {
@@ -61,7 +62,7 @@ public class SettingsController {
             } finally {
                 if (userOperationResult.get() == null)
                     userOperationResult.set(new UserOperationResult(
-                        (short) 404,
+                        HttpStatusCodes.NOT_FOUND,
                         "Update not possible: player not found"));
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(userOperationResult.get());
@@ -81,7 +82,7 @@ public class SettingsController {
                     player.setProfilePictureID(settingsRequest.getProfilePictureID());
                     userDB.update(requesterUsername, player);
                     userOperationResult.set(new UserOperationResult(
-                        (short) 200,
+                        HttpStatusCodes.OK,
                         "Profile picture updated successfully!"));
                 });
             } catch (Exception e) {
@@ -89,7 +90,7 @@ public class SettingsController {
             } finally {
                 if (userOperationResult.get() == null)
                     userOperationResult.set(new UserOperationResult(
-                        (short) 404,
+                        HttpStatusCodes.NOT_FOUND,
                         "Update not possible: player not found"));
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(userOperationResult.get());
@@ -111,7 +112,7 @@ public class SettingsController {
                         player.updateEmail(newEmail);
                         userDB.update(player.getUsername(), player);
                         userOperationResult.set(new UserOperationResult(
-                            (short) 200,
+                            HttpStatusCodes.OK,
                             "Email address updated successfully!"));
                     } else
                         userOperationResult.set(new UserOperationResult(
@@ -123,7 +124,7 @@ public class SettingsController {
             } finally {
                 if (userOperationResult.get() == null)
                     userOperationResult.set(new UserOperationResult(
-                        (short) 404,
+                        HttpStatusCodes.NOT_FOUND,
                         "Update not possible: player not found"));
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(userOperationResult.get());
@@ -145,11 +146,11 @@ public class SettingsController {
                     if (player.updatePassword(oldPassword, newPassword)) {
                         userDB.update(player.getUsername(), player);
                         userOperationResult.set(new UserOperationResult(
-                            (short) 200,
+                            HttpStatusCodes.OK,
                             "Password updated successfully!"));
                     } else
                         userOperationResult.set(new UserOperationResult(
-                            (short) 401,
+                            HttpStatusCodes.UNAUTHORIZED,
                             "The old password is not correct."));
                 });
             } catch (Exception e) {
@@ -157,7 +158,7 @@ public class SettingsController {
             } finally {
                 if (userOperationResult.get() == null)
                     userOperationResult.set(new UserOperationResult(
-                        (short) 404,
+                        HttpStatusCodes.NOT_FOUND,
                         "Update not possible: player not found"));
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(userOperationResult.get());

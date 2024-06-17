@@ -12,6 +12,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import it.unibo.sd.project.mastermind.controllers.UserController;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
+import it.unibo.sd.project.webservice.configuration.utils.HttpStatusCodes;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -69,8 +70,8 @@ public class WebServiceTests {
             .request(HttpMethod.POST, "/api/user/login")
             .compose(request -> request.send(requestBody.encode())
                 .compose(response -> {
-                    assertEquals(200, response.statusCode());
-                    if (response.statusCode() == 200) {
+                    assertEquals(HttpStatusCodes.OK, response.statusCode());
+                    if (response.statusCode() == HttpStatusCodes.OK) {
                         responseSucceeded.flag();
                         this.refreshTokenCookie = getRefreshTokenCookie(response.cookies());
                         // check the refreshToken cookie presence
@@ -94,8 +95,8 @@ public class WebServiceTests {
             .request(HttpMethod.GET, protectedRoute)
             .compose(request -> request.putHeader("Authorization", "Bearer " + accessToken).send())
             .compose(response -> {
-                assertEquals(200, response.statusCode());
-                if (response.statusCode() == 200)
+                assertEquals(HttpStatusCodes.OK, response.statusCode());
+                if (response.statusCode() == HttpStatusCodes.OK)
                     return response.body();
                 else return getFailedFuture(response);
             }).onSuccess(responseBody -> {
@@ -113,8 +114,8 @@ public class WebServiceTests {
             .request(HttpMethod.GET, protectedRoute)
             .compose(request -> request.putHeader("Authorization", "Bearer " + expiredAccessToken).send())
             .compose(response -> {
-                assertEquals(403, response.statusCode());
-                if (response.statusCode() == 403)
+                assertEquals(HttpStatusCodes.FORBIDDEN, response.statusCode());
+                if (response.statusCode() == HttpStatusCodes.FORBIDDEN)
                     return response.body();
                 else return getFailedFuture(response);
             }).onSuccess(responseBody -> {
@@ -131,8 +132,8 @@ public class WebServiceTests {
             .request(HttpMethod.GET, protectedRoute)
             .compose(HttpClientRequest::send)
             .compose(response -> {
-                assertEquals(500, response.statusCode());
-                if (response.statusCode() == 500)
+                assertEquals(HttpStatusCodes.INTERNAL_SERVER_ERROR, response.statusCode());
+                if (response.statusCode() == HttpStatusCodes.INTERNAL_SERVER_ERROR)
                     return response.body();
                 else return getFailedFuture(response);
             }).onSuccess(responseBody -> {
@@ -155,7 +156,7 @@ public class WebServiceTests {
                 refreshTokenCookie.getName() + "=" + refreshTokenCookie.getValue()).send())
             .compose(response -> {
                 int statusCode = response.statusCode();
-                if (statusCode <= 204) {
+                if (statusCode <= HttpStatusCodes.NO_CONTENT) {
                     Cookie refreshTokenCookie = getRefreshTokenCookie(response.cookies());
                     assertNull(refreshTokenCookie);
                     cookiePresenceVerified.flag();
@@ -179,7 +180,7 @@ public class WebServiceTests {
             .put("password", clearPassword);
         UserController userController = new UserController(DBSingleton.getTestDatabase());
         JsonObject response = new JsonObject(userController.registerUser().apply(requestBody.encode()));
-        if (response.getInteger("statusCode") == 201)
+        if (response.getInteger("statusCode") == HttpStatusCodes.CREATED)
             handler.handle(Future.succeededFuture());
         else {
             String resultMessage = response.getString("resultMessage");

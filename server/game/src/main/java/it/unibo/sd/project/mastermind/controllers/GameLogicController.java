@@ -1,6 +1,7 @@
 package it.unibo.sd.project.mastermind.controllers;
 
 import com.mongodb.client.MongoDatabase;
+import it.unibo.sd.project.mastermind.controllers.utils.HttpStatusCodes;
 import it.unibo.sd.project.mastermind.model.match.Attempt;
 import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchState;
@@ -69,7 +70,7 @@ public class GameLogicController {
                             pendingMatchDB.deleteByQuery(pendingReqOfAnotherPlayer);
 
                             matchOperationResult =
-                                new MatchOperationResult((short) 201, "Public match created");
+                                new MatchOperationResult(HttpStatusCodes.CREATED, "Public match created");
                             matchOperationResult.setMatches(List.of(newMatch));
                             return Presentation.serializerOf(MatchOperationResult.class)
                                 .serialize(matchOperationResult);
@@ -87,7 +88,7 @@ public class GameLogicController {
 
                     matchOperationResult =
                         new MatchOperationResult(
-                            (short) 200,
+                            HttpStatusCodes.OK,
                             "Searching another player...",
                             pendingMatchRequest.getMatchAccessCode());
                 }
@@ -95,7 +96,8 @@ public class GameLogicController {
                 throw new RuntimeException(e);
             } finally {
                 if (matchOperationResult == null) // a pending request already exists
-                    matchOperationResult = new MatchOperationResult((short) 400, "User already pending for a match");
+                    matchOperationResult = new MatchOperationResult(HttpStatusCodes.BAD_REQUEST,
+                        "User already pending for a match");
             }
             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
         };
@@ -119,7 +121,7 @@ public class GameLogicController {
                     Match newMatch = createMatch(requesterUsername, possiblePrivateMatch.get().getRequesterUsername());
                     pendingMatchDB.deleteByQuery(pendingReqWithSpecificCode);
                     matchOperationResult =
-                        new MatchOperationResult((short) 201, "Private match created");
+                        new MatchOperationResult(HttpStatusCodes.CREATED, "Private match created");
                     matchOperationResult.setMatches(List.of(newMatch));
                 }
             } catch (Exception e) {
@@ -127,7 +129,7 @@ public class GameLogicController {
             } finally {
                 if (matchOperationResult == null) // no pending request found with that access code
                     matchOperationResult =
-                        new MatchOperationResult((short) 404, "No match found with that access code");
+                        new MatchOperationResult(HttpStatusCodes.NOT_FOUND, "No match found with that access code");
             }
             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
         };
@@ -146,7 +148,7 @@ public class GameLogicController {
                 optionalPendingReq.ifPresent(pendingReq -> {
                     pendingMatchDB.deleteByQuery(pendingReqOfUserQuery);
                     matchOperationResult.set(new MatchOperationResult(
-                        (short) 200,
+                        HttpStatusCodes.OK,
                         "Private match request cancelled."));
                 });
             } catch (Exception e) {
@@ -154,7 +156,7 @@ public class GameLogicController {
             } finally {
                 if (matchOperationResult.get() == null)
                     matchOperationResult.set(new MatchOperationResult(
-                        (short) 400,
+                        HttpStatusCodes.UNAUTHORIZED,
                         "The cancellation request went wrong."));
             }
             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult.get());
@@ -185,7 +187,7 @@ public class GameLogicController {
                     // compose the results
                     matchOperationResult =
                         new MatchOperationResult(
-                            (short) 200,
+                            HttpStatusCodes.OK,
                             "Returning " + matchesOfUser.get().size() + " matches",
                             matchesOfUser.get(), pendingReqPresent.get());
                 }
@@ -194,7 +196,7 @@ public class GameLogicController {
             } finally {
                 if (matchOperationResult == null)
                     matchOperationResult = new MatchOperationResult(
-                        (short) 404, "The player " + username + " was not found.");
+                        HttpStatusCodes.NOT_FOUND, "The player " + username + " was not found.");
             }
             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
         };
@@ -207,7 +209,7 @@ public class GameLogicController {
                 Optional<Match> optionalMatch = matchDB.getDocumentByField("_id", matchID);
                 optionalMatch.ifPresent(match -> matchOperationResult.set(
                     new MatchOperationResult(
-                        (short) 200,
+                        HttpStatusCodes.OK,
                         "Returning the match with ID " + matchID,
                         updateMatches(List.of(match)), false)));
             } catch (Exception e) {
@@ -215,7 +217,7 @@ public class GameLogicController {
             } finally {
                 if (matchOperationResult.get() == null)
                     matchOperationResult.set(new MatchOperationResult(
-                        (short) 400, "Match not found for the ID " + matchID
+                        HttpStatusCodes.UNAUTHORIZED, "Match not found for the ID " + matchID
                     ));
             }
             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult.get());
@@ -246,7 +248,7 @@ public class GameLogicController {
                         matchStatus.setAbandoned();
                         matchDB.update(matchRequest.getMatchID(), matchToLeave);
                         matchOperationResult = new MatchOperationResult(
-                            (short) 200,
+                            HttpStatusCodes.OK,
                             "Match with ID " + matchToLeave.getMatchID() + " left by " + requesterUsername);
                     }
                 }
@@ -255,7 +257,7 @@ public class GameLogicController {
             } finally {
                 if (matchOperationResult == null)
                     matchOperationResult = new MatchOperationResult(
-                        (short) 400,
+                        HttpStatusCodes.UNAUTHORIZED,
                         "Invalid match selected");
             }
             return Presentation.serializerOf(MatchOperationResult.class).serialize(matchOperationResult);
@@ -279,7 +281,7 @@ public class GameLogicController {
                     match.tryToGuess(attempt);
                     matchDB.update(match.getMatchID().toString(), match);
                     guessOperationResult = new GuessOperationResult(
-                        (short) 200, "Guess made succesfully",
+                        HttpStatusCodes.OK, "Guess made succesfully",
                         match.getMatchStatus(),
                         attempt.getHints());
                 }
@@ -287,7 +289,8 @@ public class GameLogicController {
                 System.out.println(e.getMessage());
             } finally {
                 if (guessOperationResult == null)
-                    guessOperationResult = new GuessOperationResult((short) 400, "Problems with selected match");
+                    guessOperationResult = new GuessOperationResult(HttpStatusCodes.BAD_REQUEST,
+                        "Problems with selected match");
             }
             return Presentation.serializerOf(GuessOperationResult.class).serialize(guessOperationResult);
         };

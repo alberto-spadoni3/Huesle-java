@@ -8,6 +8,7 @@ import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
+import it.unibo.sd.project.webservice.configuration.utils.HttpStatusCodes;
 import it.unibo.sd.project.webservice.rabbit.MessageType;
 
 import java.util.function.BiConsumer;
@@ -91,7 +92,8 @@ public class UserRoutesConfigurator extends RoutesConfigurator {
                 String refreshToken = cookie.getValue();
                 backendHandler(messageType, refreshToken, consumer).handle(routingContext);
             } else {
-                int statusCode = messageType.getType().equals(MessageType.LOGOUT_USER.getType()) ? 204 : 401;
+                int statusCode = messageType.getType().equals(
+                    MessageType.LOGOUT_USER.getType()) ? HttpStatusCodes.NO_CONTENT : HttpStatusCodes.UNAUTHORIZED;
                 routingContext
                     .response()
                     .setStatusCode(statusCode)

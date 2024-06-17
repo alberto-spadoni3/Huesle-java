@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mongodb.client.MongoDatabase;
 import it.unibo.sd.project.mastermind.controllers.UserController;
+import it.unibo.sd.project.mastermind.controllers.utils.HttpStatusCodes;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
 import it.unibo.sd.project.mastermind.model.mongo.DBSingleton;
 import it.unibo.sd.project.mastermind.model.result.OperationResult;
@@ -61,12 +62,12 @@ public class SettingsOperationsTests {
         OperationResult error = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         // since we provided a username that doesn't exists in the database,
         // the request should have returned with an error
-        assertEquals(404, error.getStatusCode());
+        assertEquals(HttpStatusCodes.NOT_FOUND, error.getStatusCode());
         System.out.println(error.getResultMessage());
 
         response = callAsync(MessageType.GET_SETTINGS, player1.getUsername());
         UserOperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
-        assertEquals(200, result.getStatusCode());
+        assertEquals(HttpStatusCodes.OK, result.getStatusCode());
 
         Player relatedUser = result.getRelatedUser();
         assertEquals(player1.getProfilePictureID(), relatedUser.getProfilePictureID());
@@ -83,13 +84,13 @@ public class SettingsOperationsTests {
         OperationResult error = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         // since we provided a username that doesn't exists in the database,
         // the request should have returned with an error
-        assertEquals(404, error.getStatusCode());
+        assertEquals(HttpStatusCodes.NOT_FOUND, error.getStatusCode());
         System.out.println(error.getResultMessage());
 
         requestBody = getRequest(player1.getUsername(), "profilePictureID", profilePicPrimitive);
         response = callAsync(MessageType.UPDATE_PROFILE_PIC, requestBody);
         OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
-        assertEquals(200, result.getStatusCode());
+        assertEquals(HttpStatusCodes.OK, result.getStatusCode());
         // now we should see some changes in the DB
         Player updatedPlayer = userDB
             .getDocumentByField("username", player1.getUsername())
@@ -107,13 +108,13 @@ public class SettingsOperationsTests {
         OperationResult error = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         // since we provided a username that doesn't exists in the database, the request should
         // have returned with an error
-        assertEquals(404, error.getStatusCode());
+        assertEquals(HttpStatusCodes.NOT_FOUND, error.getStatusCode());
         System.out.println(error.getResultMessage());
 
         request = getRequest(player1.getUsername(), "accessibilitySettings", jsonSettings);
         response = callAsync(MessageType.UPDATE_SETTINGS, request);
         OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
-        assertEquals(200, result.getStatusCode());
+        assertEquals(HttpStatusCodes.OK, result.getStatusCode());
         // now we should see some changes in the DB
         Player updatedPlayer = userDB
             .getDocumentByField("username", player1.getUsername())
@@ -130,14 +131,14 @@ public class SettingsOperationsTests {
         OperationResult error = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         // since we provided a email address that already exists in the database,
         // the request should have returned with an error
-        assertEquals(409, error.getStatusCode());
+        assertEquals(HttpStatusCodes.CONFLICT, error.getStatusCode());
         System.out.println(error.getResultMessage());
 
         JsonPrimitive newEmail = new JsonPrimitive("bob97@huesle.com");
         request = getRequest(player1.getUsername(), "newEmail", newEmail);
         response = callAsync(MessageType.UPDATE_EMAIL, request);
         OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
-        assertEquals(200, result.getStatusCode());
+        assertEquals(HttpStatusCodes.OK, result.getStatusCode());
         // now we should see some changes in the DB
         Player updatedPlayer = userDB
             .getDocumentByField("username", player1.getUsername())
@@ -159,14 +160,14 @@ public class SettingsOperationsTests {
         OperationResult error = Presentation.deserializeAs(response.get(), UserOperationResult.class);
         // since we provided a wrong old password,
         // the request should have returned with an error
-        assertEquals(401, error.getStatusCode());
+        assertEquals(HttpStatusCodes.UNAUTHORIZED, error.getStatusCode());
         System.out.println(error.getResultMessage());
 
         request.remove("oldPassword");
         request.addProperty("oldPassword", rightOldPassword);
         response = callAsync(MessageType.UPDATE_PASSWORD, request.toString());
         OperationResult result = Presentation.deserializeAs(response.get(), UserOperationResult.class);
-        assertEquals(200, result.getStatusCode());
+        assertEquals(HttpStatusCodes.OK, result.getStatusCode());
         // now we should see some changes in the DB
         Player updatedPlayer = userDB
             .getDocumentByField("username", player1.getUsername())
@@ -195,7 +196,7 @@ public class SettingsOperationsTests {
             .registerUser()
             .apply(Presentation.serializerOf(Player.class).serialize(player1));
         OperationResult opRes = Presentation.deserializeAs(registrationResponse, UserOperationResult.class);
-        if (opRes.getStatusCode() >= 400)
+        if (opRes.getStatusCode() >= HttpStatusCodes.BAD_REQUEST)
             throw new RuntimeException("Preliminary user registration had some problems...");
     }
 }

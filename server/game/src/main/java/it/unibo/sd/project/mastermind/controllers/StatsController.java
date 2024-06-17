@@ -1,6 +1,7 @@
 package it.unibo.sd.project.mastermind.controllers;
 
 import com.mongodb.client.MongoDatabase;
+import it.unibo.sd.project.mastermind.controllers.utils.HttpStatusCodes;
 import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchState;
 import it.unibo.sd.project.mastermind.model.mongo.DBManager;
@@ -45,7 +46,7 @@ public class StatsController {
                     int matchesDrawn = getMatchesQuery(username, countMatchesDrawn);
 
                     statsOperationResult = new StatsOperationResult(
-                        (short) 200, "Returning user statistics",
+                        HttpStatusCodes.OK, "Returning user statistics",
                         matchesWon, matchesLost, matchesDrawn
                     );
                 }
@@ -54,7 +55,7 @@ public class StatsController {
             } finally {
                 if (statsOperationResult == null)
                     statsOperationResult = new StatsOperationResult(
-                        (short) 400, "Something went wrong. Please retry");
+                        HttpStatusCodes.BAD_REQUEST, "Something went wrong. Please retry");
             }
             return Presentation.serializerOf(StatsOperationResult.class).serialize(statsOperationResult);
         };

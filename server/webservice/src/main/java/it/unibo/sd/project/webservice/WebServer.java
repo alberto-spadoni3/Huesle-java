@@ -23,13 +23,14 @@ import it.unibo.sd.project.webservice.configuration.GameRoutesConfigurator;
 import it.unibo.sd.project.webservice.configuration.SettingsRoutesConfigurator;
 import it.unibo.sd.project.webservice.configuration.StatsRoutesConfigurator;
 import it.unibo.sd.project.webservice.configuration.UserRoutesConfigurator;
+import it.unibo.sd.project.webservice.configuration.utils.HttpStatusCodes;
 
 import java.util.List;
 import java.util.Set;
 
 public class WebServer extends AbstractVerticle {
-    private final short LISTENING_PORT;
     public static final String BASE_ADDRESS = "huesle.";
+    private final short LISTENING_PORT;
 
     public WebServer(short listeningPort) {
         LISTENING_PORT = listeningPort;
@@ -81,11 +82,11 @@ public class WebServer extends AbstractVerticle {
         Throwable cause = routingContext.failure().getCause();
         if (cause != null)
             if (cause.getMessage().contains("token expired"))
-                response.setStatusCode(403).end("JWT token expired");
+                response.setStatusCode(HttpStatusCodes.FORBIDDEN).end("JWT token expired");
             else
-                response.setStatusCode(400).end(cause.getMessage());
+                response.setStatusCode(HttpStatusCodes.BAD_REQUEST).end(cause.getMessage());
         else
-            response.setStatusCode(500).end("Internal Server Error");
+            response.setStatusCode(HttpStatusCodes.INTERNAL_SERVER_ERROR).end("Internal Server Error");
     }
 
     private Router getProtectedRouter() {

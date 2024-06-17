@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import it.unibo.sd.project.webservice.NotificationService;
+import it.unibo.sd.project.webservice.configuration.utils.HttpStatusCodes;
 import it.unibo.sd.project.webservice.rabbit.MessageType;
 
 public class GameRoutesConfigurator extends RoutesConfigurator {
@@ -162,7 +163,7 @@ public class GameRoutesConfigurator extends RoutesConfigurator {
     }
 
     private void notifyNewMatch(String originPlayer, int statusCode, JsonArray createdMatch) {
-        if (statusCode == 201) {
+        if (statusCode == HttpStatusCodes.CREATED) {
             createCommunicationRoom(createdMatch);
             String createdMatchID = createdMatch.stream()
                 .map(JsonObject.class::cast)

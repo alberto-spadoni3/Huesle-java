@@ -5,14 +5,15 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import it.unibo.sd.project.webservice.configuration.utils.HttpStatusCodes;
 import it.unibo.sd.project.webservice.rabbit.MessageType;
 import it.unibo.sd.project.webservice.rabbit.RPCClient;
 
 import java.util.function.BiConsumer;
 
 public abstract class RoutesConfigurator {
-    protected Router router;
     protected final Vertx vertx;
+    protected Router router;
     protected RPCClient gameBackend;
 
     protected RoutesConfigurator(Vertx vertx) {
@@ -37,7 +38,7 @@ public abstract class RoutesConfigurator {
                 .response()
                 .putHeader("Content-Type", "application/json")
                 .setStatusCode(statusCode);
-            if (statusCode >= 200 && statusCode <= 204)
+            if (statusCode >= HttpStatusCodes.OK && statusCode <= HttpStatusCodes.NO_CONTENT)
                 consumer.accept(routingContext, backendResponse);
             else
                 respondWithMessage().accept(routingContext, backendResponse);
@@ -48,7 +49,7 @@ public abstract class RoutesConfigurator {
         return routingContext -> {
             String username = routingContext.user().subject();
             if (username == null || username.isBlank())
-                routingContext.response().setStatusCode(400).end();
+                routingContext.response().setStatusCode(HttpStatusCodes.BAD_REQUEST).end();
             else
                 consumer.accept(routingContext, username);
         };

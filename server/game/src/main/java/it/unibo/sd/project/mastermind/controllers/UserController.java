@@ -8,6 +8,7 @@ import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
+import it.unibo.sd.project.mastermind.controllers.utils.HttpStatusCodes;
 import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchState;
 import it.unibo.sd.project.mastermind.model.match.MatchStatus;
@@ -31,12 +32,6 @@ public class UserController {
     private final DBManager<Player> userDB;
     private final DBManager<Match> matchDB;
     private final DBManager<PendingMatchRequest> pendingMatchDB;
-    private final short SUCCESS_HTTP_CODE = 200;
-    private final short REGISTRATION_DONE_HTTP_CODE = 201;
-    private final short NO_CONTENT_HTTP_CODE = 204;
-    private final short UNAUTHORIZED_HTTP_CODE = 401;
-    private final short FORBIDDEN_HTTP_CODE = 403;
-    private final short CONFLICT_HTTP_CODE = 409;
     private final String EMAIL_ALREADY_EXISTS_MESSAGE = "The email address is already in use";
     private final String USERNAME_ALREADY_EXISTS_MESSAGE = "The username is already in use";
     private final String UNAUTHORIZED_MESSAGE = "Unauthorized";
@@ -59,16 +54,16 @@ public class UserController {
                 Player newUser = Presentation.deserializeAs(message, Player.class);
                 if (userDB.isPresentByField("email", newUser.getEmail()))
                     registrationResult =
-                        new UserOperationResult(CONFLICT_HTTP_CODE, EMAIL_ALREADY_EXISTS_MESSAGE);
+                        new UserOperationResult(HttpStatusCodes.CONFLICT, EMAIL_ALREADY_EXISTS_MESSAGE);
                 else if (userDB.isPresentByField("username", newUser.getUsername()))
                     registrationResult =
-                        new UserOperationResult(CONFLICT_HTTP_CODE, USERNAME_ALREADY_EXISTS_MESSAGE);
+                        new UserOperationResult(HttpStatusCodes.CONFLICT, USERNAME_ALREADY_EXISTS_MESSAGE);
 
                 if (registrationResult == null) {
                     // The registration process can go on without problems
                     userDB.insert(newUser);
                     registrationResult = new UserOperationResult(
-                        REGISTRATION_DONE_HTTP_CODE,
+                        HttpStatusCodes.CREATED,
                         String.format("User %s created successfully", newUser.getUsername()));
                 }
             } catch (Exception e) {
@@ -102,7 +97,7 @@ public class UserController {
                     userDB.update(user.getUsername(), user);
 
                     loginResult = new UserOperationResult(
-                        SUCCESS_HTTP_CODE,
+                        HttpStatusCodes.OK,
                         String.format("User %s logged in", userToLogin.get().getUsername()),
                         user, accessToken);
                 }
@@ -113,7 +108,7 @@ public class UserController {
                     // It means that the username is not present in the DB,
                     // or it is disabled
                     // or the passwords doesn't match
-                    loginResult = new UserOperationResult(UNAUTHORIZED_HTTP_CODE, UNAUTHORIZED_MESSAGE);
+                    loginResult = new UserOperationResult(HttpStatusCodes.UNAUTHORIZED, UNAUTHORIZED_MESSAGE);
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(loginResult);
         };
@@ -132,7 +127,7 @@ public class UserController {
                     userDB.update(player.getUsername(), player);
 
                     result = new UserOperationResult(
-                        SUCCESS_HTTP_CODE,
+                        HttpStatusCodes.OK,
                         "The user " + player.getUsername() + " is successfully logged out");
                 }
             } catch (Exception e) {
@@ -140,7 +135,7 @@ public class UserController {
             } finally {
                 if (result == null)
                     result = new UserOperationResult(
-                        NO_CONTENT_HTTP_CODE,
+                        HttpStatusCodes.NO_CONTENT,
                         "The user was already logged out");
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(result);
@@ -161,7 +156,7 @@ public class UserController {
                         if (user.succeeded() && user.result().subject().equals(player.getUsername())) {
                             String newAccessToken = generateToken(TokenType.ACCESS, player.getUsername());
                             result.set(new UserOperationResult(
-                                SUCCESS_HTTP_CODE,
+                                HttpStatusCodes.OK,
                                 "Access token refreshed successfully",
                                 player, newAccessToken));
                         }
@@ -171,7 +166,7 @@ public class UserController {
                 System.out.println(e.getMessage());
             } finally {
                 if (result.get() == null)
-                    result.set(new UserOperationResult(FORBIDDEN_HTTP_CODE, "Forbidden"));
+                    result.set(new UserOperationResult(HttpStatusCodes.FORBIDDEN, "Forbidden"));
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(result.get());
         };
@@ -213,7 +208,7 @@ public class UserController {
                     deletedUser.disable();
                     userDB.update(username, deletedUser);
                     result = new UserOperationResult(
-                        (short) 200, "User " + username + " deleted successfully!"
+                        HttpStatusCodes.OK, "User " + username + " deleted successfully!"
                     );
                 }
             } catch (Exception e) {
@@ -221,7 +216,7 @@ public class UserController {
             } finally {
                 if (result == null)
                     result = new UserOperationResult(
-                        (short) 400, "Problems in deleting the user " + username
+                        HttpStatusCodes.BAD_REQUEST, "Problems in deleting the user " + username
                     );
             }
             return Presentation.serializerOf(UserOperationResult.class).serialize(result);

@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import it.unibo.sd.project.mastermind.controllers.UserController;
+import it.unibo.sd.project.mastermind.controllers.utils.HttpStatusCodes;
 import it.unibo.sd.project.mastermind.model.match.Hints;
 import it.unibo.sd.project.mastermind.model.match.Match;
 import it.unibo.sd.project.mastermind.model.match.MatchState;
@@ -79,7 +80,7 @@ public class GameOperationsTests {
             player1.getUsername());
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
-        assertEquals(200, operationResult.getStatusCode());
+        assertEquals(HttpStatusCodes.OK, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
         assertEquals(0, operationResult.getMatches().size());
     }
@@ -94,8 +95,8 @@ public class GameOperationsTests {
             request);
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
-        // the searching process should succeed with statusCode 200, meaning that a pending request has been added
-        assertEquals(200, operationResult.getStatusCode());
+        // the searching process should succeed with statusCode HttpStatusCodes.OK, meaning that a pending request has been added
+        assertEquals(HttpStatusCodes.OK, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
 
         // check if there is the supposed pending request
@@ -123,8 +124,8 @@ public class GameOperationsTests {
             getRequestForMatch(player1, false));
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
-        // the searching process should fail with statusCode 400, meaning that a pending request of that user already exists
-        assertEquals(400, operationResult.getStatusCode());
+        // the searching process should fail with statusCode HttpStatusCodes.BAD_REQUEST, meaning that a pending request of that user already exists
+        assertEquals(HttpStatusCodes.BAD_REQUEST, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
     }
 
@@ -138,7 +139,7 @@ public class GameOperationsTests {
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the result should indicates that a public match between player1 and player2 has been created
-        assertEquals(201, operationResult.getStatusCode());
+        assertEquals(HttpStatusCodes.CREATED, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
 
         assertNotNull(operationResult.getMatches().getFirst());
@@ -155,7 +156,7 @@ public class GameOperationsTests {
             getRequestForMatch(player2, true));
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
-        assertEquals(200, operationResult.getStatusCode());
+        assertEquals(HttpStatusCodes.OK, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
         matchAccessCode = operationResult.getMatchAccessCode();
         assertNotNull(matchAccessCode);
@@ -181,8 +182,8 @@ public class GameOperationsTests {
             getRequestForMatch(player2, true));
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
-        // the searching process should fail with statusCode 400, meaning that a pending request of that user already exists
-        assertEquals(400, operationResult.getStatusCode());
+        // the searching process should fail with statusCode HttpStatusCodes.BAD_REQUEST, meaning that a pending request of that user already exists
+        assertEquals(HttpStatusCodes.BAD_REQUEST, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
     }
 
@@ -195,8 +196,8 @@ public class GameOperationsTests {
             getRequestForMatch(player3, matchAccessCode + 1));
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
-        // the searching process should fail with statusCode 400, meaning that a pending request already exists
-        assertEquals(404, operationResult.getStatusCode());
+        // the searching process should fail with statusCode HttpStatusCodes.BAD_REQUEST, meaning that a pending request already exists
+        assertEquals(HttpStatusCodes.NOT_FOUND, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
     }
 
@@ -210,7 +211,7 @@ public class GameOperationsTests {
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
         // the result should indicate that a public match between player2 and player3 has been created
-        assertEquals(201, operationResult.getStatusCode());
+        assertEquals(HttpStatusCodes.CREATED, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
 
         assertNotNull(operationResult.getMatches().getFirst());
@@ -227,7 +228,7 @@ public class GameOperationsTests {
             player2.getUsername());
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
-        assertEquals(200, operationResult.getStatusCode());
+        assertEquals(HttpStatusCodes.OK, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
 
         // saving matches list in a class field in order to use it in the next tests
@@ -256,7 +257,7 @@ public class GameOperationsTests {
 
         OperationResult operationResult = Presentation.deserializeAs(failedResponse.get(), GuessOperationResult.class);
         // the request should fail and the guess should not be submitted
-        assertEquals(400, operationResult.getStatusCode());
+        assertEquals(HttpStatusCodes.BAD_REQUEST, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
 
         // Now let's try again with a correct request
@@ -269,7 +270,7 @@ public class GameOperationsTests {
         GuessOperationResult guessOperationResult = Presentation.deserializeAs(successfulResponse.get(),
             GuessOperationResult.class);
         // the request should fail and the guess should not be submitted
-        assertEquals(200, guessOperationResult.getStatusCode());
+        assertEquals(HttpStatusCodes.OK, guessOperationResult.getStatusCode());
         System.out.println(guessOperationResult.getResultMessage());
         // check if the result contains the computed hints
         Hints submittedAttemptHints = guessOperationResult.getSubmittedAttemptHints();
@@ -288,7 +289,7 @@ public class GameOperationsTests {
             matchID);
 
         MatchOperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
-        assertEquals(200, operationResult.getStatusCode());
+        assertEquals(HttpStatusCodes.OK, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
         assertEquals(1, operationResult.getMatches().size());
         assertEquals(matchID, operationResult.getMatches().getFirst().getMatchID().toString());
@@ -307,7 +308,7 @@ public class GameOperationsTests {
             request.toString());
 
         OperationResult operationResult = Presentation.deserializeAs(response.get(), MatchOperationResult.class);
-        assertEquals(200, operationResult.getStatusCode());
+        assertEquals(HttpStatusCodes.OK, operationResult.getStatusCode());
         System.out.println(operationResult.getResultMessage());
 
         // check if the leaved match is marked as abandoned
@@ -347,7 +348,7 @@ public class GameOperationsTests {
             String registrationResponse = userController.registerUser()
                 .apply(Presentation.serializerOf(Player.class).serialize(player));
             OperationResult opRes = Presentation.deserializeAs(registrationResponse, UserOperationResult.class);
-            if (opRes.getStatusCode() >= 400)
+            if (opRes.getStatusCode() >= HttpStatusCodes.BAD_REQUEST)
                 throw new RuntimeException("Preliminary user registration had some problems...");
         }
     }
