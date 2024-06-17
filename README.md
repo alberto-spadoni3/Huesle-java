@@ -2,8 +2,9 @@
 
 ## Description
 
-This project aims to re-implement the backend part of [](Huesle) using Java and Vert.x.
-One of the main goals of this work is to provide a server side implementation that includes distributed programming
+This project aims to re-implement the backend part of [Huesle](https://github.com/alberto-spadoni3/Huesle) switching
+from JavaScript to Java and Vert.x.
+One of the main goals of this artifact is to provide a server side implementation that includes distributed programming
 techniques.
 
 ## Technologies Used
