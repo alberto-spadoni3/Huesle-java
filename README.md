@@ -32,11 +32,11 @@ This project uses Docker to build and deploy its microservices. Follow these ste
 
 1. Clone the repository:
     ```bash
-    git clone https://dvcs.apice.unibo.it/pika-lab/courses/ds/projects/ds-project-agnoletti-spadoni-ay2021.git
+    git clone https://github.com/alberto-spadoni3/Huesle-java.git
     ```
 2. Navigate into the project directory:
     ```bash
-    cd ds-project-agnoletti-spadoni-ay2021
+    cd Huesle-java
     ```
 3. Build the Docker images:
     ```bash
